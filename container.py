@@ -49,8 +49,8 @@ class Container:
             result = dependency.Implementation
             return singletonOrFactoryDeliver
         elif dependency.LifeTime is LifeTime.FACTORY:
-            result = dependency.Implementation()  # type: ignore[attr-defined]
+            result = dependency.Implementation()  # type: ignore[union-attr]
             return singletonOrFactoryDeliver
         else:
-            result = dependency.Implementation() # type: ignore[attr-defined]
+            result = dependency.Implementation() # type: ignore[union-attr]
             return scopedDeliver

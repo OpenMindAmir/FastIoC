@@ -34,7 +34,7 @@ def Injectify(app: FastAPI, container: Container):
         signature = inspect.signature(endpoint)
         params: list[inspect.Parameter] = []
 
-        for name, param in signature.parameters.items(): # type: ignore[unused-variable]
+        for name, param in signature.parameters.items(): # type: ignore[unused]
             if isinstance(param.default, Depends):  # type: ignore[assignment]
                 params.append(param)
                 continue
