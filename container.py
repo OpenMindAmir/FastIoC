@@ -39,18 +39,18 @@ class Container:
         dependency: Dependency = self.dependencies[interface]
         result: object
 
-        def singletonOrFactoryDeliver() -> object:
+        def DependableFunction() -> object:
             return result
         
-        def scopedDeliver() -> Generator[object]:
+        def DependableGenerator() -> Generator[object]:
             yield result
 
         if dependency.LifeTime is LifeTime.SINGLETON:
             result = dependency.Implementation
-            return singletonOrFactoryDeliver
+            return DependableFunction
         elif dependency.LifeTime is LifeTime.FACTORY:
             result = dependency.Implementation()  # type: ignore[union-attr]
-            return singletonOrFactoryDeliver
+            return DependableFunction
         else:
             result = dependency.Implementation() # type: ignore[union-attr]
-            return scopedDeliver
+            return DependableGenerator
