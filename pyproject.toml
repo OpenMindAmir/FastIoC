@@ -1,0 +1,20 @@
+[build-system]
+requires = ["setuptools>=65", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "Injectify"
+version = "0.1.0"
+description = "IoC/DI container for FastAPI with automatic type-based dependency injection"
+authors = [{name="Amir R. Aliakbari (OpenMindAmir)", email="OpenMindAmir@gmail.com"}]
+requires-python = ">=3.12"
+
+dependencies = [
+    "fastapi",
+]
+
+[tool.poetry.dev-dependencies]
+pytest = "^8.0"
+
+[tool.pytest.ini_options]
+python_files = "Test*.py"

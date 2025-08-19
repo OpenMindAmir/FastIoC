@@ -1,0 +1,41 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+venv/
+env/
+.venv/
+
+# Distribution / packaging
+build/
+dist/
+*.egg-info
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Pytest cache
+.pytest_cache/
+
+# Mypy cache
+.mypy_cache/
+
+# Black cache
+.black/
+
+# isort cache
+.isort.cfg
+
+# Coverage reports
+htmlcov/
+.coverage
+.coverage.*
+.cache
+
+# Environment files
+.env
