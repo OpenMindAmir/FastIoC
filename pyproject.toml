@@ -3,7 +3,7 @@ requires = ["setuptools>=65", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "Injectify"
+name = "injectify"
 version = "0.1.0"
 description = "IoC/DI container for FastAPI with automatic type-based dependency injection"
 authors = [{name="Amir R. Aliakbari (OpenMindAmir)", email="OpenMindAmir@gmail.com"}]

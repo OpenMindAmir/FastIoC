@@ -1,0 +1,2 @@
+class InterfaceNotRegistered(Exception):
+    pass
