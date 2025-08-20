@@ -2,8 +2,8 @@ from typing import Generator
 
 from typeguard import typechecked
 
-from custom_types import Dependency, LifeTime, FastAPIDependable
-from errors import InterfaceNotRegistered
+from fastdi.custom_types import Dependency, LifeTime, FastAPIDependable
+from fastdi.errors import InterfaceNotRegistered
 
 
 class Container:

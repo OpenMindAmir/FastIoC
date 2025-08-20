@@ -4,9 +4,9 @@ import inspect
 from fastapi import Depends, FastAPI
 from typeguard import typechecked
 
-from errors import InterfaceNotRegistered
-from custom_types import FastAPIDependable
-from container import Container
+from fastdi.errors import InterfaceNotRegistered
+from fastdi.custom_types import FastAPIDependable
+from fastdi.container import Container
 
 def inject(_list: list[Any], item: Any, container: Container):
     if isinstance(item, Depends): # type: ignore[assignment]

@@ -1,20 +1,18 @@
 [build-system]
-requires = ["setuptools>=65", "wheel"]
-build-backend = "setuptools.build_meta"
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
 
-[project]
+[tool.poetry]
 name = "FastDI"
 version = "0.1.0"
 description = "IoC/DI container for FastAPI with automatic type-based dependency injection"
-authors = [{name="Amir R. Aliakbari (OpenMindAmir)", email="OpenMindAmir@gmail.com"}]
-requires-python = ">=3.12"
+authors = ["Amir R. Aliakbari (OpenMindAmir) <OpenMindAmir@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "fastdi" }]
 
-dependencies = [
-    "fastapi",
-]
+[tool.poetry.dependencies]
+python = ">=3.12"
+fastapi = "*"
 
-[tool.poetry.dev-dependencies]
+[tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
-
-[tool.pytest.ini_options]
-python_files = "Test*.py"
