@@ -27,27 +27,34 @@ def Injectify(app: FastAPI, container: Container):
     # --- Endpoint Level Dependencies ---
 
     for route in getattr(app, 'routes', []):
-        if not hasattr(route, 'endpoint'):
-            continue
+        if hasattr(route, 'endpoint'):
+            endpoint = route.endpoint
+            signature = inspect.signature(endpoint)
+            params: list[inspect.Parameter] = []
 
-        endpoint = route.endpoint
-        signature = inspect.signature(endpoint)
-        params: list[inspect.Parameter] = []
+            for name, param in signature.parameters.items(): # type: ignore[unused]
+                if isinstance(param.default, Depends):  # type: ignore[assignment]
+                    params.append(param)
+                    continue
 
-        for name, param in signature.parameters.items(): # type: ignore[unused]
-            if isinstance(param.default, Depends):  # type: ignore[assignment]
-                params.append(param)
-                continue
+                try:
+                    dependable: FastAPIDependable = container.Resolve(param.annotation)
+                    newParam = param.replace(default=Depends(dependable))
+                    params.append(newParam)
 
-            try:
-                dependable: FastAPIDependable = container.Resolve(param.annotation)
-                newParam = param.replace(default=Depends(dependable))
-                params.append(newParam)
+                except InterfaceNotRegistered:
+                    params.append(param)
 
-            except InterfaceNotRegistered:
-                params.append(param)
+            route.endpoint.__signature__ = signature.replace(parameters=params)
+        
+        if hasattr(route, 'dependencies'):
+            dependencies: list[Any] = []
+            
+            for dependancy in getattr(route, 'dependencies', []):
+                inject(dependencies, dependancy, container)
 
-        route.endpoint.__signature__ = signature.replace(parameters=params)
+            route.dependencies = dependencies
+
 
     # --- Router Level Dependencies ---
 
