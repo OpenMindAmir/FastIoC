@@ -32,7 +32,6 @@ class Container:
         if not self.dependencies.get(interface):
             raise InterfaceNotRegistered(
                 f"Interface {interface.__name__} not found in container")
-        
 
     def Resolve(self, interface: type) -> FastAPIDependable:
         self.CheckIfRegistered(interface)
