@@ -12,4 +12,4 @@ class Dependency:
     Implementation: type | object
     LifeTime: LifeTime
 
-FastAPIDependable = Callable[[], object | Generator[object]]
+FastAPIDependable = Callable[[], object | Generator[object, None, None]]

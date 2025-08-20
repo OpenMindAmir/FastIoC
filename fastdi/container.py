@@ -13,10 +13,11 @@ class Container:
 
     @typechecked
     def Register(self, interface: type, implementation: type, lifeTime: LifeTime):
+        impl = implementation
         if lifeTime is LifeTime.SINGLETON:
-            implementation = implementation()
+            impl = implementation()
         self.dependencies[interface] = Dependency(
-            Implementation=implementation, LifeTime=lifeTime)
+            Implementation=impl, LifeTime=lifeTime)
 
     def AddSingleton(self, interface: type, implementation: type):
         self.Register(interface, implementation, LifeTime.SINGLETON)
