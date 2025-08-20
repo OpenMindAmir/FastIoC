@@ -15,7 +15,7 @@ def inject(_list: list[Any], item: Any, container: Container):
 
     try:
         dependable: FastAPIDependable = container.Resolve(item)
-        _list.append(dependable)
+        _list.append(Depends(dependable))
 
     except InterfaceNotRegistered:
         _list.append(item)
@@ -65,5 +65,3 @@ def Injectify(app: FastAPI, container: Container):
         inject(dependencies, dependency, container)
 
     app.dependencies = dependencies # type: ignore[attr-defined]
-
-
