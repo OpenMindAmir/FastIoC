@@ -42,15 +42,15 @@ class Container:
         def DependableFunction() -> object:
             return result
         
-        def DependableGenerator() -> Generator[object]:
+        def DependableGenerator() -> Generator[object, None, None]:
             yield result
 
         if dependency.LifeTime is LifeTime.SINGLETON:
             result = dependency.Implementation
             return DependableFunction
         elif dependency.LifeTime is LifeTime.FACTORY:
-            result = dependency.Implementation()  # type: ignore[union-attr]
+            result = dependency.Implementation() # pyright: ignore[reportUnknownVariableType, reportCallIssue]
             return DependableFunction
         else:
-            result = dependency.Implementation() # type: ignore[union-attr]
+            result = dependency.Implementation() # pyright: ignore[reportUnknownVariableType, reportCallIssue]
             return DependableGenerator

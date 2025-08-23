@@ -1,7 +1,9 @@
-from typing import Any
 import inspect
+from typing import Any, Callable
+from functools import wraps
 
-from fastapi import Depends, FastAPI
+from fastapi import FastAPI, APIRouter, Depends
+from fastapi.params import Depends as _Depends
 from typeguard import typechecked
 
 from fastdi.errors import InterfaceNotRegistered
@@ -9,7 +11,7 @@ from fastdi.custom_types import FastAPIDependable
 from fastdi.container import Container
 
 def inject(_list: list[Any], item: Any, container: Container):
-    if isinstance(item, Depends): # type: ignore[assignment]
+    if isinstance(item, _Depends):
         _list.append(item)
         return
 
@@ -19,21 +21,45 @@ def inject(_list: list[Any], item: Any, container: Container):
 
     except InterfaceNotRegistered:
         _list.append(item)
-    
+
+safeAttrs = [
+        "routes",
+        "dependencies",
+        "prefix",
+        "tags",
+        "responses",
+        "default_response_class",
+        "deprecated",
+        "include_in_schema",
+        "redirect_slashes",
+        "default",
+        "on_startup",
+        "on_shutdown",
+        "exception_handlers",
+        "route_class",
+    ]
+
+def cloneRouter(router: APIRouter, newRouter: type[APIRouter]) -> APIRouter:
+    _newRouter = newRouter()
+    for key in safeAttrs:
+        setattr(_newRouter, key, getattr(router, key, None))
+    return _newRouter 
 
 @typechecked
 def Injectify(app: FastAPI, container: Container):
+    originalRouter: APIRouter = app.router
+    originalIncludeRouter: Callable = app.include_router # pyright: ignore[reportMissingTypeArgument]
 
-    # --- Endpoint Level Dependencies ---
+    class AutoWireRouter(APIRouter):
+        def add_api_route(self, path: str, endpoint: Callable, **kwargs): # pyright: ignore[reportMissingTypeArgument, reportMissingParameterType, reportUnknownParameterType]
 
-    for route in getattr(app, 'routes', []):
-        if hasattr(route, 'endpoint'):
-            endpoint = route.endpoint
-            signature = inspect.signature(endpoint)
+            # --- Check Endpoint Params ---
+
+            signature = inspect.signature(endpoint) # pyright: ignore[reportUnknownArgumentType]
             params: list[inspect.Parameter] = []
 
-            for name, param in signature.parameters.items(): # type: ignore[unused]
-                if isinstance(param.default, Depends):  # type: ignore[assignment]
+            for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
+                if isinstance(param.default, _Depends):
                     params.append(param)
                     continue
 
@@ -45,30 +71,48 @@ def Injectify(app: FastAPI, container: Container):
                 except InterfaceNotRegistered:
                     params.append(param)
 
-            route.endpoint.__signature__ = signature.replace(parameters=params)
-        
-        if hasattr(route, 'dependencies'):
+            endpoint.__signature__ = signature.replace(parameters=params) # pyright: ignore[reportFunctionMemberAccess]
+
+
+            # --- Route Level Dependencies ---
+
             dependencies: list[Any] = []
             
-            for dependancy in getattr(route, 'dependencies', []):
+            for dependancy in kwargs.get('dependencies') or []: # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
                 inject(dependencies, dependancy, container)
 
-            route.dependencies = dependencies
+            kwargs['dependencies'] = dependencies
 
+            return super().add_api_route(path, endpoint, **kwargs) # pyright: ignore[reportUnknownArgumentType]
+    
+    newRouter = cloneRouter(originalRouter, AutoWireRouter)
+    app.router = newRouter
 
-    # --- Router Level Dependencies ---
+    @wraps(originalIncludeRouter) # pyright: ignore[reportUnknownArgumentType]
+    def patchedIncludeRouter(router: APIRouter, *args, **kwargs): # pyright: ignore[reportMissingParameterType, reportUnknownParameterType]
 
-    for router in getattr(app, 'routers', []):
-        dependencies: list[Any] = []
+        # --- Router Level Dependencies ---
 
-        for dependency in getattr(router, 'dependencies', []):
-            inject(dependencies, dependency, container)
+        if not isinstance(router, AutoWireRouter):
+            router = cloneRouter(router, AutoWireRouter)
+            dependencies: list[Any] = []
+            for dependency in getattr(router, 'dependencies', []):
+                inject(dependencies, dependency, container)
 
-        router.dependencies = dependencies
+            router.dependencies = dependencies
 
-    # --- Application Level Dependencies ---
+        return originalIncludeRouter(router, *args, **kwargs) # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
+    
+    app.include_router = patchedIncludeRouter
+
+    # Save original versions for debug
+    app._router = originalRouter # pyright: ignore[reportAttributeAccessIssue]
+    app._include_router = originalIncludeRouter # pyright: ignore[reportAttributeAccessIssue]
+
+    # --- App Level Dependencies ---
+
     dependencies: list[Any] = []
     for dependency in getattr(app, 'dependencies', []):
         inject(dependencies, dependency, container)
-
-    app.dependencies = dependencies # type: ignore[attr-defined]
+    
+    app.dependencies = dependencies # pyright: ignore[reportAttributeAccessIssue]
