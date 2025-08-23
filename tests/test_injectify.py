@@ -1,13 +1,13 @@
 import pytest
-from typing import Protocol
+from typing import Protocol, Any
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 
 from fastdi import Container, Injectify
 
 
-# Interfaces & Implementations
+# Dependencies
 class IService(Protocol):
     def GetNumber(self) -> int: ...
 
@@ -18,6 +18,11 @@ class Service(IService):
 
     def GetNumber(self) -> int:
         return self.number
+    
+def GetMessage() -> str:
+    return 'message'
+
+text = 'text'
     
 # Setup container
 container = Container()
@@ -34,13 +39,16 @@ def app():
 def client(app: FastAPI):
     return TestClient(app)
 
-# --- Test 1: Enpoint dependency injection ---
+# --- Test 1: Endpoint 1 layer dependency injection ---
 def test_simpleEndpoint(app: FastAPI, client: TestClient):
 
     @app.get('/test')
-    def testEndpoint(service: IService): # pyright: ignore[reportUnusedFunction]
-        return {'number': service.GetNumber()}
+    def testEndpoint(text: str, service: IService, message: str = Depends(GetMessage)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+        return {'number': service.GetNumber(), 'message': message, 'text': text}
     
-    response = client.get('/test')
+    response = client.get('/test', params={'text': text})
+    data = response.json()
     assert response.status_code == 200
-    assert response.json() == {'number': 5}
+    assert data['number'] == 5
+    assert data['message'] == GetMessage()
+    assert data['text'] == text
