@@ -4,7 +4,8 @@ from typing import Protocol, Any
 from fastapi import FastAPI, APIRouter, Depends
 from fastapi.testclient import TestClient
 
-from fastdi import Container, Injectify
+from fastdi import Container
+from fastdi.injectify import Injectify
 
 
 # Dependencies

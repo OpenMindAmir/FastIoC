@@ -2,7 +2,7 @@ import inspect
 from typing import Any, Callable
 from functools import wraps
 
-from fastapi import FastAPI as , APIRouter, Depends
+from fastapi import APIRouter, Depends, FastAPI
 from fastapi.params import Depends as _Depends
 from typeguard import typechecked
 
@@ -10,15 +10,6 @@ from fastdi.errors import InterfaceNotRegistered
 from fastdi.custom_types import FastAPIDependable
 from fastdi.container import Container
 
-
-
-
-
-
-
-
-
-#############################################################################
 
 def inject(_list: list[Any], item: Any, container: Container):
     if isinstance(item, _Depends):
