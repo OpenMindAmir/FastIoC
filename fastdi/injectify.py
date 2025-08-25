@@ -1,6 +1,5 @@
 import inspect
 from typing import Any, Callable
-from functools import wraps
 
 from fastapi import APIRouter, Depends, FastAPI
 from fastapi.params import Depends as _Depends
@@ -9,19 +8,8 @@ from typeguard import typechecked
 from fastdi.errors import InterfaceNotRegistered
 from fastdi.custom_types import FastAPIDependable
 from fastdi.container import Container
+from fastdi.utils import injectToList
 
-
-def inject(_list: list[Any], item: Any, container: Container):
-    if isinstance(item, _Depends):
-        _list.append(item)
-        return
-
-    try:
-        dependable: FastAPIDependable = container.Resolve(item)
-        _list.append(Depends(dependable))
-
-    except InterfaceNotRegistered:
-        _list.append(item)
 
 safeAttrs = [
         "routes",
@@ -79,7 +67,7 @@ def Injectify(app: FastAPI, container: Container):
             dependencies: list[Any] = []
             
             for dependancy in kwargs.get('dependencies') or []: # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-                inject(dependencies, dependancy, container)
+                injectToList(dependencies, dependancy, container)
 
             kwargs['dependencies'] = dependencies
 
@@ -90,11 +78,3 @@ def Injectify(app: FastAPI, container: Container):
 
     # Save original versions for debug
     app._router = originalRouter # pyright: ignore[reportAttributeAccessIssue]
-
-    # --- Router Level Dependencies ---
-
-    dependencies: list[Any] = []
-    for dependency in getattr(app, 'dependencies', []):
-        inject(dependencies, dependency, container)
-    
-    app.dependencies = dependencies # pyright: ignore[reportAttributeAccessIssue]
