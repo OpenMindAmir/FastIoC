@@ -49,7 +49,6 @@ def cloneRouter(router: APIRouter, newRouter: type[APIRouter]) -> APIRouter:
 @typechecked
 def Injectify(app: FastAPI, container: Container):
     originalRouter: APIRouter = app.router
-    originalIncludeRouter: Callable = app.include_router # pyright: ignore[reportMissingTypeArgument]
 
     class AutoWireRouter(APIRouter):
         def add_api_route(self, path: str, endpoint: Callable, **kwargs): # pyright: ignore[reportMissingTypeArgument, reportMissingParameterType, reportUnknownParameterType]
@@ -89,28 +88,10 @@ def Injectify(app: FastAPI, container: Container):
     newRouter = cloneRouter(originalRouter, AutoWireRouter)
     app.router = newRouter
 
-    @wraps(originalIncludeRouter) # pyright: ignore[reportUnknownArgumentType]
-    def patchedIncludeRouter(router: APIRouter, *args, **kwargs): # pyright: ignore[reportMissingParameterType, reportUnknownParameterType]
-
-        # --- Router Level Dependencies ---
-
-        if not isinstance(router, AutoWireRouter):
-            router = cloneRouter(router, AutoWireRouter)
-            dependencies: list[Any] = []
-            for dependency in getattr(router, 'dependencies', []):
-                inject(dependencies, dependency, container)
-
-            router.dependencies = dependencies
-
-        return originalIncludeRouter(router, *args, **kwargs) # pyright: ignore[reportUnknownArgumentType, reportUnknownVariableType]
-    
-    app.include_router = patchedIncludeRouter
-
     # Save original versions for debug
     app._router = originalRouter # pyright: ignore[reportAttributeAccessIssue]
-    app._include_router = originalIncludeRouter # pyright: ignore[reportAttributeAccessIssue]
 
-    # --- App Level Dependencies ---
+    # --- Router Level Dependencies ---
 
     dependencies: list[Any] = []
     for dependency in getattr(app, 'dependencies', []):

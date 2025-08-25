@@ -61,6 +61,7 @@ def IncreaseNumber4():
 container = Container()
 container.AddFactory(INumberService, NumberService)
 container.AddFactory(IGlobalNumber, GlobalNumber)
+container.AddFactory(IGlobalNumber2, GlobalNumber2)
 
 # Fixtures
 @pytest.fixture
