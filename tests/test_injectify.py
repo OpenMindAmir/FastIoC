@@ -92,12 +92,12 @@ def test_RouterEndpoints(app: FastAPI, client: TestClient):
     router = APIRouter(dependencies=[Depends(IncreaseNumber4)]) # pyright: ignore[reportArgumentType]
     Injectify(router, container)
 
-    @router.get('/routerTest', dependencies=[Depends(IncreaseNumber4), IGlobalNumber2])  # pyright: ignore[reportArgumentType]
+    @router.get('/test', dependencies=[Depends(IncreaseNumber4), IGlobalNumber2])  # pyright: ignore[reportArgumentType]
     def endpoint(text: str, service: INumberService) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {'number': service.GetNumber(), 'text': text}
     
     app.include_router(router)
-    response = client.get('/routerTest', params={'text': text})
+    response = client.get('/test', params={'text': text})
     assert response.status_code == 200
     assert response.json() == {'number': 5, 'text': text}
     assert number3 == 4
