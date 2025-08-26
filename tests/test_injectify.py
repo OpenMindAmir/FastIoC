@@ -72,7 +72,7 @@ def client(app: FastAPI):
     return TestClient(app)
 
 # --- Test 1: Application Endpoints ---
-def test_AppEndpoints(app: FastAPI, client: TestClient):
+def test_AppEndpoint(app: FastAPI, client: TestClient):
 
     @app.get('/test', dependencies=[IGlobalNumber, Depends(IncreaseNumber2)]) # pyright: ignore[reportArgumentType]
     def endpoint(text: str, service: INumberService, message: str = Depends(GetMessage)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
@@ -88,7 +88,7 @@ def test_AppEndpoints(app: FastAPI, client: TestClient):
     assert number2 == 3
 
 # --- Test 2: Router Endpoints ---
-def test_RouterEndpoints(app: FastAPI, client: TestClient):
+def test_RouterEndpoint(app: FastAPI, client: TestClient):
     router = APIRouter(dependencies=[Depends(IncreaseNumber4)]) # pyright: ignore[reportArgumentType]
     Injectify(router, container)
 
