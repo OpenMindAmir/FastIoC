@@ -1,7 +1,6 @@
-import inspect
 from typing import Any, Callable, TypeVar
 
-from fastapi import APIRouter, Depends
+from fastapi import Depends
 from fastapi.params import Depends as _Depends
 
 from fastdi.container import Container
@@ -26,13 +25,15 @@ def injectToList(_list: list[Any], item: Any, container: Container):
         _list.append(item)
 
 
-def getSafeAttrs() -> list[str]:
-    signature = inspect.signature(APIRouter.__init__)
-    return [name for name in signature.parameters if name != 'self']
+# TODO Remove Extra code
+
+# def getSafeAttrs() -> list[str]:
+#     signature = inspect.signature(APIRouter.__init__)
+#     return [name for name in signature.parameters if name != 'self']
 
 
-def cloneRouter(router: APIRouter, newRouter: type[APIRouter]) -> APIRouter:
-    _newRouter = newRouter()
-    for key in getSafeAttrs():
-        setattr(_newRouter, key, getattr(router, key, None))
-    return _newRouter
+# def cloneRouter(router: APIRouter, newRouter: type[APIRouter]) -> APIRouter:
+#     _newRouter = newRouter()
+#     for key in getSafeAttrs():
+#         setattr(_newRouter, key, getattr(router, key, None))
+#     return _newRouter
