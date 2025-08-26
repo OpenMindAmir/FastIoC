@@ -75,7 +75,7 @@ def client(app: FastAPI):
 def test_AppEndpoints(app: FastAPI, client: TestClient):
 
     @app.get('/test', dependencies=[IGlobalNumber, Depends(IncreaseNumber2)]) # pyright: ignore[reportArgumentType]
-    def TestEndpoint(text: str, service: INumberService, message: str = Depends(GetMessage)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    def endpoint(text: str, service: INumberService, message: str = Depends(GetMessage)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {'number': service.GetNumber(), 'message': message, 'text': text}
     
     response = client.get('/test', params={'text': text})
@@ -93,7 +93,7 @@ def test_RouterEndpoints(app: FastAPI, client: TestClient):
     Injectify(router, container)
 
     @router.get('/routerTest', dependencies=[Depends(IncreaseNumber4), IGlobalNumber2])  # pyright: ignore[reportArgumentType]
-    def TestRouter(text: str, service: INumberService) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    def endpoint(text: str, service: INumberService) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {'number': service.GetNumber(), 'text': text}
     
     app.include_router(router)
