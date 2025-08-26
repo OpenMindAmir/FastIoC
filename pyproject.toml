@@ -16,3 +16,4 @@ fastapi = "*"
 
 [tool.poetry.group.dev.dependencies]
 pytest = "^8.0"
+pytest-cov = "^6.2.1"
