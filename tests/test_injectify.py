@@ -89,7 +89,7 @@ def test_AppEndpoint(app: FastAPI, client: TestClient):
 
 # --- Test 2: Router Endpoints ---
 def test_RouterEndpoint(app: FastAPI, client: TestClient):
-    router = APIRouter(dependencies=[Depends(IncreaseNumber4)]) # pyright: ignore[reportArgumentType]
+    router = APIRouter() # pyright: ignore[reportArgumentType]
     Injectify(router, container)
 
     @router.get('/test', dependencies=[Depends(IncreaseNumber4), IGlobalNumber2])  # pyright: ignore[reportArgumentType]
