@@ -54,9 +54,6 @@ def IncreaseNumber4():
     global number4
     number4 += 5
 
-
-
-    
 # Setup container
 container = Container()
 container.AddFactory(INumberService, NumberService)
@@ -74,8 +71,8 @@ def app():
 def client(app: FastAPI):
     return TestClient(app)
 
-# --- Test 1: Endpoint 1 layer dependency injection ---
-def test_endpointLevel(app: FastAPI, client: TestClient):
+# --- Test 1: Application Endpoints ---
+def test_appEndpoints(app: FastAPI, client: TestClient):
 
     @app.get('/test', dependencies=[IGlobalNumber, Depends(IncreaseNumber2)]) # pyright: ignore[reportArgumentType]
     def TestEndpoint(text: str, service: INumberService, message: str = Depends(GetMessage)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
@@ -90,16 +87,17 @@ def test_endpointLevel(app: FastAPI, client: TestClient):
     assert number1 == 2
     assert number2 == 3
 
-# --- Test 2: Router-Level dependencies (1 layer)
-def test_routerLevel(app: FastAPI, client: TestClient):
-    router = APIRouter(dependencies=[Depends(IncreaseNumber4), IGlobalNumber2]) # pyright: ignore[reportArgumentType]
+# --- Test 2: Router Endpoints ---
+def test_routerEndpoints(app: FastAPI, client: TestClient):
+    router = APIRouter(dependencies=[Depends(IncreaseNumber4)]) # pyright: ignore[reportArgumentType]
+    Injectify(router, container)
 
-    @router.get('/routerTest')
-    def TestRouter(service: INumberService, text: str) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    @router.get('/routerTest', dependencies=[Depends(IncreaseNumber4), IGlobalNumber2])  # pyright: ignore[reportArgumentType]
+    def TestRouter(text: str, service: INumberService) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {'number': service.GetNumber(), 'text': text}
     
     app.include_router(router)
-    response = client.get('/routerTest')
+    response = client.get('/routerTest', params={'text': text})
     assert response.status_code == 200
     assert response.json() == {'number': 5, 'text': text}
     assert number3 == 4
