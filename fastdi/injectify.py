@@ -8,31 +8,7 @@ from typeguard import typechecked
 from fastdi.errors import InterfaceNotRegistered
 from fastdi.custom_types import FastAPIDependable
 from fastdi.container import Container
-from fastdi.utils import injectToList
-
-
-safeAttrs = [
-        "routes",
-        "dependencies",
-        "prefix",
-        "tags",
-        "responses",
-        "default_response_class",
-        "deprecated",
-        "include_in_schema",
-        "redirect_slashes",
-        "default",
-        "on_startup",
-        "on_shutdown",
-        "exception_handlers",
-        "route_class",
-    ]
-
-def cloneRouter(router: APIRouter, newRouter: type[APIRouter]) -> APIRouter:
-    _newRouter = newRouter()
-    for key in safeAttrs:
-        setattr(_newRouter, key, getattr(router, key, None))
-    return _newRouter 
+from fastdi.utils import injectToList, cloneRouter
 
 @typechecked
 def Injectify(app: FastAPI, container: Container):
