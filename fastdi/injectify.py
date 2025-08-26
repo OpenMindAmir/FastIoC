@@ -8,49 +8,56 @@ from typeguard import typechecked
 from fastdi.errors import InterfaceNotRegistered
 from fastdi.custom_types import FastAPIDependable
 from fastdi.container import Container
-from fastdi.utils import injectToList, cloneRouter
+from fastdi.utils import injectToList, pretendSignatureOf
 
 @typechecked
-def Injectify(app: FastAPI, container: Container):
-    originalRouter: APIRouter = app.router
+def Injectify(target: FastAPI | APIRouter, container: Container):
 
-    class AutoWireRouter(APIRouter):
-        def add_api_route(self, path: str, endpoint: Callable, **kwargs): # pyright: ignore[reportMissingTypeArgument, reportMissingParameterType, reportUnknownParameterType]
+    originalAddAPIRouter: Callable[..., None]
 
-            # --- Check Endpoint Params ---
+    if isinstance(target, FastAPI):
+        originalAddAPIRouter = target.router.add_api_route
+    else:
+        originalAddAPIRouter = target.add_api_route
 
-            signature = inspect.signature(endpoint) # pyright: ignore[reportUnknownArgumentType]
-            params: list[inspect.Parameter] = []
+    @pretendSignatureOf(APIRouter.add_api_route)
+    def addApiRoute(path: str, endpoint: Callable[..., Any], **kwargs: Any):
 
-            for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
-                if isinstance(param.default, _Depends):
-                    params.append(param)
-                    continue
+        # --- Check Endpoint Params ---
 
-                try:
-                    dependable: FastAPIDependable = container.Resolve(param.annotation)
-                    newParam = param.replace(default=Depends(dependable))
-                    params.append(newParam)
+        signature = inspect.signature(endpoint) # pyright: ignore[reportUnknownArgumentType]
+        params: list[inspect.Parameter] = []
 
-                except InterfaceNotRegistered:
-                    params.append(param)
+        for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
+            if isinstance(param.default, _Depends):
+                params.append(param)
+                continue
 
-            endpoint.__signature__ = signature.replace(parameters=params) # pyright: ignore[reportFunctionMemberAccess]
+            try:
+                dependable: FastAPIDependable = container.Resolve(param.annotation)
+                newParam = param.replace(default=Depends(dependable))
+                params.append(newParam)
+
+            except InterfaceNotRegistered:
+                params.append(param)
+
+        endpoint.__signature__ = signature.replace(parameters=params) # pyright: ignore[reportFunctionMemberAccess]
 
 
-            # --- Route Level Dependencies ---
+        # --- Route Level Dependencies ---
 
-            dependencies: list[Any] = []
-            
-            for dependancy in kwargs.get('dependencies') or []: # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-                injectToList(dependencies, dependancy, container)
+        dependencies: list[Any] = []
+        
+        for dependancy in kwargs.get('dependencies') or []: # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+            injectToList(dependencies, dependancy, container)
 
-            kwargs['dependencies'] = dependencies
+        kwargs['dependencies'] = dependencies
 
-            return super().add_api_route(path, endpoint, **kwargs) # pyright: ignore[reportUnknownArgumentType]
+        originalAddAPIRouter(path, endpoint, **kwargs)
     
-    newRouter = cloneRouter(originalRouter, AutoWireRouter)
-    app.router = newRouter
-
-    # Save original versions for debug
-    app._router = originalRouter # pyright: ignore[reportAttributeAccessIssue]
+    if isinstance(target, FastAPI):
+        target.router.add_api_route = addApiRoute # pyright: ignore[reportAttributeAccessIssue]
+        target.router._add_api_route = originalAddAPIRouter # pyright: ignore[reportAttributeAccessIssue]
+    else:
+        target.add_api_route = addApiRoute # pyright: ignore[reportAttributeAccessIssue]
+        target._add_api_route = originalAddAPIRouter # pyright: ignore[reportAttributeAccessIssue]
