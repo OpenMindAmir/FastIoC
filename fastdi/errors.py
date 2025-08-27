@@ -1,2 +1,2 @@
-class InterfaceNotRegistered(Exception):
+class ProtocolNotRegistered(Exception):
     pass

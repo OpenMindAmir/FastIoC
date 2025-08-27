@@ -5,7 +5,7 @@ from fastapi import APIRouter, FastAPI
 from fastapi.params import Depends
 from typeguard import typechecked
 
-from fastdi.errors import InterfaceNotRegistered
+from fastdi.errors import ProtocolNotRegistered
 from fastdi.container import Container
 from fastdi.utils import injectToList, pretendSignatureOf
 
@@ -37,7 +37,7 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
                 newParam = param.replace(default=dependancy)
                 params.append(newParam)
 
-            except InterfaceNotRegistered:
+            except ProtocolNotRegistered:
                 params.append(param)
 
         endpoint.__signature__ = signature.replace(parameters=params) # pyright: ignore[reportFunctionMemberAccess]
