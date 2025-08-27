@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Depends
+from fastapi.params import Depends as Dependancy
 import random
 
 app = FastAPI()
@@ -18,11 +19,16 @@ def Transient(factory):
     def _inner():
         return factory()
     return _inner
+
+# Use like this => Depends(Transient(Number))
+
+factory = Dependancy(dependency=Number, use_cache=False)
+scoped = Dependancy(dependency=Number, use_cache=True)
 # -------------------------
 @app.get("/transient")
 def transient(
-    n1: Number = Depends(Transient(Number)),
-    n2: Number = Depends(Transient(Number))
+    n1: Number = factory,
+    n2: Number = factory
 ):
     return {"n1": n1.get(), "n2": n2.get()}
 
@@ -31,9 +37,13 @@ def transient(
 # -------------------------
 @app.get("/cached")
 def cached(
-    n1: Number = Depends(get_number),
-    n2: Number = Depends(get_number)
+    n1: Number = scoped,
+    n2: Number = scoped,
 ):
     return {"n1": n1.get(), "n2": n2.get()}
+
+
+# ---
+
 
 # TODO Remove file

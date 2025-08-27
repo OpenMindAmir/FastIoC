@@ -1,23 +1,28 @@
-from typing import Generator
+from typing import Generator, AsyncGenerator , Callable, Any
 
 from typeguard import typechecked
+from fastapi.params import Depends
 
-from fastdi.custom_types import Dependency, LifeTime, FastAPIDependable
+from fastdi.custom_types import LifeTime
 from fastdi.errors import InterfaceNotRegistered
 
 
 class Container:
 
     def __init__(self):
-        self.dependencies: dict[type, Dependency] = {}
+        self.dependencies: dict[type, Depends] = {}
 
     @typechecked
-    def Register(self, interface: type, implementation: type, lifeTime: LifeTime):
+    def Register(self, protocol: type, implementation: type | Callable[..., Any], lifeTime: LifeTime):
         impl = implementation
         if lifeTime is LifeTime.SINGLETON:
             impl = implementation()
-        self.dependencies[interface] = Dependency(
-            Implementation=impl, LifeTime=lifeTime)
+            def injectSingleton() -> object:
+                return impl
+            self.dependencies[protocol] = Depends(dependency=injectSingleton)
+        else:
+            self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifeTime is LifeTime.FACTORY else True)
+
 
     def AddSingleton(self, interface: type, implementation: type):
         self.Register(interface, implementation, LifeTime.SINGLETON)
@@ -28,29 +33,15 @@ class Container:
     def AddFactory(self, interface: type, implementation: type):
         self.Register(interface, implementation, LifeTime.FACTORY)
 
+    def AddContext(self, protocol: type, implementation: Callable[..., Generator[Any, None, None] | AsyncGenerator[Any, None] ]):
+        self.Register(protocol, implementation, LifeTime.CONTEXT)
+
     @typechecked
-    def CheckIfRegistered(self, interface: type):
-        if not self.dependencies.get(interface):
+    def CheckIfRegistered(self, protocol: type):
+        if not self.dependencies.get(protocol):
             raise InterfaceNotRegistered(
-                f"Interface {interface.__name__} not found in container")
+                f"Interface/Protocol {protocol.__name__} not found in container")
 
-    def Resolve(self, interface: type) -> FastAPIDependable:
-        self.CheckIfRegistered(interface)
-        dependency: Dependency = self.dependencies[interface]
-        result: object
-
-        def DependableFunction() -> object:
-            return result
-        
-        def DependableGenerator() -> Generator[object, None, None]:
-            yield result
-
-        if dependency.LifeTime is LifeTime.SINGLETON:
-            result = dependency.Implementation
-            return DependableFunction
-        elif dependency.LifeTime is LifeTime.FACTORY:
-            result = dependency.Implementation() # pyright: ignore[reportUnknownVariableType, reportCallIssue]
-            return DependableFunction
-        else:
-            result = dependency.Implementation() # pyright: ignore[reportUnknownVariableType, reportCallIssue]
-            return DependableGenerator
+    def Resolve(self, protocol: type) -> Depends:
+        self.CheckIfRegistered(protocol)
+        return self.dependencies[protocol]

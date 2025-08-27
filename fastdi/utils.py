@@ -1,10 +1,8 @@
 from typing import Any, Callable, TypeVar
 
-from fastapi import Depends
-from fastapi.params import Depends as _Depends
+from fastapi.params import Depends
 
 from fastdi.container import Container
-from fastdi.custom_types import FastAPIDependable
 from fastdi.errors import InterfaceNotRegistered
 
 T = TypeVar('T')
@@ -13,13 +11,13 @@ def pretendSignatureOf(func: T) -> Callable[[Any], T]:
     return lambda f: f
 
 def injectToList(_list: list[Any], item: Any, container: Container):
-    if isinstance(item, _Depends):
+    if isinstance(item, Depends):
         _list.append(item)
         return
 
     try:
-        dependable: FastAPIDependable = container.Resolve(item)
-        _list.append(Depends(dependable))
+        dependancy: Depends = container.Resolve(item)
+        _list.append(dependancy)
 
     except InterfaceNotRegistered:
         _list.append(item)

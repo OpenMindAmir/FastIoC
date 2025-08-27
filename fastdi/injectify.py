@@ -1,12 +1,11 @@
 import inspect
 from typing import Any, Callable
 
-from fastapi import APIRouter, Depends, FastAPI
-from fastapi.params import Depends as _Depends
+from fastapi import APIRouter, FastAPI
+from fastapi.params import Depends
 from typeguard import typechecked
 
 from fastdi.errors import InterfaceNotRegistered
-from fastdi.custom_types import FastAPIDependable
 from fastdi.container import Container
 from fastdi.utils import injectToList, pretendSignatureOf
 
@@ -29,13 +28,13 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
         params: list[inspect.Parameter] = []
 
         for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
-            if isinstance(param.default, _Depends):
+            if isinstance(param.default, Depends):
                 params.append(param)
                 continue
 
             try:
-                dependable: FastAPIDependable = container.Resolve(param.annotation)
-                newParam = param.replace(default=Depends(dependable))
+                dependancy: Depends = container.Resolve(param.annotation)
+                newParam = param.replace(default=dependancy)
                 params.append(newParam)
 
             except InterfaceNotRegistered:
