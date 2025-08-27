@@ -5,7 +5,7 @@ from typeguard import typechecked
 from fastapi.params import Depends
 
 from fastdi.definitions import LifeTime
-from fastdi.errors import ProtocolNotRegistered
+from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorError
 
 
 class Container:
@@ -18,7 +18,7 @@ class Container:
         if lifeTime is LifeTime.SINGLETON:
             conc = concrete()
             if inspect.isgenerator(conc) or inspect.isasyncgen(conc):
-                raise ValueError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
+                raise SingletonGeneratorError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
             def provideSingleton() -> Any:
                 return conc
             self.dependencies[protocol] = Depends(dependency=provideSingleton, use_cache=True)
@@ -38,7 +38,7 @@ class Container:
     @typechecked
     def CheckIfRegistered(self, protocol: type):
         if not self.dependencies.get(protocol):
-            raise ProtocolNotRegistered(
+            raise ProtocolNotRegisteredError(
                 f"Protocol {protocol.__name__} is not registered in the container")
 
     def Resolve(self, protocol: type) -> Depends:
