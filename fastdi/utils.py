@@ -3,7 +3,7 @@ from typing import Any, Callable, TypeVar
 from fastapi.params import Depends
 
 from fastdi.container import Container
-from fastdi.errors import ProtocolNotRegistered
+from fastdi.errors import ProtocolNotRegisteredError
 
 T = TypeVar('T')
 
@@ -19,7 +19,7 @@ def injectToList(_list: list[Any], item: Any, container: Container):
         dependancy: Depends = container.Resolve(item)
         _list.append(dependancy)
 
-    except ProtocolNotRegistered:
+    except ProtocolNotRegisteredError:
         _list.append(item)
 
 

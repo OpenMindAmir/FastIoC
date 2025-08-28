@@ -12,7 +12,7 @@ class ProtocolNotRegisteredError(FastDIError):
     """
     pass
 
-class SingletonGeneratorError(FastDIError):
+class SingletonGeneratorNotAllowedError(FastDIError):
     """
     Raised when attempting to register a generator or async generator as
     a singleton dependency in the DI container.
