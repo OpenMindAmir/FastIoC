@@ -141,6 +141,7 @@ class Container:
         params: list[inspect.Parameter] = []
         for name, param in signature.parameters.items():
             if name == 'self':
+                params.append(param)
                 continue
             annotation = param.annotation
             if annotation != inspect.Signature.empty:
