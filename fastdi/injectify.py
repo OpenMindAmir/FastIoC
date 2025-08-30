@@ -1,3 +1,11 @@
+"""
+FastDI Integration for FastAPI and APIRouter.
+
+Provides automatic dependency injection for route endpoints and route-level
+dependencies using a FastDI container. The main function, `Injectify`, wraps
+FastAPI or APIRouter to inject registered dependencies based on type annotations.
+"""
+
 import inspect
 from typing import Any, Callable
 
@@ -9,8 +17,29 @@ from fastdi.errors import ProtocolNotRegisteredError
 from fastdi.container import Container
 from fastdi.utils import injectToList, pretendSignatureOf, isAnnotatedWithDepends
 
+
 @typechecked
 def Injectify(target: FastAPI | APIRouter, container: Container):
+
+    """
+    Wrap a FastAPI app or APIRouter to automatically inject dependencies.
+
+    THIS MUST BE CALLED BEFORE ADDING ANY ENDPOINTS THAT REQUIRE DEPENDENCY INJECTION.
+
+    This function overrides `add_api_route` to:
+        - Inject dependencies into endpoint parameters using the provided container.
+        - Resolve route-level dependencies automatically.
+        - Support both FastAPI application and APIRouter instances.
+
+    Args:
+        target (FastAPI | APIRouter): The FastAPI app or APIRouter to wrap.
+        container (Container): The FastDI container used to resolve dependencies.
+
+    Example:
+        >>> app = FastAPI()
+        >>> container = Container()
+        >>> Injectify(app, container)
+    """
 
     originalAddAPIRouter: Callable[..., None]
 
@@ -24,14 +53,13 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
 
         # --- Check Endpoint Params ---
 
-        signature = inspect.signature(endpoint) # pyright: ignore[reportUnknownArgumentType]
+        signature = inspect.signature(endpoint)  # pyright: ignore[reportUnknownArgumentType]
         params: list[inspect.Parameter] = []
 
         for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
             if isinstance(param.default, Depends) or isAnnotatedWithDepends(param.annotation):
                 params.append(param)
                 continue
-
             try:
                 newParam = param.replace(default=container.Resolve(param.annotation))
                 params.append(newParam)
@@ -39,14 +67,14 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
             except ProtocolNotRegisteredError:
                 params.append(param)
 
-        endpoint.__signature__ = signature.replace(parameters=params) # pyright: ignore[reportFunctionMemberAccess]
+        endpoint.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
 
         # --- Route Level Dependencies ---
 
         dependencies: list[Any] = []
         
-        for dependancy in kwargs.get('dependencies') or []: # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        for dependancy in kwargs.get('dependencies') or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
             injectToList(dependencies, dependancy, container)
 
         kwargs['dependencies'] = dependencies
@@ -54,8 +82,8 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
         originalAddAPIRouter(path, endpoint, **kwargs)
     
     if isinstance(target, FastAPI):
-        target.router.add_api_route = addApiRoute # pyright: ignore[reportAttributeAccessIssue]
-        target.router._add_api_route = originalAddAPIRouter # pyright: ignore[reportAttributeAccessIssue]
+        target.router.add_api_route = addApiRoute  # pyright: ignore[reportAttributeAccessIssue]
+        target.router._add_api_route = originalAddAPIRouter  # pyright: ignore[reportAttributeAccessIssue]
     else:
-        target.add_api_route = addApiRoute # pyright: ignore[reportAttributeAccessIssue]
-        target._add_api_route = originalAddAPIRouter # pyright: ignore[reportAttributeAccessIssue]
+        target.add_api_route = addApiRoute  # pyright: ignore[reportAttributeAccessIssue]
+        target._add_api_route = originalAddAPIRouter  # pyright: ignore[reportAttributeAccessIssue]

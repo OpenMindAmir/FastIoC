@@ -1,3 +1,7 @@
+"""
+A set of helper utilities used internally by the FastDI library.
+"""
+
 from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, TYPE_CHECKING
 
 from fastapi.params import Depends
@@ -8,11 +12,25 @@ if TYPE_CHECKING:
 
 T = TypeVar('T')
 
+
 def pretendSignatureOf(func: T) -> Callable[[Any], T]:
+    """
+    Decorator helper to "pretend" that another function `f`
+    has the same type signature as `func`.
+    (Used only for type checkers; no runtime effect.)
+    """
     return lambda f: f
 
+
 def injectToList(_list: list[Any], item: Any, container: 'Container'):
-    if isinstance(item, Depends):
+    """
+    Append a dependency-like item into a list.
+
+    - If `item` is a `Depends` or annotated with `Depends`, append as-is.
+    - Otherwise try to resolve it from the container and append the resolved `Depends`.
+    - If the type is not registered in the container, append the item itself.
+    """
+    if isinstance(item, Depends) or isAnnotatedWithDepends(item):
         _list.append(item)
         return
 
@@ -23,14 +41,20 @@ def injectToList(_list: list[Any], item: Any, container: 'Container'):
     except ProtocolNotRegisteredError:
         _list.append(item)
 
+
 def isAnnotatedWithDepends(annotation: Any) -> bool:
+    """
+    Check if a type annotation is wrapped with `Annotated[..., Depends(...)]`.
+
+    Returns True if the given annotation is an `Annotated` type that includes
+    a `Depends` marker among its extra arguments, otherwise False.
+    """
     if get_origin(annotation) is Annotated:
-        mainType, *extras = get_args(annotation) # pyright: ignore[reportUnusedVariable]
+        mainType, *extras = get_args(annotation)  # pyright: ignore[reportUnusedVariable]
         for extra in extras:
             if isinstance(extra, Depends):
                 return True
     return False
-        
 
 
 # TODO Remove Extra code
