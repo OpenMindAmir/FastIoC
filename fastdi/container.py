@@ -48,7 +48,7 @@ class Container:
             lifeTime (LifeTime): SINGLETON, SCOPED, or FACTORY.
 
         Raises:
-            SingletonGeneratorNotAllowedError: If a generator is registered as singleton.
+            SingletonGeneratorNotAllowedError: If a generator or async generator is registered as singleton.
         """
 
         concrete = self._layeredInjector(concrete)
