@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Annotated
 
 from fastapi import FastAPI, APIRouter, Depends
 from fastapi.testclient import TestClient
@@ -10,13 +10,14 @@ from .constants import *
 def test_AppEndpoint(app: FastAPI, client: TestClient, state: State):
 
     @app.get('/test', dependencies=[IGlobalService, GlobalDirectNumber, Depends(SetGlobalUsualNumber)])  # pyright: ignore[reportArgumentType]
-    async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, number: DirectNumber, number2: int = Depends(GetDirectNumber)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, number: DirectNumber, number2: Annotated[int, DirectNumber], number3: int = Depends(GetDirectNumber)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
             'srv': service.GetNumber(),
             'gnr': generator, 
             'n1': number,
             'n2': number2,
+            'n3': number3
         }
     
     response = client.get('/test', params={'text': QUERY_TEXT})
@@ -25,7 +26,7 @@ def test_AppEndpoint(app: FastAPI, client: TestClient, state: State):
     assert data['txt'] == QUERY_TEXT  # Get & parse query parameter correctly (alongside dependencies)
     assert data['srv'] == SERVICE_NUMBER  # Inject class instance as dependency 
     assert data['gnr'] == GENERATOR_NUMBER  # Inject generator as dependency
-    assert data['n1'] == data['n2'] == DIRECT_NUMBER  # Inject function as dependency + Use FastAPI dependencies alongside FastDI deps
+    assert data['n1'] == data['n2'] == data['n3'] == DIRECT_NUMBER  # Inject function as dependency (n1) + Resolve dependency from annotations (n2) + Use FastAPI dependencies alongside FastDI deps (n3)
     assert state.GlobalServiceNumber == GLOBAL_SERVICE_NUMBER  # Class instance injection in POD (Path Operation Decorator) 
     assert state.GlobalDirectNumber == GLOBAL_DIRECT_NUMBER  # Function injection in POD
     assert state.GlobalUsualNumber == GLOBAL_USUAL_NUMBER  # Use FastAPI dependencies in POD alongside FastDI deps 

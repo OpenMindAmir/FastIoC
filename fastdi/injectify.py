@@ -15,7 +15,7 @@ from typeguard import typechecked
 
 from fastdi.errors import ProtocolNotRegisteredError
 from fastdi.container import Container
-from fastdi.utils import injectToList, pretendSignatureOf, isAnnotatedWithDepends
+from fastdi.utils import injectToList, pretendSignatureOf, isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
 
 
 @typechecked
@@ -58,6 +58,10 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
 
         for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
             if isinstance(param.default, Depends) or isAnnotatedWithDepends(param.annotation):
+                params.append(param)
+                continue
+            if annotatedDependency := getAnnotatedDependencyIfRegistered(param.annotation, container):
+                newParam = param.replace(default=annotatedDependency)
                 params.append(param)
                 continue
             try:
