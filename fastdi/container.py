@@ -51,7 +51,7 @@ class Container:
             SingletonGeneratorNotAllowedError: If a generator or async generator is registered as singleton.
         """
 
-        concrete = self._layeredInjector(concrete)
+        concrete = self._nestedInjector(concrete)
         if lifeTime is LifeTime.SINGLETON:
             conc = concrete()
             if inspect.isgenerator(conc) or inspect.isasyncgen(conc):
@@ -130,7 +130,7 @@ class Container:
         return self.dependencies[protocol]
     
     @typechecked
-    def _layeredInjector(self, concrete: FastDIConcrete) -> FastDIConcrete:
+    def _nestedInjector(self, concrete: FastDIConcrete) -> FastDIConcrete:
 
         """
         Inject dependencies into class or callable signatures automatically.
