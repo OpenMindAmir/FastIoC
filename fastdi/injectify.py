@@ -62,7 +62,7 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
                 continue
             if annotatedDependency := getAnnotatedDependencyIfRegistered(param.annotation, container):
                 newParam = param.replace(default=annotatedDependency)
-                params.append(param)
+                params.append(newParam)
                 continue
             try:
                 newParam = param.replace(default=container.Resolve(param.annotation))
