@@ -13,7 +13,7 @@ from fastapi.params import Depends
 
 from fastdi.definitions import LifeTime, FastDIConcrete
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import isAnnotatedWithDepends
+from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
 
 class Container:
 
@@ -146,6 +146,10 @@ class Container:
             if annotation != inspect.Signature.empty:
                 if isinstance(param.default, Depends) or isAnnotatedWithDepends(annotation):
                     params.append(param)
+                    continue
+                if annotatedDependency := getAnnotatedDependencyIfRegistered(param.annotation, self):
+                    newParam = param.replace(default=annotatedDependency)
+                    params.append(newParam)
                     continue
                 try:
                     newParam = param.replace(default=self.Resolve(annotation))

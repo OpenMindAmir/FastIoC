@@ -62,7 +62,7 @@ def isAnnotatedWithDepends(annotation: Any) -> bool:
                 return True
     return False
 
-def getAnnotatedDependencyIfRegistered(annotation: Any, container: Container) -> Depends | None:
+def getAnnotatedDependencyIfRegistered(annotation: Any, container: 'Container') -> Depends | None:
 
     """
     Attempts to resolve a dependency from the container if the given annotation
