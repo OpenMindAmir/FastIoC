@@ -145,3 +145,54 @@ class IGlobalNestedService(Protocol):
 class GlobalNestedService(IGlobalNestedService):
     def __init__(self, nested: IGlobalNestedNumber) -> None:
         return None
+
+
+# --- Lifetime Dependencies ---
+
+class ILifetimeService(Protocol):
+
+    index: int
+
+    def GetCurrentItem(self) -> int: ...
+
+
+class ILifetimeServiceSingleton(ILifetimeService):
+    ...
+
+
+class ILifetimeServiceScoped(ILifetimeService):
+    ...
+
+
+class ILifetimeServiceFactory(ILifetimeService):
+    ...
+
+
+class LifetimeServiceSingleton(ILifetimeServiceSingleton):
+
+    def __init__(self) -> None:
+        self.index = 0
+
+    def GetCurrentItem(self) -> int:
+        self.index += 1
+        return NUMBERS[self.index]
+
+
+class LifetimeServiceScoped(ILifetimeServiceScoped):
+
+    def __init__(self) -> None:
+        self.index = 0
+
+    def GetCurrentItem(self) -> int:
+        self.index += 1
+        return NUMBERS[self.index]
+
+
+class LifetimeServiceFactory(ILifetimeServiceFactory):
+
+    def __init__(self) -> None:
+        self.index = 0
+
+    def GetCurrentItem(self) -> int:
+        self.index += 1
+        return NUMBERS[self.index]

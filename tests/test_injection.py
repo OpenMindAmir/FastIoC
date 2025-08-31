@@ -4,7 +4,7 @@ from fastapi import FastAPI, APIRouter, Depends
 from fastapi.testclient import TestClient
 
 from .dependencies import State, IGlobalService, INumberService, FunctionNumber, GlobalFunctionNumber, GetFunctionNumber, SetGlobalUsualNumber, GeneratorDependencyType
-from .constants import *
+from .constants import QUERY_TEXT, SERVICE_NUMBER, GENERATOR_NUMBER, FUNCTION_NUMBER, GENERATOR_EXIT_NUMBER, GLOBAL_FUNCTION_NUMBER, GLOBAL_SERVICE_NUMBER, GLOBAL_USUAL_NUMBER
 
 # --- Application Endpoint Test (Async) ---
 def test_AppEndpoint(app: FastAPI, client: TestClient, state: State):
