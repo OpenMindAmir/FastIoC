@@ -78,8 +78,8 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
 
         dependencies: list[Any] = []
         
-        for dependancy in kwargs.get('dependencies') or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-            injectToList(dependencies, dependancy, container)
+        for dependency in kwargs.get('dependencies') or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+            injectToList(dependencies, dependency, container)
 
         kwargs['dependencies'] = dependencies
 

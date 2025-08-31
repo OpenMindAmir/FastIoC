@@ -39,8 +39,8 @@ def injectToList(_list: list[Any], item: Any, container: 'Container'):
         return
 
     try:
-        dependancy: Depends = container.Resolve(item)
-        _list.append(dependancy)
+        dependency: Depends = container.Resolve(item)
+        _list.append(dependency)
 
     except ProtocolNotRegisteredError:
         _list.append(item)

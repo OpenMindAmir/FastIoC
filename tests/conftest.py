@@ -6,17 +6,24 @@ from fastapi.testclient import TestClient
 from fastdi.container import Container
 from fastdi.injectify import Injectify
 
-from .dependencies import State, state as _state, IGlobalService, INumberService, GlobalService, NumberService, DirectNumber, GetDirectNumber, GlobalDirectNumber, SetGlobalDirectNumber, GeneratorDependency, GeneratorDependencyType
+from .dependencies import State, state as _state, IGlobalService, INumberService, GlobalService, NumberService, FunctionNumber, GetFunctionNumber, GlobalFunctionNumber, SetGlobalFunctionNumber, GeneratorDependency, GeneratorDependencyType, DependentNestedNumber, GetDependentNestedNumber, INestedService, NestedService, IGlobalNestedNumber, GlobalNestedNumber, IGlobalNestedService, GlobalNestedService
 
 
 @pytest.fixture
 def container():
     container = Container()
+    # General (Injection)
     container.AddScoped(INumberService, NumberService)
     container.AddScoped(IGlobalService, GlobalService)
-    container.AddScoped(DirectNumber, GetDirectNumber)
-    container.AddScoped(GlobalDirectNumber, SetGlobalDirectNumber)
+    container.AddScoped(FunctionNumber, GetFunctionNumber)
+    container.AddScoped(GlobalFunctionNumber, SetGlobalFunctionNumber)
     container.AddScoped(GeneratorDependencyType, GeneratorDependency)
+    # Nested
+    container.AddScoped(DependentNestedNumber, GetDependentNestedNumber)
+    container.AddScoped(IGlobalNestedNumber, GlobalNestedNumber)
+    container.AddScoped(IGlobalNestedService, GlobalNestedService)
+    container.AddScoped(INestedService, NestedService)
+
     return container
 
 

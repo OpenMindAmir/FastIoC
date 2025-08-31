@@ -3,14 +3,14 @@ from typing import Any, Annotated
 from fastapi import FastAPI, APIRouter, Depends
 from fastapi.testclient import TestClient
 
-from .dependencies import State, IGlobalService, INumberService, DirectNumber, GlobalDirectNumber, GetDirectNumber, SetGlobalUsualNumber, GeneratorDependencyType
+from .dependencies import State, IGlobalService, INumberService, FunctionNumber, GlobalFunctionNumber, GetFunctionNumber, SetGlobalUsualNumber, GeneratorDependencyType
 from .constants import *
 
-# --- Application Endpoint Test ---
+# --- Application Endpoint Test (Async) ---
 def test_AppEndpoint(app: FastAPI, client: TestClient, state: State):
 
-    @app.get('/test', dependencies=[IGlobalService, GlobalDirectNumber, Depends(SetGlobalUsualNumber)])  # pyright: ignore[reportArgumentType]
-    async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, number: DirectNumber, number2: Annotated[int, DirectNumber], number3: int = Depends(GetDirectNumber)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    @app.get('/test', dependencies=[IGlobalService, GlobalFunctionNumber, Depends(SetGlobalUsualNumber)])  # pyright: ignore[reportArgumentType]
+    async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, number: FunctionNumber, number2: Annotated[int, FunctionNumber], number3: int = Depends(GetFunctionNumber)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
             'srv': service.GetNumber(),
@@ -26,14 +26,14 @@ def test_AppEndpoint(app: FastAPI, client: TestClient, state: State):
     assert data['txt'] == QUERY_TEXT  # Get & parse query parameter correctly (alongside dependencies)
     assert data['srv'] == SERVICE_NUMBER  # Inject class instance as dependency 
     assert data['gnr'] == GENERATOR_NUMBER  # Inject generator as dependency
-    assert data['n1'] == data['n2'] == data['n3'] == DIRECT_NUMBER  # Inject function as dependency (n1) + Resolve dependency from annotations (n2) + Use FastAPI dependencies alongside FastDI deps (n3)
+    assert data['n1'] == data['n2'] == data['n3'] == FUNCTION_NUMBER  # Inject function as dependency (n1) + Resolve dependency from annotations (n2) + Use FastAPI dependencies alongside FastDI deps (n3)
     assert state.GlobalServiceNumber == GLOBAL_SERVICE_NUMBER  # Class instance injection in POD (Path Operation Decorator) 
-    assert state.GlobalDirectNumber == GLOBAL_DIRECT_NUMBER  # Function injection in POD
+    assert state.GlobalDirectNumber == GLOBAL_FUNCTION_NUMBER  # Function injection in POD
     assert state.GlobalUsualNumber == GLOBAL_USUAL_NUMBER  # Use FastAPI dependencies in POD alongside FastDI deps 
     assert state.GeneratorExitNumber == GENERATOR_EXIT_NUMBER  # Ensure that clean-up block of generator works
 
 
-# --- Router Endpoint Test ---
+# --- Router Endpoint Test (Sync) ---
 def test_RouterEndpoint(app: FastAPI, router: APIRouter, client: TestClient, state: State):
 
     @router.get('/test', dependencies=[IGlobalService])  # pyright: ignore[reportArgumentType]
