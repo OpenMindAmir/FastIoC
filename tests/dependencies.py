@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol
+from typing import Protocol, Generator
 
 from .constants import *
 
@@ -11,6 +11,7 @@ class State:
     GlobalServiceNumber: int = 0
     GlobalDirectNumber: int = 0
     GlobalUsualNumber: int = 0
+    GeneratorExitNumber: int = 0
 
 
     _instance: 'State | None' = None
@@ -68,5 +69,13 @@ class GlobalDirectNumber(int): ...
 def SetGlobalDirectNumber():
     state.GlobalDirectNumber = GLOBAL_DIRECT_NUMBER
 
-def SetGlobalUsualNumbe():
+def SetGlobalUsualNumber():
     state.GlobalUsualNumber = GLOBAL_USUAL_NUMBER
+
+class GeneratorDependencyType(int): ...
+
+def GeneratorDependency() -> Generator[int, None, None]:
+    try:
+        yield GENERATOR_NUMBER
+    finally:
+        state.GeneratorExitNumber = GENERATOR_EXIT_NUMBER
