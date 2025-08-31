@@ -10,7 +10,7 @@ from .constants import *
 def test_nested(app: FastAPI, client: TestClient, state: State):
     
     @app.get('/test', dependencies=[IGlobalNestedService])  # pyright: ignore[reportArgumentType]
-    def endpoint(text: str, service: INestedService, nested: Annotated[int, DependentNestedNumber], usual: int = Depends(GetDependentNestedNumber)) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
+    async def endpoint(text: str, service: INestedService, nested: Annotated[int, DependentNestedNumber], usual: int = Depends(GetDependentNestedNumber)) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
             'n1': service.GetNumber(),
             'n2': service.GetServiceNumber(),
