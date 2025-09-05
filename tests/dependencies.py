@@ -20,7 +20,7 @@ class State:
 
     @classmethod
     def get(cls) -> 'State':
-        if cls._instance is None:
+        if cls._instance == None:
             cls._instance = cls()
         return cls._instance
 
@@ -53,7 +53,7 @@ class IGlobalService(Protocol):
 
 class GlobalService(IGlobalService):
     def __init__(self) -> None:
-        state.GlobalServiceNumber = GLOBAL_SERVICE_NUMBER
+        state.get().GlobalServiceNumber = GLOBAL_SERVICE_NUMBER
 
 
 # --- Function Based Depedencies ---
@@ -71,11 +71,11 @@ class GlobalFunctionNumber(int):
 
 
 def SetGlobalFunctionNumber():
-    state.GlobalDirectNumber = GLOBAL_FUNCTION_NUMBER
+    state.get().GlobalDirectNumber = GLOBAL_FUNCTION_NUMBER
 
 
 def SetGlobalUsualNumber():
-    state.GlobalUsualNumber = GLOBAL_USUAL_NUMBER
+    state.get().GlobalUsualNumber = GLOBAL_USUAL_NUMBER
 
 
 class GeneratorDependencyType(int):
@@ -86,7 +86,7 @@ def GeneratorDependency() -> Generator[int, None, None]:
     try:
         yield GENERATOR_NUMBER
     finally:
-        state.GeneratorExitNumber = GENERATOR_EXIT_NUMBER
+        state.get().GeneratorExitNumber = GENERATOR_EXIT_NUMBER
 
 
 # --- Nested Dependencies ---
@@ -135,7 +135,7 @@ class IGlobalNestedNumber(type):
 
 
 def GlobalNestedNumber():
-    state.NestedNumber = NESTED_NUMBER
+    state.get().NestedNumber = NESTED_NUMBER
 
 
 class IGlobalNestedService(Protocol):

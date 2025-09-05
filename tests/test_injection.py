@@ -27,10 +27,10 @@ def test_AppEndpoint(app: FastAPI, client: TestClient, state: State):
     assert data['srv'] == SERVICE_NUMBER  # Inject class instance as dependency 
     assert data['gnr'] == GENERATOR_NUMBER  # Inject generator as dependency
     assert data['n1'] == data['n2'] == data['n3'] == FUNCTION_NUMBER  # Inject function as dependency (n1) + Resolve dependency from annotations (n2) + Use FastAPI dependencies alongside FastDI deps (n3)
-    assert state.GlobalServiceNumber == GLOBAL_SERVICE_NUMBER  # Class instance injection in POD (Path Operation Decorator) 
-    assert state.GlobalDirectNumber == GLOBAL_FUNCTION_NUMBER  # Function injection in POD
-    assert state.GlobalUsualNumber == GLOBAL_USUAL_NUMBER  # Use FastAPI dependencies in POD alongside FastDI deps 
-    assert state.GeneratorExitNumber == GENERATOR_EXIT_NUMBER  # Ensure that clean-up block of generator works
+    assert state.get().GlobalServiceNumber == GLOBAL_SERVICE_NUMBER  # Class instance injection in POD (Path Operation Decorator) 
+    assert state.get().GlobalDirectNumber == GLOBAL_FUNCTION_NUMBER  # Function injection in POD
+    assert state.get().GlobalUsualNumber == GLOBAL_USUAL_NUMBER  # Use FastAPI dependencies in POD alongside FastDI deps 
+    assert state.get().GeneratorExitNumber == GENERATOR_EXIT_NUMBER  # Ensure that clean-up block of generator works
 
 
 # --- Router Endpoint Test (Sync) ---
@@ -50,4 +50,4 @@ def test_RouterEndpoint(app: FastAPI, router: APIRouter, client: TestClient, sta
     assert response.status_code == 200
     assert data['txt'] == QUERY_TEXT
     assert data['srv'] == SERVICE_NUMBER
-    assert state.GlobalServiceNumber == GLOBAL_SERVICE_NUMBER
+    assert state.get().GlobalServiceNumber == GLOBAL_SERVICE_NUMBER
