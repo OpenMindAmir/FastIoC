@@ -1,18 +1,33 @@
-# from typing import Any
-# from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
-# from fastdi import Container
-# from fastdi.utils import pretendSignatureOf
+from typing import Any
+from typing_extensions import Self
 
-# class FastAPI(_FastAPI):
+from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
+from fastapi.params import Depends
 
-#     container: Container
+from fastdi.container import Container
+from fastdi.injectify import Injectify
+from fastdi.definitions import FastDIConcrete
 
-#     @pretendSignatureOf(_FastAPI.__init__)
-#     def __init__(self, *args: Any, container: Container = Container(), **kwargs: Any):
-#         super().__init__(*args, **kwargs)
-#         self.container = container
+class FastAPI(_FastAPI):
+    
+    _container: Container
+    _dependencies: list[type | Depends]
 
+    def __new__(cls, *args: Any, container: Container = Container(), **kwargs: Any) -> Self:
+        instance = super().__new__(cls)
+        super(FastAPI, instance).__init__(*args, **kwargs)
+        Injectify(instance, container)
+        instance._container = container
+        return instance
 
-# a = FastAPI()
+    # def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
+    #     self._container.AddSingleton(protocol, concrete)
 
-# a.container = 
+    # def AddScoped(self, protocol: type, concrete: FastDIConcrete):
+    #     self._container.AddScoped(protocol, concrete)
+
+    # def AddFactory(self, protocol: type, concrete: FastDIConcrete):
+    #     self._container.AddFactory(protocol, concrete)
+    
+
+    # TODO check before first load with global state or something like that, consider DX
