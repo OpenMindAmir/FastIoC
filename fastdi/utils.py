@@ -83,18 +83,3 @@ def getAnnotatedDependencyIfRegistered(annotation: Any, container: 'Container') 
                 except ProtocolNotRegisteredError:
                     continue
     return dependency
-
-
-
-# TODO Remove Extra code
-
-# def getSafeAttrs() -> list[str]:
-#     signature = inspect.signature(APIRouter.__init__)
-#     return [name for name in signature.parameters if name != 'self']
-
-
-# def cloneRouter(router: APIRouter, newRouter: type[APIRouter]) -> APIRouter:
-#     _newRouter = newRouter()
-#     for key in getSafeAttrs():
-#         setattr(_newRouter, key, getattr(router, key, None))
-#     return _newRouter
