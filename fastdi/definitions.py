@@ -5,6 +5,7 @@ Defines core types, enums, and aliases used throughout the FastDI library.
 from enum import Enum, auto
 from typing import Callable, Any
 
+from fastapi.params import Depends
 
 class LifeTime(Enum):
     """
@@ -20,3 +21,6 @@ class LifeTime(Enum):
 
 
 FastDIConcrete = type | Callable[..., Any]
+FastDIDependency = type | Depends
+
+DEPENDENCIES = 'dependencies'

@@ -16,6 +16,7 @@ from typeguard import typechecked
 from fastdi.errors import ProtocolNotRegisteredError
 from fastdi.container import Container
 from fastdi.utils import injectToList, pretendSignatureOf, isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
+from fastdi.definitions import DEPENDENCIES
 
 
 @typechecked
@@ -76,12 +77,12 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
 
         # --- Route Level Dependencies ---
 
-        dependencies: list[Any] = []
+        dependencies: list[Depends] = []
         
-        for dependency in kwargs.get('dependencies') or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+        for dependency in kwargs.get(DEPENDENCIES) or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
             injectToList(dependencies, dependency, container)
 
-        kwargs['dependencies'] = dependencies
+        kwargs[DEPENDENCIES] = dependencies
 
         originalAddAPIRouter(path, endpoint, **kwargs)
     

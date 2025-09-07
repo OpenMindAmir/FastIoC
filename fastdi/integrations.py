@@ -1,33 +1,282 @@
-from typing import Any
-from typing_extensions import Self
+"""
+FastDI-Enhanced FastAPI Integration
 
+This module provides extended versions of FastAPI and APIRouter with
+automatic FastDI dependency injection support. It allows:
+
+- Lazy injection of dependencies into route endpoints.
+- Management of global dependencies via a built-in FastDI Container.
+- Developer-friendly DX helpers for registering singleton, scoped, and factory dependencies.
+- Seamless integration with existing FastAPI routes and APIRouters without
+  requiring manual injection setup.
+
+Key components:
+
+1. `Injectified`:
+   Base class providing shared dependency injection functionality,
+   including global dependencies management and container access.
+
+2. `FastAPI`:
+   Extended FastAPI class inheriting from both FastAPI and Injectified,
+   supporting lazy dependency injection and global dependencies.
+
+3. `APIRouter`:
+   Extended APIRouter class inheriting from both APIRouter and Injectified,
+   supporting the same DI features as FastAPI.
+
+4. Helper functions:
+   - `init()`: Initialize internal container and process initial global dependencies.
+   - `injectify()`: Lazily inject dependencies on the first route added.
+
+This design ensures a DRY, centralized approach to dependency injection
+while preserving FastAPI's native routing and dependency mechanisms.
+"""
+
+from typing import Any
+
+from typeguard import typechecked
 from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
 from fastapi.params import Depends
 
 from fastdi.container import Container
-from fastdi.injectify import Injectify
-from fastdi.definitions import FastDIConcrete
+from fastdi.injectify import Injectify, DEPENDENCIES
+from fastdi.definitions import FastDIConcrete, FastDIDependency
+from fastdi.utils import pretendSignatureOf, processDependenciesList, injectToList
 
-class FastAPI(_FastAPI):
+
+def init(self: 'FastAPI | APIRouter', container: Container, kwargs: dict[Any, Any]) -> dict[Any, Any]:
+
+    """
+    Initialize the extended instances for integrations.
+    """
+
+    self._container = container  # pyright: ignore[reportPrivateUsage]
+    self._injectified = False  # pyright: ignore[reportPrivateUsage]
+
+    if DEPENDENCIES in kwargs and kwargs[DEPENDENCIES]:
+        kwargs[DEPENDENCIES] = processDependenciesList(kwargs[DEPENDENCIES], self._container) # pyright: ignore[reportPrivateUsage]
     
+    return kwargs
+
+def injectify(self: 'FastAPI | APIRouter'):
+
+    """
+    On the first route added, this method calls `Injectify` to wrap endpoints
+    and automatically inject dependencies using the container.
+    """
+
+    if not self._injectified:  # pyright: ignore[reportPrivateUsage]
+        Injectify(self, self._container)  # pyright: ignore[reportPrivateUsage]
+        self._injectified = True  # pyright: ignore[reportPrivateUsage]
+
+
+class Injectified:
+
+    """
+    Base class providing shared FastDI integration functionality.
+    """
+
     _container: Container
-    _dependencies: list[type | Depends]
 
-    def __new__(cls, *args: Any, container: Container = Container(), **kwargs: Any) -> Self:
-        instance = super().__new__(cls)
-        super(FastAPI, instance).__init__(*args, **kwargs)
-        Injectify(instance, container)
-        instance._container = container
-        return instance
+    @property
+    def dependencies(self) -> list[Depends]:
 
-    # def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
-    #     self._container.AddSingleton(protocol, concrete)
+        """
+        Get the global dependencies list.
 
-    # def AddScoped(self, protocol: type, concrete: FastDIConcrete):
-    #     self._container.AddScoped(protocol, concrete)
+        Returns:
+            list[Depends]: List of FastAPI-compatible Depends objects.
+        """
 
-    # def AddFactory(self, protocol: type, concrete: FastDIConcrete):
-    #     self._container.AddFactory(protocol, concrete)
+        return self.__dict__[DEPENDENCIES]
     
+    @dependencies.setter
+    def dependencies(self, value: list[FastDIDependency]):
+        """
+        Set and process global dependencies.
 
-    # TODO check before first load with global state or something like that, consider DX
+        Each dependency will be processed and converted to a FastAPI-compatible Depends.
+
+        NOTE: Make sure that any type you want to resolve via the container is registered first.
+
+        Args:
+            value (list[FastDIDependency]): A list of raw types or Depends.
+        """
+         
+        self.__dict__[DEPENDENCIES] = processDependenciesList(value, self._container)
+
+    @property
+    def container(self) -> Container:
+
+        """
+        Get the FastDI container.
+
+        Returns:
+            Container: The container instance used for dependency injection.
+        """
+
+        return self._container
+    
+    @container.setter
+    @typechecked
+    def container(self, value: Container):
+
+        """
+        Set a new FastDI container.
+
+        Resets the `_injectified` flag to allow re-injection if needed.
+
+        Args:
+            value (Container): A valid FastDI Container instance.
+        """
+
+        self._container = value
+        self._injectified = False
+
+    def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
+            
+            """
+            Register a singleton dependency into the internal container.
+            One single shared instance will be used throughout the entire process/worker.
+
+            Args:
+                protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
+                concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+
+            Raises:
+                SingletonGeneratorNotAllowedError: If 'concrete' is a generator or async generator.
+                ProtocolNotRegisteredError: If a nested dependency is not registered.
+            """
+
+            self._container.AddSingleton(protocol, concrete)
+
+    def AddScoped(self, protocol: type, concrete: FastDIConcrete):
+
+        """
+        Register a request-scoped dependency into the internal container.
+        A new instance is created for each HTTP request and reused throughout that request.
+
+        Args:
+            protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
+            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+
+        Raises:
+            ProtocolNotRegisteredError: If a nested dependency is not registered.
+        """
+
+        self._container.AddScoped(protocol, concrete)
+
+    def AddFactory(self, protocol: type, concrete: FastDIConcrete):
+
+        """
+        Register a factory (transient) dependency into the internal container.
+        A new instance is created each time the dependency is resolved.
+
+        Args:
+            protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
+            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+
+        Raises:
+            ProtocolNotRegisteredError: If a nested dependency is not registered.
+        """
+
+        self._container.AddFactory(protocol, concrete)
+
+    def AddGlobalDependency(self, dependency: FastDIDependency):
+
+        """
+        Add a single global dependency.
+
+        The dependency will be resolved via the container (if registered) and appended to the global
+        dependencies list. If the type is not registered in the container, the dependency is added as-is.
+        
+        NOTE: If you want the dependency to be resolved from the container, ensure it is registered
+        in the container before calling this method.
+
+        Args:
+            dependency (FastDIDependency): A type, protocol, or Depends object.
+        """
+
+        injectToList(self.__dict__[DEPENDENCIES], dependency, self._container)
+
+class FastAPI(_FastAPI, Injectified):
+
+    """
+    Extended FastAPI class with automatic FastDI integration.
+
+    Features:
+        - Supports global dependencies via an internal FastDI Container.
+          A default container is created automatically, but it can be replaced via the `container` property.
+        - Lazy injection of dependencies into route endpoints.
+        - Developer-friendly DX sugar:
+            - `AddGlobalDependency` to add a single global dependency.
+            - `AddSingleton`, `AddScoped`, `AddFactory` to register dependencies in the container.
+        - Global and route-level dependencies are automatically processed.
+    """
+
+    @pretendSignatureOf(_FastAPI.__init__)
+    def __init__(self, *args: Any, container: Container = Container(), **kwargs: Any):
+
+        """
+        Initialize the extended FastAPI instance.
+        """
+
+        kwargs = init(self, container, kwargs)
+
+        super().__init__(*args, **kwargs)
+
+    @pretendSignatureOf(_FastAPI.add_api_route)
+    def add_api_route(self, *args: Any, **kwargs: Any):
+
+        """
+        Override add_api_route to ensure lazy injection of dependencies.
+
+        On the first route added, this method calls `Injectify` to wrap endpoints
+        and automatically inject dependencies using the container.
+        """
+
+        injectify(self)
+
+        super().add_api_route(*args, **kwargs) # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+
+
+class APIRouter(_APIRouter, Injectified):
+
+    """
+    Extended APIRouter class with automatic FastDI integration.
+
+    Features:
+        - Supports global dependencies via an internal FastDI Container.
+          A default container is created automatically, but it can be replaced via the `container` property.
+        - Lazy injection of dependencies into route endpoints.
+        - Developer-friendly DX sugar:
+            - `AddGlobalDependency` to add a single global dependency.
+            - `AddSingleton`, `AddScoped`, `AddFactory` to register dependencies in the container.
+        - Global and route-level dependencies are automatically processed.
+    """
+
+    @pretendSignatureOf(_FastAPI.__init__)
+    def __init__(self, *args: Any, container: Container = Container(), **kwargs: Any):
+
+        """
+        Initialize the extended APIRouter instance.
+        """
+
+        kwargs = init(self, container, kwargs)
+
+        super().__init__(*args, **kwargs)
+
+    
+    @pretendSignatureOf(_APIRouter.add_api_route)
+    def add_api_route(self, *args: Any, **kwargs: Any):
+
+        """
+        Override add_api_route to ensure lazy injection of dependencies.
+
+        On the first route added, this method calls `Injectify` to wrap endpoints
+        and automatically inject dependencies using the container.
+        """
+
+        injectify(self)
+
+        super().add_api_route(*args, **kwargs) # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]

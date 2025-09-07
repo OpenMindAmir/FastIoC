@@ -7,6 +7,7 @@ from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, TYPE
 from fastapi.params import Depends
 
 from fastdi.errors import ProtocolNotRegisteredError
+from fastdi.definitions import FastDIDependency
 if TYPE_CHECKING:
     from fastdi.container import Container
 
@@ -44,6 +45,23 @@ def injectToList(_list: list[Any], item: Any, container: 'Container'):
 
     except ProtocolNotRegisteredError:
         _list.append(item)
+
+
+def processDependenciesList(dependencies: list[FastDIDependency], container: 'Container') -> list[Depends]:
+
+    """
+    Process a list of global dependencies.
+
+    - Iterates over the given dependencies.
+    - Converts each item into a FastAPI-compatible `Depends` using the container.
+    - Returns the processed list.
+    """
+
+    _list: list[Depends] = []
+    for dependency in dependencies:
+        injectToList(_list, dependency, container)
+    return _list
+
 
 
 def isAnnotatedWithDepends(annotation: Any) -> bool:
