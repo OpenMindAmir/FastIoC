@@ -19,7 +19,9 @@ def test_app(state: State, container: Container):
     app.AddScoped(LazyNumber, GetLazyNumber)
     app.AddScoped(IGlobalService3, GlobalService3)
 
-    app.AddGlobalDependency(IGlobalService3)
+    print(type(app.__class__.__mro__))
+    print(app.__class__.__mro__)
+    app.AddDependencies(IGlobalService3)
 
     @app.get('/test', dependencies=[IGlobalService2])  # pyright: ignore[reportArgumentType]
     def endpoint(text: str, service: INumberService, number: Annotated[int, LazyNumber]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]

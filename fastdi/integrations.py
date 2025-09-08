@@ -4,35 +4,13 @@ FastDI-Enhanced FastAPI Integration
 This module provides extended versions of FastAPI and APIRouter with
 automatic FastDI dependency injection support. It allows:
 
-- Lazy injection of dependencies into route endpoints.
 - Management of global dependencies via a built-in FastDI Container.
 - Developer-friendly DX helpers for registering singleton, scoped, and factory dependencies.
 - Seamless integration with existing FastAPI routes and APIRouters without
   requiring manual injection setup.
-
-Key components:
-
-1. `Injectified`:
-   Base class providing shared dependency injection functionality,
-   including global dependencies management and container access.
-
-2. `FastAPI`:
-   Extended FastAPI class inheriting from both FastAPI and Injectified,
-   supporting lazy dependency injection and global dependencies.
-
-3. `APIRouter`:
-   Extended APIRouter class inheriting from both APIRouter and Injectified,
-   supporting the same DI features as FastAPI.
-
-4. Helper functions:
-   - `init()`: Initialize internal container and process initial global dependencies.
-   - `injectify()`: Lazily inject dependencies on the first route added.
-
-This design ensures a DRY, centralized approach to dependency injection
-while preserving FastAPI's native routing and dependency mechanisms.
 """
 
-from typing import Any
+from typing import Any, cast
 
 from typeguard import typechecked
 from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
@@ -67,33 +45,6 @@ class Injectified:
     _container: Container
 
     @property
-    def dependencies(self) -> list[Depends]:
-
-        """
-        Get the global dependencies list.
-
-        Returns:
-            list[Depends]: List of FastAPI-compatible Depends objects.
-        """
-
-        return self.__dict__[DEPENDENCIES]
-    
-    @dependencies.setter
-    def dependencies(self, value: list[FastDIDependency]):
-        """
-        Set and process global dependencies.
-
-        Each dependency will be processed and converted to a FastAPI-compatible Depends.
-
-        NOTE: Make sure that any type you want to resolve via the container is registered first.
-
-        Args:
-            value (list[FastDIDependency]): A list of raw types or Depends.
-        """
-         
-        self.__dict__[DEPENDENCIES] = processDependenciesList(value, self._container)
-
-    @property
     def container(self) -> Container:
 
         """
@@ -112,14 +63,66 @@ class Injectified:
         """
         Set a new FastDI container.
 
-        Resets the `_injectified` flag to allow re-injection if needed.
-
         Args:
             value (Container): A valid FastDI Container instance.
+
+        NOTE:
+            Endpoints defined earlier have already been bound to the
+            previous container. Only endpoints defined after this call
+            will be processed with the new container.
         """
 
         self._container = value
-        self._injectified = False
+        Injectify(cast(FastAPI | APIRouter, self), self._container)
+
+    # @property
+    # def dependencies(self) -> list[Depends]:
+
+    #     """
+    #     Get the global dependencies list.
+
+    #     Returns:
+    #         list[Depends]: List of FastAPI-compatible Depends objects.
+    #     """
+
+    #     return list(self.__dict__.setdefault(DEPENDENCIES, []))
+    
+    # @dependencies.setter
+    # @typechecked
+    # def dependencies(self, value: list[FastDIDependency]):
+
+    #     """
+    #     Set and process global dependencies.
+
+    #     Each dependency will be processed and converted to a FastAPI-compatible Depends.
+
+    #     NOTE: Make sure that any type you want to resolve via the container is registered first.
+
+    #     Args:
+    #         value (list[FastDIDependency]): A list of raw types or Depends.
+    #     """
+        
+    #     self.__dict__[DEPENDENCIES] = processDependenciesList(value, self._container)
+
+    @typechecked
+    def AddDependencies(self, *dependencies: FastDIDependency):
+
+        """
+        Register one or more global dependencies for this app/router.
+
+        Global dependencies are applied passively to all endpoints, meaning
+        they are executed on every request but their return values are not
+        directly injected into the endpoint function signature.
+
+        Args:
+            *dependencies (FastDIDependency): One or more dependency definitions
+                (types, callables, or `Depends` instances) to be registered.
+        """
+
+        if not hasattr(self, DEPENDENCIES) or not getattr(self, DEPENDENCIES, False):
+            self.dependencies = []
+
+        self.dependencies = processDependenciesList(list(dependencies), self._container)
 
     def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
         
@@ -170,22 +173,6 @@ class Injectified:
 
         self._container.AddFactory(protocol, concrete)
 
-    def AddGlobalDependency(self, dependency: FastDIDependency):
-
-        """
-        Add a single global dependency.
-
-        The dependency will be resolved via the container (if registered) and appended to the global
-        dependencies list. If the type is not registered in the container, the dependency is added as-is.
-        
-        NOTE: If you want the dependency to be resolved from the container, ensure it is registered
-        in the container before calling this method.
-
-        Args:
-            dependency (FastDIDependency): A type, protocol, or Depends object.
-        """
-
-        injectToList(self.__dict__[DEPENDENCIES], dependency, self._container)
 
 class FastAPI(_FastAPI, Injectified):
 
