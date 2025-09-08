@@ -25,6 +25,5 @@ def test_Lifetime(app: FastAPI, client: TestClient):
     _data = _response.json()
 
     assert response.status_code == _response.status_code == 200
-
     assert data['f1'] == data['f2'] == _data['f1'] == _data['f2'] == data['r1'] == _data['r1'] == data['s'] == NUMBERS[1]
     assert data['r2'] == _data['r2'] == _data['s'] == NUMBERS[2]

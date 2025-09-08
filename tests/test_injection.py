@@ -22,6 +22,7 @@ def test_AppEndpoint(app: FastAPI, client: TestClient, state: State):
     
     response = client.get('/test', params={'text': QUERY_TEXT})
     data = response.json()
+
     assert response.status_code == 200
     assert data['txt'] == QUERY_TEXT  # Get & parse query parameter correctly (alongside dependencies)
     assert data['srv'] == SERVICE_NUMBER  # Inject class instance as dependency 
@@ -47,6 +48,7 @@ def test_RouterEndpoint(app: FastAPI, router: APIRouter, client: TestClient, sta
     
     response = client.get('/test', params={'text': QUERY_TEXT})
     data = response.json()
+    
     assert response.status_code == 200
     assert data['txt'] == QUERY_TEXT
     assert data['srv'] == SERVICE_NUMBER

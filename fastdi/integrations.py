@@ -134,21 +134,22 @@ class Injectified:
         self._injectified = False
 
     def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
-            
-            """
-            Register a singleton dependency into the internal container.
-            One single shared instance will be used throughout the entire process/worker.
+        
+        """
+        Register a singleton dependency into the internal container.
+        One single shared instance will be used throughout the entire process/worker.
 
-            Args:
-                protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-                concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+        Args:
+            protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
+            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
 
-            Raises:
-                SingletonGeneratorNotAllowedError: If 'concrete' is a generator or async generator.
-                ProtocolNotRegisteredError: If a nested dependency is not registered.
-            """
+        Raises:
+            SingletonGeneratorNotAllowedError: If 'concrete' is a generator or async generator.
+            ProtocolNotRegisteredError: If a nested dependency is not registered.
+        """
 
-            self._container.AddSingleton(protocol, concrete)
+        self._container.AddSingleton(protocol, concrete)
+        self._injectified = False
 
     def AddScoped(self, protocol: type, concrete: FastDIConcrete):
 
@@ -165,6 +166,7 @@ class Injectified:
         """
 
         self._container.AddScoped(protocol, concrete)
+        self._injectified = False
 
     def AddFactory(self, protocol: type, concrete: FastDIConcrete):
 
@@ -181,6 +183,7 @@ class Injectified:
         """
 
         self._container.AddFactory(protocol, concrete)
+        self._injectified = False
 
     def AddGlobalDependency(self, dependency: FastDIDependency):
 
@@ -198,6 +201,7 @@ class Injectified:
         """
 
         injectToList(self.__dict__[DEPENDENCIES], dependency, self._container)
+        self._injectified = False
 
 class FastAPI(_FastAPI, Injectified):
 

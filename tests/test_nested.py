@@ -22,6 +22,7 @@ def test_nested(app: FastAPI, client: TestClient, state: State):
     
     response = client.get('/test', params={'text': QUERY_TEXT})
     data = response.json()
+    
     assert response.status_code == 200
     assert data['n2'] == SERVICE_NUMBER
     assert data['n1'] == data['n3'] == data['n4'] == data['n5'] == state.get().NestedNumber == NESTED_NUMBER
