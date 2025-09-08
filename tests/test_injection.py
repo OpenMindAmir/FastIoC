@@ -50,6 +50,6 @@ def test_RouterEndpoint(app: FastAPI, router: APIRouter, client: TestClient, sta
     data = response.json()
     
     assert response.status_code == 200
-    assert data['txt'] == QUERY_TEXT
-    assert data['srv'] == SERVICE_NUMBER
-    assert state.get().GlobalServiceNumber == GLOBAL_SERVICE_NUMBER
+    assert data['txt'] == QUERY_TEXT # Query parameter
+    assert data['srv'] == SERVICE_NUMBER # Simple dependency
+    assert state.get().GlobalServiceNumber == GLOBAL_SERVICE_NUMBER # Endpoint passive dependency

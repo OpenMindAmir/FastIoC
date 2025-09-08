@@ -11,6 +11,8 @@ from .constants import *
 @dataclass
 class State:
     GlobalServiceNumber: int = 0
+    GlobalServiceNumber2: int = 0
+    GlobalServiceNumber3: int = 0
     GlobalDirectNumber: int = 0
     GlobalUsualNumber: int = 0
     GeneratorExitNumber: int = 0
@@ -196,3 +198,31 @@ class LifetimeServiceFactory(ILifetimeServiceFactory):
     def GetCurrentItem(self) -> int:
         self.index += 1
         return NUMBERS[self.index]
+    
+
+# --- Integration dependencies ---
+
+
+class LazyNumber(int): ...
+
+
+def GetLazyNumber() -> int:
+    return LAZY_NUMBER
+
+
+class IGlobalService2(Protocol):
+    ...
+
+
+class GlobalService2(IGlobalService2):
+    def __init__(self) -> None:
+        state.get().GlobalServiceNumber2 = GLOBAL_SERVICE_NUMBER2
+
+
+class IGlobalService3(Protocol):
+    ...
+
+
+class GlobalService3(IGlobalService3):
+    def __init__(self) -> None:
+        state.get().GlobalServiceNumber3 = GLOBAL_SERVICE_NUMBER3

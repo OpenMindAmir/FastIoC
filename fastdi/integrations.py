@@ -43,32 +43,20 @@ from fastdi.injectify import Injectify, DEPENDENCIES
 from fastdi.definitions import FastDIConcrete, FastDIDependency
 from fastdi.utils import pretendSignatureOf, processDependenciesList, injectToList
 
-
-def init(self: 'FastAPI | APIRouter', container: Container, kwargs: dict[Any, Any]) -> dict[Any, Any]:
+def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[Any, Any]) -> dict[Any, Any]:
 
     """
     Initialize the extended instances for integrations.
     """
 
-    self._container = container  # pyright: ignore[reportPrivateUsage]
-    self._injectified = False  # pyright: ignore[reportPrivateUsage]
+    if container:
+        self._container = container  # pyright: ignore[reportPrivateUsage]
+        if DEPENDENCIES in kwargs and kwargs[DEPENDENCIES]:
+            kwargs[DEPENDENCIES] = processDependenciesList(kwargs[DEPENDENCIES], self._container) # pyright: ignore[reportPrivateUsage]
+    else:
+        self._container = Container() # pyright: ignore[reportPrivateUsage]
 
-    if DEPENDENCIES in kwargs and kwargs[DEPENDENCIES]:
-        kwargs[DEPENDENCIES] = processDependenciesList(kwargs[DEPENDENCIES], self._container) # pyright: ignore[reportPrivateUsage]
-    
     return kwargs
-
-def injectify(self: 'FastAPI | APIRouter'):
-
-    """
-    On the first route added, this method calls `Injectify` to wrap endpoints
-    and automatically inject dependencies using the container.
-    """
-
-    if not self._injectified:  # pyright: ignore[reportPrivateUsage]
-        Injectify(self, self._container)  # pyright: ignore[reportPrivateUsage]
-        self._injectified = True  # pyright: ignore[reportPrivateUsage]
-
 
 class Injectified:
 
@@ -149,7 +137,6 @@ class Injectified:
         """
 
         self._container.AddSingleton(protocol, concrete)
-        self._injectified = False
 
     def AddScoped(self, protocol: type, concrete: FastDIConcrete):
 
@@ -166,7 +153,6 @@ class Injectified:
         """
 
         self._container.AddScoped(protocol, concrete)
-        self._injectified = False
 
     def AddFactory(self, protocol: type, concrete: FastDIConcrete):
 
@@ -183,7 +169,6 @@ class Injectified:
         """
 
         self._container.AddFactory(protocol, concrete)
-        self._injectified = False
 
     def AddGlobalDependency(self, dependency: FastDIDependency):
 
@@ -201,7 +186,6 @@ class Injectified:
         """
 
         injectToList(self.__dict__[DEPENDENCIES], dependency, self._container)
-        self._injectified = False
 
 class FastAPI(_FastAPI, Injectified):
 
@@ -219,7 +203,7 @@ class FastAPI(_FastAPI, Injectified):
     """
 
     @pretendSignatureOf(_FastAPI.__init__)
-    def __init__(self, *args: Any, container: Container = Container(), **kwargs: Any):
+    def __init__(self, *args: Any, container: Container | None = None, **kwargs: Any):
 
         """
         Initialize the extended FastAPI instance.
@@ -229,20 +213,7 @@ class FastAPI(_FastAPI, Injectified):
 
         super().__init__(*args, **kwargs)
 
-    @pretendSignatureOf(_FastAPI.add_api_route)
-    def add_api_route(self, *args: Any, **kwargs: Any):
-
-        """
-        Override add_api_route to ensure lazy injection of dependencies.
-
-        On the first route added, this method calls `Injectify` to wrap endpoints
-        and automatically inject dependencies using the container.
-        """
-
-        injectify(self)
-
-        super().add_api_route(*args, **kwargs) # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
-
+        Injectify(self, self._container) # pyright: ignore[reportPrivateUsage]
 
 class APIRouter(_APIRouter, Injectified):
 
@@ -260,7 +231,7 @@ class APIRouter(_APIRouter, Injectified):
     """
 
     @pretendSignatureOf(_FastAPI.__init__)
-    def __init__(self, *args: Any, container: Container = Container(), **kwargs: Any):
+    def __init__(self, *args: Any, container: Container | None = None, **kwargs: Any):
 
         """
         Initialize the extended APIRouter instance.
@@ -270,17 +241,4 @@ class APIRouter(_APIRouter, Injectified):
 
         super().__init__(*args, **kwargs)
 
-    
-    @pretendSignatureOf(_APIRouter.add_api_route)
-    def add_api_route(self, *args: Any, **kwargs: Any):
-
-        """
-        Override add_api_route to ensure lazy injection of dependencies.
-
-        On the first route added, this method calls `Injectify` to wrap endpoints
-        and automatically inject dependencies using the container.
-        """
-
-        injectify(self)
-
-        super().add_api_route(*args, **kwargs) # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
+        Injectify(self, self._container) # pyright: ignore[reportPrivateUsage]
