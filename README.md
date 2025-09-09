@@ -2,6 +2,12 @@ note to user lists are not thread safe be on alert when you are using them in si
 
 r&d multiprocessing.Manager
 
-container simple resolve
-container arguments
-container lifetime on resolve
+container simple resolve (dont think so, may be its just a consideration for APIController ... NOTE: Another consideration is dependencies,override)
+container lifetime on resolve (same as above)
+container arguments (research first)
+
+FastAPIController
+Mediator
+FastAPIEnterprize
+correct names for generator (openapisimplification)
+Pascalcase
