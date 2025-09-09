@@ -217,12 +217,3 @@ class IGlobalService2(Protocol):
 class GlobalService2(IGlobalService2):
     def __init__(self) -> None:
         state.get().GlobalServiceNumber2 = GLOBAL_SERVICE_NUMBER2
-
-
-class IGlobalService3(Protocol):
-    ...
-
-
-class GlobalService3(IGlobalService3):
-    def __init__(self) -> None:
-        state.get().GlobalServiceNumber3 = GLOBAL_SERVICE_NUMBER3

@@ -14,12 +14,11 @@ from typing import Any, cast
 
 from typeguard import typechecked
 from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
-from fastapi.params import Depends
 
 from fastdi.container import Container
 from fastdi.injectify import Injectify, DEPENDENCIES
-from fastdi.definitions import FastDIConcrete, FastDIDependency
-from fastdi.utils import pretendSignatureOf, processDependenciesList, injectToList
+from fastdi.definitions import FastDIConcrete
+from fastdi.utils import pretendSignatureOf, processDependenciesList
 
 def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[Any, Any]) -> dict[Any, Any]:
 
@@ -75,54 +74,6 @@ class Injectified:
         self._container = value
         Injectify(cast(FastAPI | APIRouter, self), self._container)
 
-    # @property
-    # def dependencies(self) -> list[Depends]:
-
-    #     """
-    #     Get the global dependencies list.
-
-    #     Returns:
-    #         list[Depends]: List of FastAPI-compatible Depends objects.
-    #     """
-
-    #     return list(self.__dict__.setdefault(DEPENDENCIES, []))
-    
-    # @dependencies.setter
-    # @typechecked
-    # def dependencies(self, value: list[FastDIDependency]):
-
-    #     """
-    #     Set and process global dependencies.
-
-    #     Each dependency will be processed and converted to a FastAPI-compatible Depends.
-
-    #     NOTE: Make sure that any type you want to resolve via the container is registered first.
-
-    #     Args:
-    #         value (list[FastDIDependency]): A list of raw types or Depends.
-    #     """
-        
-    #     self.__dict__[DEPENDENCIES] = processDependenciesList(value, self._container)
-
-    @typechecked
-    def AddDependencies(self, *dependencies: FastDIDependency):
-
-        """
-        Register one or more global dependencies for this app/router.
-
-        Global dependencies are applied passively to all endpoints, meaning
-        they are executed on every request but their return values are not
-        directly injected into the endpoint function signature.
-
-        Args:
-            *dependencies (FastDIDependency): One or more dependency definitions
-                (types, callables, or `Depends` instances) to be registered.
-        """
-
-        if not hasattr(self, DEPENDENCIES) or not getattr(self, DEPENDENCIES, False):
-            self.dependencies = []
-
-        self.dependencies = processDependenciesList(list(dependencies), self._container)
 
     def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
         
@@ -217,7 +168,7 @@ class APIRouter(_APIRouter, Injectified):
         - Global and route-level dependencies are automatically processed.
     """
 
-    @pretendSignatureOf(_FastAPI.__init__)
+    @pretendSignatureOf(_APIRouter.__init__)
     def __init__(self, *args: Any, container: Container | None = None, **kwargs: Any):
 
         """
