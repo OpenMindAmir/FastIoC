@@ -27,7 +27,7 @@ def test_app(state: State, container: Container):
     app.AddScoped(LazyNumber, GetLazyNumber)
 
     @app.get('/test', dependencies=[IGlobalService2])  # pyright: ignore[reportArgumentType]
-    def endpoint(text: str, service: INumberService, number: Annotated[int, LazyNumber]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
+    async def endpoint(text: str, service: INumberService, number: Annotated[int, LazyNumber]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
             'num': service.GetNumber(),
@@ -63,7 +63,7 @@ def test_router(state: State, app: _FastAPI, router: _APIRouter, client: TestCli
     irouter.AddScoped(LazyNumber, GetLazyNumber)
 
     @irouter.get('/test', dependencies=[IGlobalService2] ) # pyright: ignore[reportArgumentType]
-    def endpoint(text: str, service: INumberService, number: Annotated[int, LazyNumber]) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    async def endpoint(text: str, service: INumberService, number: Annotated[int, LazyNumber]) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
             'srv': service.GetNumber(),
@@ -110,3 +110,36 @@ def test_router(state: State, app: _FastAPI, router: _APIRouter, client: TestCli
     assert data2['num'] == idata2['num'] == FUNCTION_NUMBER
     assert state.get().GlobalServiceNumber == GLOBAL_SERVICE_NUMBER
     assert state.get().GlobalUsualNumber == GLOBAL_USUAL_NUMBER
+
+# --- Container replacement test
+def test_changeContainer(container: Container):
+
+    app = FastAPI(container = container)
+    client = TestClient(app)
+
+    @app.get('/test')
+    async def endpoint(service: INumberService) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
+        return {
+            'srv': service.GetNumber()
+        }
+
+    newContainer = Container()
+
+    newContainer.AddScoped(LazyNumber, GetLazyNumber)
+
+    app.container = newContainer
+
+    @app.get('/test2')
+    async def endpoint2(number: Annotated[int, LazyNumber]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
+        return {
+            'num': number
+        }
+    
+    response = client.get('/test')
+    response2 = client.get('/test2')
+    data = response.json()
+    data2 = response2.json()
+
+    assert response.status_code ==  response2.status_code == 200
+    assert data['srv'] == SERVICE_NUMBER
+    assert data2['num'] == LAZY_NUMBER
