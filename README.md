@@ -8,7 +8,7 @@ container arguments (research first)
 
 Interface
 FastAPIController
-Mediator
 FastAPIEnterprize
 correct names for generator (openapisimplification)
 Pascalcase
+provide decorator for container (auto type detection)
