@@ -12,7 +12,7 @@ from typeguard import typechecked
 from fastapi.params import Depends
 
 from fastdi.definitions import LifeTime, FastDIConcrete
-from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
+from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError, TooManyConcretesProvidedError, ProviderMissingDecorationError
 from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered, determineProtocol
 
 class Container:
@@ -174,15 +174,14 @@ class Container:
         One single shared instance will be used throughout the entire process/worker.
 
         Example:
-            >>> @container.ProvideSingleton()
+            >>> @container.ProvideSingleton
             >>> class Foo: ...
 
         Args:
             protocol (type | None): The interface or protocol under which the dependency
                 will be registered.
                 - If provided, the concrete will be bound to this protocol.
-                - If omitted and the concrete is a class, the protocol is inferred.
-                - If omitted and the concrete is not a class, an error is raised.
+                - If omitted, the protocol is inferred.
 
         Raises:
             SingletonGeneratorNotAllowedError:
@@ -196,22 +195,21 @@ class Container:
             return concrete
         return decorator
     
-    def ProvideScoped(self, protocol: type | None = None) -> Any:
+    def ProvideScoped(self, *args: FastDIConcrete, protocol: type | None = None) -> Any:
 
         """"
         Register provided concrete as a request-scoped dependency.
         A new instance is created for each HTTP request and reused throughout that request.
 
         Eample:
-            >>> @container.ProvideScoped()
+            >>> @container.ProvideScoped
             >>> class Foo: ...
 
         Args:
             protocol (type | None): The interface or protocol under which the dependency
                 will be registered.
                 - If provided, the concrete will be bound to this protocol.
-                - If omitted and the concrete is a class, the protocol is inferred.
-                - If omitted and the concrete is not a class, an error is raised.
+                - If omitted, the protocol is inferred.
 
         Raises:
             ProtocolNotRegisteredError:
@@ -221,6 +219,30 @@ class Container:
         def decorator(concrete: FastDIConcrete) -> FastDIConcrete:
             self._provide(concrete, LifeTime.SCOPED, protocol)
             return concrete
+
+        # if not args:#TODO Missing concrete errro
+            # return decorator()
+        
+        if len(args) > 1:
+            raise TooManyConcretesProvidedError("""
+                Only one positional argument can be passed to a provider.
+                Use the 'protocol' keyword argument to specify the interface/protocol for a concrete.
+
+                Correct usage:
+                    > @container.ProvideScoped(protocol=IService)
+                    > @container.ProvideScoped
+
+                Incorrect usage:
+                    > @container.ProvideScoped(IService)
+                """)
+        
+        concrete = args[0]
+
+        if protocol:
+            self._provide(concrete, LifeTime.SCOPED, protocol) # pyright: ignore[reportGeneralTypeIssues]
+            return concrete
+
+        
         return decorator
     
     def ProvideFactory(self, protocol: type | None = None) -> Any:
@@ -230,15 +252,14 @@ class Container:
         A new instance is created each time the dependency is resolved.
 
         Example:
-            >>> @container.ProvideFactory()
+            >>> @container.ProvideFactory
             >>> class Foo: ...
 
         Args:
             protocol (type | None): The interface or protocol under which the dependency
                 will be registered.
                 - If provided, the concrete will be bound to this protocol.
-                - If omitted and the concrete is a class, the protocol is inferred.
-                - If omitted and the concrete is not a class, an error is raised.
+                - If omitted, the protocol is inferred.
 
         Raises:
             ProtocolNotRegisteredError:

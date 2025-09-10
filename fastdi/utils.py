@@ -119,6 +119,6 @@ def determineProtocol(concrete: FastDIConcrete, protocol: type | None) -> type:
         return cast(type, concrete)
     
     if bases := [base for base in concrete.__bases__ if base is not object]:
-        return bases[0]
+        return bases[-1]
     
     return concrete
