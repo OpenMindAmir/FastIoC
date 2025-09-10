@@ -170,7 +170,7 @@ class Container:
     def ProvideSingleton(self, protocol: type | None = None) -> Any:
 
         """"
-        Register provided concreate as a singleton dependency.
+        Register provided concrete as a singleton dependency.
         One single shared instance will be used throughout the entire process/worker.
 
         Example:
@@ -199,7 +199,7 @@ class Container:
     def ProvideScoped(self, protocol: type | None = None) -> Any:
 
         """"
-        Register provided concreate as a request-scoped dependency.
+        Register provided concrete as a request-scoped dependency.
         A new instance is created for each HTTP request and reused throughout that request.
 
         Eample:
@@ -226,7 +226,7 @@ class Container:
     def ProvideFactory(self, protocol: type | None = None) -> Any:
 
         """"
-        Register provided concreate as a factory (transient) dependency.
+        Register provided concrete as a factory (transient) dependency.
         A new instance is created each time the dependency is resolved.
 
         Example:
