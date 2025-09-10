@@ -6,6 +6,7 @@ container simple resolve (dont think so, may be its just a consideration for API
 container lifetime on resolve (same as above)
 container arguments (research first)
 
+Interface
 FastAPIController
 Mediator
 FastAPIEnterprize
