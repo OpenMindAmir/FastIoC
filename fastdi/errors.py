@@ -28,3 +28,10 @@ class SingletonGeneratorNotAllowedError(FastDIError):
     raise an error. Therefore, singleton scope does not make sense here.
     """
     pass
+
+
+class ProtocolRequiredForNonClassProvidedError(FastDIError):
+    """
+    Raised when a non-class dependency is provided without specifying a protocol.
+    """
+    pass

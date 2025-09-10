@@ -7,8 +7,9 @@ container lifetime on resolve (same as above)
 container arguments (research first)
 
 Interface
-FastAPIController
+FastAPIController (see fastapi-controller)
 FastAPIEnterprize
-correct names for generator (openapisimplification)
+correct names for generator (openapisimplification) see fastapi utils
 Pascalcase
-provide decorator for container (auto type detection)
+
+provide decorator for container (auto type detection) ----> Without paranteses <<<<<<<<<<<<<<<<<<

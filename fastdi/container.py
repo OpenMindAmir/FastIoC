@@ -13,7 +13,7 @@ from fastapi.params import Depends
 
 from fastdi.definitions import LifeTime, FastDIConcrete
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
+from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered, determineProtocol
 
 class Container:
 
@@ -61,7 +61,6 @@ class Container:
             self.dependencies[protocol] = Depends(dependency=provideSingleton, use_cache=True)
         else:
             self.dependencies[protocol] = Depends(dependency=concrete, use_cache = False if lifeTime is LifeTime.FACTORY else True)
-
 
     def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
 
@@ -160,3 +159,99 @@ class Container:
 
         return concrete
 
+    def _provide(self, concrete: FastDIConcrete, lifeTime: LifeTime, protocol: type | None):
+
+        """
+        Registers a provided concrete implementation with its protocol and lifetime.
+        """
+
+        self.Register(determineProtocol(concrete, protocol), concrete, lifeTime)
+
+    def ProvideSingleton(self, protocol: type | None = None) -> Any:
+
+        """"
+        Register provided concreate as a singleton dependency.
+        One single shared instance will be used throughout the entire process/worker.
+
+        Example:
+            >>> @container.ProvideSingleton()
+            >>> class Foo: ...
+
+        Args:
+            protocol (type | None): The interface or protocol under which the dependency
+                will be registered.
+                - If provided, the concrete will be bound to this protocol.
+                - If omitted and the concrete is a class, the protocol is inferred.
+                - If omitted and the concrete is not a class, an error is raised.
+
+        Raises:
+            ProtocolRequiredForNonClassProvidedError:
+                If the provided dependency is not a class and no protocol is specified.
+            SingletonGeneratorNotAllowedError:
+                If 'concrete' is a generator or async generator.
+            ProtocolNotRegisteredError:
+                If a nested dependency is not registered.
+        """
+
+        def decorator(concrete: FastDIConcrete) -> FastDIConcrete:
+            self._provide(concrete, LifeTime.SINGLETON, protocol)
+            return concrete
+        return decorator
+    
+    def ProvideScoped(self, protocol: type | None = None) -> Any:
+
+        """"
+        Register provided concreate as a request-scoped dependency.
+        A new instance is created for each HTTP request and reused throughout that request.
+
+        Usage:
+            >>> @container.ProvideScoped()
+            >>> class Foo: ...
+
+        Args:
+            protocol (type | None): The interface or protocol under which the dependency
+                will be registered.
+                - If provided, the concrete will be bound to this protocol.
+                - If omitted and the concrete is a class, the protocol is inferred.
+                - If omitted and the concrete is not a class, an error is raised.
+
+        Raises:
+            ProtocolRequiredForNonClassProvidedError:
+                If the provided dependency is not a class and no protocol is specified.
+            ProtocolNotRegisteredError:
+                If a nested dependency is not registered.
+        """
+
+        def decorator(concrete: FastDIConcrete) -> FastDIConcrete:
+            self._provide(concrete, LifeTime.SCOPED, protocol)
+            return concrete
+        return decorator
+    
+    def ProvideFactory(self, protocol: type | None = None) -> Any:
+
+        """"
+        Register provided concreate as a factory (transient) dependency.
+        A new instance is created each time the dependency is resolved.
+
+        Usage:
+            >>> @container.ProvideFactory()
+            >>> class Foo: ...
+
+        Args:
+            protocol (type | None): The interface or protocol under which the dependency
+                will be registered.
+                - If provided, the concrete will be bound to this protocol.
+                - If omitted and the concrete is a class, the protocol is inferred.
+                - If omitted and the concrete is not a class, an error is raised.
+
+        Raises:
+            ProtocolRequiredForNonClassProvidedError:
+                If the provided dependency is not a class and no protocol is specified.
+            ProtocolNotRegisteredError:
+                If a nested dependency is not registered.
+        """
+
+        def decorator(concrete: FastDIConcrete) -> FastDIConcrete:
+            self._provide(concrete, LifeTime.FACTORY, protocol)
+            return concrete
+        return decorator

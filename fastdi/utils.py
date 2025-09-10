@@ -2,12 +2,13 @@
 A set of helper utilities used internally by the FastDI library.
 """
 
-from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, TYPE_CHECKING
+from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, TYPE_CHECKING, cast
+import inspect
 
 from fastapi.params import Depends
 
-from fastdi.errors import ProtocolNotRegisteredError
-from fastdi.definitions import FastDIDependency
+from fastdi.errors import ProtocolNotRegisteredError, ProtocolRequiredForNonClassProvidedError
+from fastdi.definitions import FastDIDependency, FastDIConcrete
 if TYPE_CHECKING:
     from fastdi.container import Container
 
@@ -63,7 +64,6 @@ def processDependenciesList(dependencies: list[FastDIDependency], container: 'Co
     return _list
 
 
-
 def isAnnotatedWithDepends(annotation: Any) -> bool:
 
     """
@@ -79,6 +79,7 @@ def isAnnotatedWithDepends(annotation: Any) -> bool:
             if isinstance(extra, Depends):
                 return True
     return False
+
 
 def getAnnotatedDependencyIfRegistered(annotation: Any, container: 'Container') -> Depends | None:
 
@@ -101,3 +102,26 @@ def getAnnotatedDependencyIfRegistered(annotation: Any, container: 'Container') 
                 except ProtocolNotRegisteredError:
                     continue
     return dependency
+
+
+def determineProtocol(concrete: FastDIConcrete, protocol: type | None) -> type:
+
+    """
+    Determines the protocol for a given dependency:
+    - If an explicit protocol is provided, returns it.
+    - If a non-class concrete is given without a protocol, raises an error.
+    - Otherwise infers the protocol from the first base class, or returns the concrete itself.
+    """
+
+    if protocol:
+        return protocol
+    
+    if not inspect.isclass(concrete) and not protocol:
+        raise ProtocolRequiredForNonClassProvidedError(f'Concrete "{concrete.__name__}" is provided without a Protocol while it is not a Class')
+    
+    concrete = cast(type, concrete)
+    
+    if bases := [base for base in concrete.__bases__ if base is not object]:
+        return bases[0]
+    
+    return concrete
