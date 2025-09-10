@@ -7,7 +7,7 @@ import inspect
 
 from fastapi.params import Depends
 
-from fastdi.errors import ProtocolNotRegisteredError, ProtocolRequiredForNonClassProvidedError
+from fastdi.errors import ProtocolNotRegisteredError
 from fastdi.definitions import FastDIDependency, FastDIConcrete
 if TYPE_CHECKING:
     from fastdi.container import Container
@@ -109,17 +109,14 @@ def determineProtocol(concrete: FastDIConcrete, protocol: type | None) -> type:
     """
     Determines the protocol for a given dependency:
     - If an explicit protocol is provided, returns it.
-    - If a non-class concrete is given without a protocol, raises an error.
     - Otherwise infers the protocol from the first base class, or returns the concrete itself.
     """
 
     if protocol:
         return protocol
     
-    if not inspect.isclass(concrete) and not protocol:
-        raise ProtocolRequiredForNonClassProvidedError(f'Concrete "{concrete.__name__}" is provided without a Protocol while it is not a Class')
-    
-    concrete = cast(type, concrete)
+    if not inspect.isclass(concrete):
+        return cast(type, concrete)
     
     if bases := [base for base in concrete.__bases__ if base is not object]:
         return bases[0]

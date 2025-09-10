@@ -185,8 +185,6 @@ class Container:
                 - If omitted and the concrete is not a class, an error is raised.
 
         Raises:
-            ProtocolRequiredForNonClassProvidedError:
-                If the provided dependency is not a class and no protocol is specified.
             SingletonGeneratorNotAllowedError:
                 If 'concrete' is a generator or async generator.
             ProtocolNotRegisteredError:
@@ -204,7 +202,7 @@ class Container:
         Register provided concreate as a request-scoped dependency.
         A new instance is created for each HTTP request and reused throughout that request.
 
-        Usage:
+        Eample:
             >>> @container.ProvideScoped()
             >>> class Foo: ...
 
@@ -216,8 +214,6 @@ class Container:
                 - If omitted and the concrete is not a class, an error is raised.
 
         Raises:
-            ProtocolRequiredForNonClassProvidedError:
-                If the provided dependency is not a class and no protocol is specified.
             ProtocolNotRegisteredError:
                 If a nested dependency is not registered.
         """
@@ -233,7 +229,7 @@ class Container:
         Register provided concreate as a factory (transient) dependency.
         A new instance is created each time the dependency is resolved.
 
-        Usage:
+        Example:
             >>> @container.ProvideFactory()
             >>> class Foo: ...
 
@@ -245,8 +241,6 @@ class Container:
                 - If omitted and the concrete is not a class, an error is raised.
 
         Raises:
-            ProtocolRequiredForNonClassProvidedError:
-                If the provided dependency is not a class and no protocol is specified.
             ProtocolNotRegisteredError:
                 If a nested dependency is not registered.
         """
