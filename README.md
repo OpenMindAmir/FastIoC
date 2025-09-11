@@ -6,6 +6,8 @@ r&d multiprocessing.Manager
 
 override
 
+maybe snake case finally :)
+
 Interface
 FastAPIController (see fastapi-controller)
 FastAPIEnterprize

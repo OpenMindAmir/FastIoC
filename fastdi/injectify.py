@@ -7,20 +7,22 @@ FastAPI or APIRouter to inject registered dependencies based on type annotations
 """
 
 import inspect
-from typing import Any, Callable
+from typing import Any, Callable, TYPE_CHECKING
 
 from fastapi import APIRouter, FastAPI
 from fastapi.params import Depends
 from typeguard import typechecked
 
 from fastdi.errors import ProtocolNotRegisteredError
-from fastdi.container import Container
 from fastdi.utils import injectToList, pretendSignatureOf, isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
 from fastdi.definitions import DEPENDENCIES
 
+if TYPE_CHECKING:
+    from fastdi.container import Container
+
 
 @typechecked
-def Injectify(target: FastAPI | APIRouter, container: Container):
+def Injectify(target: FastAPI | APIRouter, container: 'Container'):
 
     """
     Wrap a FastAPI app or APIRouter to automatically inject dependencies.
@@ -45,9 +47,15 @@ def Injectify(target: FastAPI | APIRouter, container: Container):
     originalAddAPIRouter: Callable[..., None]
 
     if isinstance(target, FastAPI):
-        originalAddAPIRouter = target.router.add_api_route
+        if getattr(target.router, '_add_api_route', None):
+            originalAddAPIRouter = target.router._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+        else:
+            originalAddAPIRouter = target.router.add_api_route
     else:
-        originalAddAPIRouter = target.add_api_route
+        if getattr(target, '_add_api_route', None):
+            originalAddAPIRouter = target._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+        else:
+            originalAddAPIRouter = target.add_api_route
 
     @pretendSignatureOf(APIRouter.add_api_route)
     def addApiRoute(path: str, endpoint: Callable[..., Any], **kwargs: Any):

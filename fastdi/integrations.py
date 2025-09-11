@@ -16,8 +16,7 @@ from typeguard import typechecked
 from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
 
 from fastdi.container import Container
-from fastdi.injectify import Injectify, DEPENDENCIES
-from fastdi.definitions import FastDIConcrete
+from fastdi.definitions import FastDIConcrete, DEPENDENCIES
 from fastdi.utils import pretendSignatureOf, processDependenciesList
 
 def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[Any, Any]) -> dict[Any, Any]:
@@ -72,8 +71,7 @@ class Injectified:
         """
 
         self._container = value
-        Injectify(cast(FastAPI | APIRouter, self), self._container)
-
+        self._container.Injectify(cast(FastAPI | APIRouter, self))
 
     def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
         
@@ -151,7 +149,7 @@ class FastAPI(_FastAPI, Injectified):
 
         super().__init__(*args, **kwargs)
 
-        Injectify(self, self._container) # pyright: ignore[reportPrivateUsage]
+        self._container.Injectify(self)
 
 class APIRouter(_APIRouter, Injectified):
 
@@ -179,4 +177,4 @@ class APIRouter(_APIRouter, Injectified):
 
         super().__init__(*args, **kwargs)
 
-        Injectify(self, self._container) # pyright: ignore[reportPrivateUsage]
+        self._container.Injectify(self)

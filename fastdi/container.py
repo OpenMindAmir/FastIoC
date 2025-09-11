@@ -10,10 +10,12 @@ from typing import Any
 
 from typeguard import typechecked
 from fastapi.params import Depends
+from fastapi import FastAPI, APIRouter
 
 from fastdi.definitions import LifeTime, FastDIConcrete, Dependency
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
 from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
+from fastdi.injectify import Injectify
 
 class Container:
 
@@ -35,6 +37,30 @@ class Container:
         """Initialize an empty dependency container."""
 
         self.dependencies: dict[type, Depends] = {}
+
+    
+    def Injectify(self, target: FastAPI | APIRouter):
+
+        """
+        Wrap a FastAPI app or APIRouter to automatically inject dependencies.
+
+        THIS MUST BE CALLED BEFORE ADDING ANY ENDPOINTS THAT REQUIRE DEPENDENCY INJECTION.
+
+        This function overrides `add_api_route` to:
+            - Inject dependencies into endpoint parameters using the provided container.
+            - Resolve route-level dependencies automatically.
+            - Support both FastAPI application and APIRouter instances.
+
+        Args:
+            target (FastAPI | APIRouter): The FastAPI app or APIRouter to wrap.
+
+        Example:
+            >>> app = FastAPI()
+            >>> container = Container()
+            >>> container.Injectify(app)
+        """
+
+        Injectify(target, self)
 
     @typechecked
     def Register(self, protocol: type, concrete: FastDIConcrete, lifeTime: LifeTime):

@@ -8,5 +8,4 @@ It simplifies dependency management and promotes clean, modular code.
 """
 
 from fastdi.container import Container  # pyright: ignore[reportUnusedImport]
-from fastdi.injectify import Injectify  # pyright: ignore[reportUnusedImport]
 from fastdi.integrations import FastAPI, APIRouter  # pyright: ignore[reportUnusedImport]

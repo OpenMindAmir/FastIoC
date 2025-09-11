@@ -4,7 +4,6 @@ from fastapi import FastAPI, APIRouter
 from fastapi.testclient import TestClient
 
 from fastdi.container import Container
-from fastdi.injectify import Injectify
 
 from .dependencies import State, state as _state, IGlobalService, INumberService, GlobalService, NumberService, FunctionNumber, GetFunctionNumber, GlobalFunctionNumber, SetGlobalFunctionNumber, GeneratorDependency, GeneratorDependencyType, DependentNestedNumber, GetDependentNestedNumber, INestedService, NestedService, IGlobalNestedNumber, GlobalNestedNumber, IGlobalNestedService, GlobalNestedService, ILifetimeServiceSingleton, ILifetimeServiceScoped, ILifetimeServiceFactory, LifetimeServiceSingleton, LifetimeServiceScoped, LifetimeServiceFactory, IGlobalService2, GlobalService2
 
@@ -36,14 +35,14 @@ def container():
 @pytest.fixture
 def router(container: Container):
     router = APIRouter()
-    Injectify(router, container)
+    container.Injectify(router)
     return router
 
 
 @pytest.fixture
 def app(container: Container):
     app = FastAPI()
-    Injectify(app, container)
+    container.Injectify(app)
     return app
 
 
