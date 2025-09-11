@@ -11,7 +11,7 @@ from typing import Any
 from typeguard import typechecked
 from fastapi.params import Depends
 
-from fastdi.definitions import LifeTime, FastDIConcrete
+from fastdi.definitions import LifeTime, FastDIConcrete, Dependency
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
 from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
 
@@ -50,6 +50,12 @@ class Container:
         Raises:
             SingletonGeneratorNotAllowedError: If a generator or async generator is registered as singleton.
         """
+
+        dependency: Dependency[Any] | None = self.BeforeRegisterHook(Dependency[Any](protocol, concrete, lifeTime))   # pyright: ignore[reportArgumentType]
+        if dependency:
+            protocol = dependency.protocol
+            concrete = dependency.concrete
+            lifeTime = dependency.lifeTime
 
         concrete = self._nestedInjector(concrete)
         if lifeTime is LifeTime.SINGLETON:
@@ -126,7 +132,12 @@ class Container:
         """Return the Depends instance for a protocol. Raises ProtocolNotRegisteredError if not registered."""
         
         self.CheckIfRegistered(protocol)
-        return self.dependencies[protocol]
+        dependency: Depends = self.dependencies[protocol]
+
+        if hookedDependency := self.BeforeResolveHook(dependency):
+            return hookedDependency
+        
+        return dependency
     
     @typechecked
     def _nestedInjector(self, concrete: FastDIConcrete) -> FastDIConcrete:
@@ -158,3 +169,81 @@ class Container:
         concrete.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
         return concrete
+    
+
+    # --- Hooks ---
+
+    def BeforeRegisterHook(self, dependency: Dependency[Any]) -> Dependency[Any]:
+        """
+        Hook executed **before a dependency is registered** in the container.
+
+        This method allows you to inspect, modify, or validate the dependency 
+        before it is stored in the container.
+
+        Args:
+            dependency (Dependency[Any]): The dependency instance about to be registered.
+                - `dependency.protocol`: The interface or protocol type.
+                - `dependency.concrete`: The concrete implementation or factory.
+                - `dependency.lifeTime`: The lifetime of the dependency (SINGLETON, SCOPED, FACTORY).
+
+        Returns:
+            Dependency[Any]: The (optionally modified) dependency that will actually be registered.
+
+        Usage:
+            You can override this method to implement custom logic such as:
+            - Logging registration
+            - Wrapping the concrete class
+            - Validating dependency types
+            - Applying decorators or configuration
+
+        Example (monkey patch):
+
+            def my_register_hook(dep):
+                print(f"Registering {dep.protocol.__name__} -> {dep.concrete}")
+                return dep
+
+            container = Container()
+            container.BeforeRegisterHook = my_register_hook  # Monkey patch the hook
+
+            container.AddScoped(IService, Service)
+            # Now each register prints info before storing the dependency
+        """
+        ...
+
+    def BeforeResolveHook(self, dependency: Depends) -> Depends:
+        """
+        Hook executed **before a dependency is resolved** from the container.
+
+        This method allows you to inspect, wrap, or modify the dependency
+        just before it is provided to a consumer (endpoint, service, etc).
+
+        Args:
+            dependency (Depends): The FastAPI Depends instance representing the dependency 
+                about to be resolved.
+                - `dependency.dependency`: The callable that will produce the actual instance.
+                - `dependency.use_cache`: Whether the instance should be cached for reuse.
+
+        Returns:
+            Depends: The (optionally modified) Depends instance to be used in resolution.
+
+        Usage:
+            You can override this method to implement custom logic such as:
+            - Logging resolution
+            - Wrapping the callable with additional behavior
+            - Injecting default parameters
+            - Applying metrics or tracing
+
+        Example (monkey patch):
+
+            def my_resolve_hook(dep):
+                print(f"Resolving dependency {dep.dependency.__name__}")
+                return dep
+
+            container = Container()
+            container.BeforeResolveHook = my_resolve_hook  # Monkey patch the hook
+
+            # Now, when resolving a dependency:
+            resolved_dep = container.Resolve(IService)
+            # Each resolve prints info before returning the instance
+        """
+        ...
