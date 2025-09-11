@@ -4,7 +4,7 @@ options pattern note in description
 
 r&d multiprocessing.Manager
 
-override
+override (proccess dictionary and also get a container + integration for fastapi (may be router))
 maybe snake case finally :)
 
 Interface
