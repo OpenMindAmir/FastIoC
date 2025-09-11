@@ -6,16 +6,15 @@ dependencies with different lifetimes (singleton, scoped, factory) in FastAPI.
 """
 
 import inspect
-from typing import Any
+from typing import Any, Callable, Annotated, get_origin, get_args
 
 from typeguard import typechecked
 from fastapi.params import Depends
 from fastapi import FastAPI, APIRouter
 
-from fastdi.definitions import LifeTime, FastDIConcrete, Dependency
+from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
-from fastdi.injectify import Injectify
+from fastdi.utils import isAnnotatedWithDepends, pretendSignatureOf
 
 class Container:
 
@@ -38,7 +37,10 @@ class Container:
 
         self.dependencies: dict[type, Depends] = {}
 
-    
+
+    # --- Injectify ---
+
+    @typechecked
     def Injectify(self, target: FastAPI | APIRouter):
 
         """
@@ -60,7 +62,65 @@ class Container:
             >>> container.Injectify(app)
         """
 
-        Injectify(target, self)
+        originalAddAPIRouter: Callable[..., None]
+
+        if isinstance(target, FastAPI):
+            if getattr(target.router, '_add_api_route', None):
+                originalAddAPIRouter = target.router._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+            else:
+                originalAddAPIRouter = target.router.add_api_route
+        else:
+            if getattr(target, '_add_api_route', None):
+                originalAddAPIRouter = target._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+            else:
+                originalAddAPIRouter = target.add_api_route
+
+        @pretendSignatureOf(APIRouter.add_api_route)
+        def addApiRoute(path: str, endpoint: Callable[..., Any], **kwargs: Any):
+
+            # --- Check Endpoint Params ---
+
+            signature = inspect.signature(endpoint)  # pyright: ignore[reportUnknownArgumentType]
+            params: list[inspect.Parameter] = []
+
+            for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
+                if isinstance(param.default, Depends) or isAnnotatedWithDepends(param.annotation):
+                    params.append(param)
+                    continue
+                if annotatedDependency := self._getAnnotatedDependencyIfRegistered(param.annotation):
+                    newParam = param.replace(default=annotatedDependency)
+                    params.append(newParam)
+                    continue
+                try:
+                    newParam = param.replace(default=self.Resolve(param.annotation))
+                    params.append(newParam)
+
+                except ProtocolNotRegisteredError:
+                    params.append(param)
+
+            endpoint.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
+
+
+            # --- Route Level Dependencies ---
+
+            dependencies: list[Depends] = []
+            
+            for dependency in kwargs.get(DEPENDENCIES) or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+                self._injectToList(dependencies, dependency)
+
+            kwargs[DEPENDENCIES] = dependencies
+
+            originalAddAPIRouter(path, endpoint, **kwargs)
+        
+        if isinstance(target, FastAPI):
+            target.router.add_api_route = addApiRoute  # pyright: ignore[reportAttributeAccessIssue]
+            target.router._add_api_route = originalAddAPIRouter  # pyright: ignore[reportAttributeAccessIssue]
+        else:
+            target.add_api_route = addApiRoute  # pyright: ignore[reportAttributeAccessIssue]
+            target._add_api_route = originalAddAPIRouter  # pyright: ignore[reportAttributeAccessIssue]
+            
+
+    # --- Register & Resolve ---
 
     @typechecked
     def Register(self, protocol: type, concrete: FastDIConcrete, lifeTime: LifeTime):
@@ -94,6 +154,32 @@ class Container:
         else:
             self.dependencies[protocol] = Depends(dependency=concrete, use_cache = False if lifeTime is LifeTime.FACTORY else True)
 
+
+    def Resolve(self, protocol: type) -> Depends:
+
+        """Return the Depends instance for a protocol. Raises ProtocolNotRegisteredError if not registered."""
+        
+        self.CheckIfRegistered(protocol)
+        dependency: Depends = self.dependencies[protocol]
+
+        if hookedDependency := self.BeforeResolveHook(dependency):
+            return hookedDependency
+        
+        return dependency
+    
+    
+    @typechecked
+    def CheckIfRegistered(self, protocol: type):
+
+        """Raises ProtocolNotRegisteredError if the protocol is not registered."""
+
+        if not self.dependencies.get(protocol):
+            raise ProtocolNotRegisteredError(
+                f"Protocol {protocol.__name__} is not registered in the container")
+        
+
+    # --- Registeration sugar methods ---   
+    
     def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
 
         """
@@ -111,6 +197,7 @@ class Container:
 
         self.Register(protocol, concrete, LifeTime.SINGLETON)
 
+
     def AddScoped(self, protocol: type, concrete: FastDIConcrete):
 
         """
@@ -126,6 +213,7 @@ class Container:
         """
 
         self.Register(protocol, concrete, LifeTime.SCOPED)
+
 
     def AddFactory(self, protocol: type, concrete: FastDIConcrete):
 
@@ -144,26 +232,7 @@ class Container:
         self.Register(protocol, concrete, LifeTime.FACTORY)
 
 
-    @typechecked
-    def CheckIfRegistered(self, protocol: type):
-
-        """Raises ProtocolNotRegisteredError if the protocol is not registered."""
-
-        if not self.dependencies.get(protocol):
-            raise ProtocolNotRegisteredError(
-                f"Protocol {protocol.__name__} is not registered in the container")
-
-    def Resolve(self, protocol: type) -> Depends:
-
-        """Return the Depends instance for a protocol. Raises ProtocolNotRegisteredError if not registered."""
-        
-        self.CheckIfRegistered(protocol)
-        dependency: Depends = self.dependencies[protocol]
-
-        if hookedDependency := self.BeforeResolveHook(dependency):
-            return hookedDependency
-        
-        return dependency
+    # --- Internal helper functions
     
     @typechecked
     def _nestedInjector(self, concrete: FastDIConcrete) -> FastDIConcrete:
@@ -183,7 +252,7 @@ class Container:
                 if isinstance(param.default, Depends) or isAnnotatedWithDepends(annotation):
                     params.append(param)
                     continue
-                if annotatedDependency := getAnnotatedDependencyIfRegistered(param.annotation, self):
+                if annotatedDependency := self._getAnnotatedDependencyIfRegistered(param.annotation):
                     newParam = param.replace(default=annotatedDependency)
                     params.append(newParam)
                     continue
@@ -195,6 +264,67 @@ class Container:
         concrete.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
         return concrete
+    
+
+    def _injectToList(self, _list: list[Any], item: Any):
+
+        """
+        Append a dependency-like item into a list.
+
+        - If `item` is a `Depends` or annotated with `Depends`, append as-is.
+        - Otherwise try to resolve it from the container and append the resolved `Depends`.
+        - If the type is not registered in the container, append the item itself.
+        """
+
+        if isinstance(item, Depends) or isAnnotatedWithDepends(item):
+            _list.append(item)
+            return
+
+        try:
+            dependency: Depends = self.Resolve(item)
+            _list.append(dependency)
+
+        except ProtocolNotRegisteredError:
+            _list.append(item)
+    
+
+    def _processDependenciesList(self, dependencies: list[FastDIDependency]) -> list[Depends]:
+
+        """
+        Process a list of global dependencies.
+
+        - Iterates over the given dependencies.
+        - Converts each item into a FastAPI-compatible `Depends` using the container.
+        - Returns the processed list.
+        """
+
+        _list: list[Depends] = []
+        for dependency in dependencies:
+            self._injectToList(_list, dependency)
+        return _list
+    
+
+    def _getAnnotatedDependencyIfRegistered(self, annotation: Any) -> Depends | None:
+
+        """
+        Attempts to resolve a dependency from the container if the given annotation
+        is an Annotated type with a registered dependency.
+
+        Returns the first resolved dependency if found (stops at the first match),
+        otherwise None.
+        """
+
+        dependency = None
+        if get_origin(annotation) is Annotated:
+            mainType, *extras = get_args(annotation)  # pyright: ignore[reportUnusedVariable]
+            for extra in extras:
+                if isinstance(extra, type):
+                    try:
+                        dependency = self.Resolve(extra)
+                        break
+                    except ProtocolNotRegisteredError:
+                        continue
+        return dependency
     
 
     # --- Hooks ---

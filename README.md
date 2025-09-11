@@ -5,7 +5,6 @@ options pattern note in description
 r&d multiprocessing.Manager
 
 override
-
 maybe snake case finally :)
 
 Interface

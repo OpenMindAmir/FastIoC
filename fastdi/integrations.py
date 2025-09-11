@@ -17,7 +17,7 @@ from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
 
 from fastdi.container import Container
 from fastdi.definitions import FastDIConcrete, DEPENDENCIES
-from fastdi.utils import pretendSignatureOf, processDependenciesList
+from fastdi.utils import pretendSignatureOf
 
 def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[Any, Any]) -> dict[Any, Any]:
 
@@ -28,7 +28,7 @@ def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[
     if container:
         self._container = container  # pyright: ignore[reportPrivateUsage]
         if DEPENDENCIES in kwargs and kwargs[DEPENDENCIES]:
-            kwargs[DEPENDENCIES] = processDependenciesList(kwargs[DEPENDENCIES], self._container) # pyright: ignore[reportPrivateUsage]
+            kwargs[DEPENDENCIES] = self._container._processDependenciesList(kwargs[DEPENDENCIES]) # pyright: ignore[reportPrivateUsage]
     else:
         self._container = Container() # pyright: ignore[reportPrivateUsage]
 
