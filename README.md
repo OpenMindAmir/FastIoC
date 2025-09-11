@@ -1,14 +1,10 @@
 note to user lists are not thread safe be on alert when you are using them in singleton and multiple threeads
 note last class will be used for interface
+options pattern note in description
 
 r&d multiprocessing.Manager
 
-container simple resolve (dont think so, may be its just a consideration for APIController ... NOTE: Another consideration is dependencies,override)
-container lifetime on resolve (same as above)
-container arguments (research first)
-
-validation hook
-options pattern
+override
 
 Interface
 FastAPIController (see fastapi-controller)
