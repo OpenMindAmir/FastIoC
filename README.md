@@ -3,18 +3,15 @@ note last class will be used for interface
 
 r&d multiprocessing.Manager
 
-missing concrete eror
-change logic & docstring for others (DRY logic)
-integration for app
-
 container simple resolve (dont think so, may be its just a consideration for APIController ... NOTE: Another consideration is dependencies,override)
 container lifetime on resolve (same as above)
 container arguments (research first)
+
+validation hook
+options pattern
 
 Interface
 FastAPIController (see fastapi-controller)
 FastAPIEnterprize
 correct names for generator (openapisimplification) see fastapi utils
 Pascalcase
-
-provide decorator for container (auto type detection) ----> Without paranteses <<<<<<<<<<<<<<<<<<

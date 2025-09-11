@@ -2,13 +2,12 @@
 A set of helper utilities used internally by the FastDI library.
 """
 
-from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, TYPE_CHECKING, cast
-import inspect
+from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, TYPE_CHECKING
 
 from fastapi.params import Depends
 
 from fastdi.errors import ProtocolNotRegisteredError
-from fastdi.definitions import FastDIDependency, FastDIConcrete
+from fastdi.definitions import FastDIDependency
 if TYPE_CHECKING:
     from fastdi.container import Container
 
@@ -102,23 +101,3 @@ def getAnnotatedDependencyIfRegistered(annotation: Any, container: 'Container') 
                 except ProtocolNotRegisteredError:
                     continue
     return dependency
-
-
-def determineProtocol(concrete: FastDIConcrete, protocol: type | None) -> type:
-
-    """
-    Determines the protocol for a given dependency:
-    - If an explicit protocol is provided, returns it.
-    - Otherwise infers the protocol from the first base class, or returns the concrete itself.
-    """
-
-    if protocol:
-        return protocol
-    
-    if not inspect.isclass(concrete):
-        return cast(type, concrete)
-    
-    if bases := [base for base in concrete.__bases__ if base is not object]:
-        return bases[-1]
-    
-    return concrete

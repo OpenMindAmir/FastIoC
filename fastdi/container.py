@@ -12,8 +12,8 @@ from typeguard import typechecked
 from fastapi.params import Depends
 
 from fastdi.definitions import LifeTime, FastDIConcrete
-from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError, TooManyConcretesProvidedError, ProviderMissingDecorationError
-from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered, determineProtocol
+from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
+from fastdi.utils import isAnnotatedWithDepends, getAnnotatedDependencyIfRegistered
 
 class Container:
 
@@ -158,115 +158,3 @@ class Container:
         concrete.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
         return concrete
-
-    def _provide(self, concrete: FastDIConcrete, lifeTime: LifeTime, protocol: type | None):
-
-        """
-        Registers a provided concrete implementation with its protocol and lifetime.
-        """
-
-        self.Register(determineProtocol(concrete, protocol), concrete, lifeTime)
-
-    def ProvideSingleton(self, protocol: type | None = None) -> Any:
-
-        """"
-        Register provided concrete as a singleton dependency.
-        One single shared instance will be used throughout the entire process/worker.
-
-        Example:
-            >>> @container.ProvideSingleton
-            >>> class Foo: ...
-
-        Args:
-            protocol (type | None): The interface or protocol under which the dependency
-                will be registered.
-                - If provided, the concrete will be bound to this protocol.
-                - If omitted, the protocol is inferred.
-
-        Raises:
-            SingletonGeneratorNotAllowedError:
-                If 'concrete' is a generator or async generator.
-            ProtocolNotRegisteredError:
-                If a nested dependency is not registered.
-        """
-
-        def decorator(concrete: FastDIConcrete) -> FastDIConcrete:
-            self._provide(concrete, LifeTime.SINGLETON, protocol)
-            return concrete
-        return decorator
-    
-    def ProvideScoped(self, *args: FastDIConcrete, protocol: type | None = None) -> Any:
-
-        """"
-        Register provided concrete as a request-scoped dependency.
-        A new instance is created for each HTTP request and reused throughout that request.
-
-        Eample:
-            >>> @container.ProvideScoped
-            >>> class Foo: ...
-
-        Args:
-            protocol (type | None): The interface or protocol under which the dependency
-                will be registered.
-                - If provided, the concrete will be bound to this protocol.
-                - If omitted, the protocol is inferred.
-
-        Raises:
-            ProtocolNotRegisteredError:
-                If a nested dependency is not registered.
-        """
-
-        def decorator(concrete: FastDIConcrete) -> FastDIConcrete:
-            self._provide(concrete, LifeTime.SCOPED, protocol)
-            return concrete
-
-        # if not args:#TODO Missing concrete errro
-            # return decorator()
-        
-        if len(args) > 1:
-            raise TooManyConcretesProvidedError("""
-                Only one positional argument can be passed to a provider.
-                Use the 'protocol' keyword argument to specify the interface/protocol for a concrete.
-
-                Correct usage:
-                    > @container.ProvideScoped(protocol=IService)
-                    > @container.ProvideScoped
-
-                Incorrect usage:
-                    > @container.ProvideScoped(IService)
-                """)
-        
-        concrete = args[0]
-
-        if protocol:
-            self._provide(concrete, LifeTime.SCOPED, protocol) # pyright: ignore[reportGeneralTypeIssues]
-            return concrete
-
-        
-        return decorator
-    
-    def ProvideFactory(self, protocol: type | None = None) -> Any:
-
-        """"
-        Register provided concrete as a factory (transient) dependency.
-        A new instance is created each time the dependency is resolved.
-
-        Example:
-            >>> @container.ProvideFactory
-            >>> class Foo: ...
-
-        Args:
-            protocol (type | None): The interface or protocol under which the dependency
-                will be registered.
-                - If provided, the concrete will be bound to this protocol.
-                - If omitted, the protocol is inferred.
-
-        Raises:
-            ProtocolNotRegisteredError:
-                If a nested dependency is not registered.
-        """
-
-        def decorator(concrete: FastDIConcrete) -> FastDIConcrete:
-            self._provide(concrete, LifeTime.FACTORY, protocol)
-            return concrete
-        return decorator

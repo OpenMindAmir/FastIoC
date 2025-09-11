@@ -28,12 +28,3 @@ class SingletonGeneratorNotAllowedError(FastDIError):
     raise an error. Therefore, singleton scope does not make sense here.
     """
     pass
-
-
-class TooManyConcretesProvidedError(FastDIError):
-    """
-    Raised when more than one positional argument is passed to a provider.
-
-    Use the 'protocol' keyword argument to specify the interface for a concrete.
-    """
-    pass
