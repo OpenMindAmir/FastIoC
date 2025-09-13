@@ -9,7 +9,7 @@ from fastapi.params import Depends
 T = TypeVar('T')
 
 
-def pretendSignatureOf(func: T) -> Callable[[Any], T]:
+def pretend_signature_of(func: T) -> Callable[[Any], T]:
 
     """
     Decorator helper to "pretend" that another function `f`
@@ -20,7 +20,7 @@ def pretendSignatureOf(func: T) -> Callable[[Any], T]:
     return lambda f: f
 
 
-def isAnnotatedWithDepends(annotation: Any) -> bool:
+def is_annotated_with_depends(annotation: Any) -> bool:
 
     """
     Check if a type annotation is wrapped with `Annotated[..., Depends(...)]`.

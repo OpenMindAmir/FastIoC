@@ -14,7 +14,8 @@ from fastapi import FastAPI, APIRouter
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import isAnnotatedWithDepends, pretendSignatureOf
+from fastdi.utils import is_annotated_with_depends, pretend_signature_of
+
 
 class Container:
 
@@ -41,7 +42,7 @@ class Container:
     # --- Injectify ---
 
     @typechecked
-    def Injectify(self, target: FastAPI | APIRouter):
+    def injectify(self, target: FastAPI | APIRouter):
 
         """
         Wrap a FastAPI app or APIRouter to automatically inject dependencies.
@@ -59,24 +60,24 @@ class Container:
         Example:
             >>> app = FastAPI()
             >>> container = Container()
-            >>> container.Injectify(app)
+            >>> container.injectify(app)
         """
 
-        originalAddAPIRouter: Callable[..., None]
+        original_add_api_route: Callable[..., None]
 
         if isinstance(target, FastAPI):
             if getattr(target.router, '_add_api_route', None):
-                originalAddAPIRouter = target.router._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+                original_add_api_route = target.router._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
             else:
-                originalAddAPIRouter = target.router.add_api_route
+                original_add_api_route = target.router.add_api_route
         else:
             if getattr(target, '_add_api_route', None):
-                originalAddAPIRouter = target._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+                original_add_api_route = target._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
             else:
-                originalAddAPIRouter = target.add_api_route
+                original_add_api_route = target.add_api_route
 
-        @pretendSignatureOf(APIRouter.add_api_route)
-        def addApiRoute(path: str, endpoint: Callable[..., Any], **kwargs: Any):
+        @pretend_signature_of(APIRouter.add_api_route)
+        def injective_add_api_route(path: str, endpoint: Callable[..., Any], **kwargs: Any):
 
             # --- Check Endpoint Params ---
 
@@ -84,15 +85,15 @@ class Container:
             params: list[inspect.Parameter] = []
 
             for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
-                if isinstance(param.default, Depends) or isAnnotatedWithDepends(param.annotation):
+                if isinstance(param.default, Depends) or is_annotated_with_depends(param.annotation):
                     params.append(param)
                     continue
-                if annotatedDependency := self._getAnnotatedDependencyIfRegistered(param.annotation):
+                if annotatedDependency := self._get_annotated_dependency_if_registered(param.annotation):
                     newParam = param.replace(default=annotatedDependency)
                     params.append(newParam)
                     continue
                 try:
-                    newParam = param.replace(default=self.Resolve(param.annotation))
+                    newParam = param.replace(default=self.resolve(param.annotation))
                     params.append(newParam)
 
                 except ProtocolNotRegisteredError:
@@ -106,70 +107,70 @@ class Container:
             dependencies: list[Depends] = []
             
             for dependency in kwargs.get(DEPENDENCIES) or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-                self._injectToList(dependencies, dependency)
+                self._inject_to_list(dependencies, dependency)
 
             kwargs[DEPENDENCIES] = dependencies
 
-            originalAddAPIRouter(path, endpoint, **kwargs)
+            original_add_api_route(path, endpoint, **kwargs)
         
         if isinstance(target, FastAPI):
-            target.router.add_api_route = addApiRoute  # pyright: ignore[reportAttributeAccessIssue]
-            target.router._add_api_route = originalAddAPIRouter  # pyright: ignore[reportAttributeAccessIssue]
+            target.router.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+            target.router._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
         else:
-            target.add_api_route = addApiRoute  # pyright: ignore[reportAttributeAccessIssue]
-            target._add_api_route = originalAddAPIRouter  # pyright: ignore[reportAttributeAccessIssue]
+            target.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+            target._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
             
 
     # --- Register & Resolve ---
 
     @typechecked
-    def Register(self, protocol: type, concrete: FastDIConcrete, lifeTime: LifeTime):
+    def register(self, protocol: type, implementation: FastDIConcrete, lifeTime: LifeTime):
 
         """
         Register a dependency with a given lifetime.
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
             lifeTime (LifeTime): SINGLETON, SCOPED, or FACTORY.
 
         Raises:
             SingletonGeneratorNotAllowedError: If a generator or async generator is registered as singleton.
         """
 
-        dependency: Dependency[Any] | None = self.BeforeRegisterHook(Dependency[Any](protocol, concrete, lifeTime))   # pyright: ignore[reportArgumentType]
+        dependency: Dependency[Any] | None = self.before_register_hook(Dependency[Any](protocol, implementation, lifeTime))   # pyright: ignore[reportArgumentType]
         if dependency:
             protocol = dependency.protocol
-            concrete = dependency.concrete
+            implementation = dependency.implementation
             lifeTime = dependency.lifeTime
 
-        concrete = self._nestedInjector(concrete)
+        implementation = self._nested_injector(implementation)
         if lifeTime is LifeTime.SINGLETON:
-            conc = concrete()
-            if inspect.isgenerator(conc) or inspect.isasyncgen(conc):
+            impl = implementation()
+            if inspect.isgenerator(impl) or inspect.isasyncgen(impl):
                 raise SingletonGeneratorNotAllowedError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
-            def provideSingleton() -> Any:
-                return conc
-            self.dependencies[protocol] = Depends(dependency=provideSingleton, use_cache=True)
+            def singleton_provider() -> Any:
+                return impl
+            self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
         else:
-            self.dependencies[protocol] = Depends(dependency=concrete, use_cache = False if lifeTime is LifeTime.FACTORY else True)
+            self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifeTime is LifeTime.FACTORY else True)
 
 
-    def Resolve(self, protocol: type) -> Depends:
+    def resolve(self, protocol: type) -> Depends:
 
         """Return the Depends instance for a protocol. Raises ProtocolNotRegisteredError if not registered."""
         
-        self.CheckIfRegistered(protocol)
+        self.check_if_registered(protocol)
         dependency: Depends = self.dependencies[protocol]
 
-        if hookedDependency := self.BeforeResolveHook(dependency):
+        if hookedDependency := self.before_resolve_hook(dependency):
             return hookedDependency
         
         return dependency
     
     
     @typechecked
-    def CheckIfRegistered(self, protocol: type):
+    def check_if_registered(self, protocol: type):
 
         """Raises ProtocolNotRegisteredError if the protocol is not registered."""
 
@@ -180,7 +181,7 @@ class Container:
 
     # --- Registeration sugar methods ---   
     
-    def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
+    def add_singleton(self, protocol: type, implementation: FastDIConcrete):
 
         """
         Register a singleton dependency.
@@ -188,17 +189,17 @@ class Container:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
-            SingletonGeneratorNotAllowedError: If 'concrete' is a generator or async generator.
+            SingletonGeneratorNotAllowedError: If 'implementation' is a generator or async generator.
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self.Register(protocol, concrete, LifeTime.SINGLETON)
+        self.register(protocol, implementation, LifeTime.SINGLETON)
 
 
-    def AddScoped(self, protocol: type, concrete: FastDIConcrete):
+    def add_scoped(self, protocol: type, implementation: FastDIConcrete):
 
         """
         Register a request-scoped dependency.
@@ -206,16 +207,16 @@ class Container:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self.Register(protocol, concrete, LifeTime.SCOPED)
+        self.register(protocol, implementation, LifeTime.SCOPED)
 
 
-    def AddFactory(self, protocol: type, concrete: FastDIConcrete):
+    def add_factory(self, protocol: type, implementation: FastDIConcrete):
 
         """
         Register a factory (transient) dependency.
@@ -223,50 +224,50 @@ class Container:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self.Register(protocol, concrete, LifeTime.FACTORY)
+        self.register(protocol, implementation, LifeTime.FACTORY)
 
 
     # --- Internal helper functions
     
     @typechecked
-    def _nestedInjector(self, concrete: FastDIConcrete) -> FastDIConcrete:
+    def _nested_injector(self, implementation: FastDIConcrete) -> FastDIConcrete:
 
         """
         Inject dependencies into class or callable signatures automatically.
         Used to inject dependencies of a dependency
         """
 
-        signature: inspect.Signature = inspect.signature(concrete.__init__) if inspect.isclass(concrete) else inspect.signature(concrete)
+        signature: inspect.Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
         params: list[inspect.Parameter] = []
         for name, param in signature.parameters.items():
             if name == 'self':
                 continue
             annotation = param.annotation
             if annotation != inspect.Signature.empty:
-                if isinstance(param.default, Depends) or isAnnotatedWithDepends(annotation):
+                if isinstance(param.default, Depends) or is_annotated_with_depends(annotation):
                     params.append(param)
                     continue
-                if annotatedDependency := self._getAnnotatedDependencyIfRegistered(param.annotation):
+                if annotatedDependency := self._get_annotated_dependency_if_registered(param.annotation):
                     newParam = param.replace(default=annotatedDependency)
                     params.append(newParam)
                     continue
                 try:
-                    newParam = param.replace(default=self.Resolve(annotation))
+                    newParam = param.replace(default=self.resolve(annotation))
                     params.append(newParam)
                 except ProtocolNotRegisteredError:
                     params.append(param)
-        concrete.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
+        implementation.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
-        return concrete
+        return implementation
     
 
-    def _injectToList(self, _list: list[Any], item: Any):
+    def _inject_to_list(self, _list: list[Any], item: Any):
 
         """
         Append a dependency-like item into a list.
@@ -276,19 +277,19 @@ class Container:
         - If the type is not registered in the container, append the item itself.
         """
 
-        if isinstance(item, Depends) or isAnnotatedWithDepends(item):
+        if isinstance(item, Depends) or is_annotated_with_depends(item):
             _list.append(item)
             return
 
         try:
-            dependency: Depends = self.Resolve(item)
+            dependency: Depends = self.resolve(item)
             _list.append(dependency)
 
         except ProtocolNotRegisteredError:
             _list.append(item)
     
 
-    def _processDependenciesList(self, dependencies: list[FastDIDependency]) -> list[Depends]:
+    def _process_dependencies_list(self, dependencies: list[FastDIDependency]) -> list[Depends]:
 
         """
         Process a list of global dependencies.
@@ -300,11 +301,11 @@ class Container:
 
         _list: list[Depends] = []
         for dependency in dependencies:
-            self._injectToList(_list, dependency)
+            self._inject_to_list(_list, dependency)
         return _list
     
 
-    def _getAnnotatedDependencyIfRegistered(self, annotation: Any) -> Depends | None:
+    def _get_annotated_dependency_if_registered(self, annotation: Any) -> Depends | None:
 
         """
         Attempts to resolve a dependency from the container if the given annotation
@@ -320,7 +321,7 @@ class Container:
             for extra in extras:
                 if isinstance(extra, type):
                     try:
-                        dependency = self.Resolve(extra)
+                        dependency = self.resolve(extra)
                         break
                     except ProtocolNotRegisteredError:
                         continue
@@ -329,7 +330,7 @@ class Container:
 
     # --- Hooks ---
 
-    def BeforeRegisterHook(self, dependency: Dependency[Any]) -> Dependency[Any]:
+    def before_register_hook(self, dependency: Dependency[Any]) -> Dependency[Any]:
         """
         Hook executed **before a dependency is registered** in the container.
 
@@ -339,7 +340,7 @@ class Container:
         Args:
             dependency (Dependency[Any]): The dependency instance about to be registered.
                 - `dependency.protocol`: The interface or protocol type.
-                - `dependency.concrete`: The concrete implementation or factory.
+                - `dependency.implementation`: The implementation implementation or factory.
                 - `dependency.lifeTime`: The lifetime of the dependency (SINGLETON, SCOPED, FACTORY).
 
         Returns:
@@ -348,14 +349,14 @@ class Container:
         Usage:
             You can override this method to implement custom logic such as:
             - Logging registration
-            - Wrapping the concrete class
+            - Wrapping the implementation class
             - Validating dependency types
             - Applying decorators or configuration
 
         Example (monkey patch):
 
             def my_register_hook(dep):
-                print(f"Registering {dep.protocol.__name__} -> {dep.concrete}")
+                print(f"Registering {dep.protocol.__name__} -> {dep.implementation}")
                 return dep
 
             container = Container()
@@ -366,7 +367,7 @@ class Container:
         """
         ...
 
-    def BeforeResolveHook(self, dependency: Depends) -> Depends:
+    def before_resolve_hook(self, dependency: Depends) -> Depends:
         """
         Hook executed **before a dependency is resolved** from the container.
 

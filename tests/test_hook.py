@@ -9,35 +9,35 @@ from .constants import SERVICE_NUMBER
 
 # --- Test hook
 def test_hook():
-    App = FastAPI()
+    app = FastAPI()
 
-    RegisterNumber: int = 0
-    ResolveNumber: int = 0
+    register_number: int = 0
+    resolve_number: int = 0
 
-    def RegisterHook(dependency: Dependency[INumberService]):
-        nonlocal RegisterNumber
-        RegisterNumber = dependency.concrete().GetNumber()
+    def register_hook(dependency: Dependency[INumberService]):
+        nonlocal register_number
+        register_number = dependency.implementation().get_number()
         return dependency
     
-    def ResolveHook(dependency: Depends):
-        nonlocal ResolveNumber
-        ResolveNumber = dependency.dependency().GetNumber()  # pyright: ignore[reportOptionalCall]
+    def resolve_hook(dependency: Depends):
+        nonlocal resolve_number
+        resolve_number = dependency.dependency().get_number()  # pyright: ignore[reportOptionalCall]
         return dependency
 
-    App.container.BeforeRegisterHook = RegisterHook
-    App.container.BeforeResolveHook = ResolveHook
+    app.container.before_register_hook = register_hook
+    app.container.before_resolve_hook = resolve_hook
 
-    App.AddScoped(INumberService, NumberService)
+    app.add_scoped(INumberService, NumberService)
 
 
-    @App.get('/test')
+    @app.get('/test')
     def endpoint(service: INumberService) -> int:  # pyright: ignore[reportUnusedFunction]
-        return service.GetNumber()
+        return service.get_number()
     
-    client = TestClient(App)
+    client = TestClient(app)
 
     response = client.get('/test')
     data = response.json()
 
     assert response.status_code == 200
-    assert data == RegisterNumber == ResolveNumber == SERVICE_NUMBER
+    assert data == register_number == resolve_number == SERVICE_NUMBER

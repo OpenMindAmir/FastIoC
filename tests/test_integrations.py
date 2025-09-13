@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from fastdi.integrations import FastAPI, APIRouter
 from fastdi.container import Container
 
-from .dependencies import State, IGlobalService, SetGlobalUsualNumber, IGlobalService2, INumberService, LazyNumber, GetLazyNumber, GetFunctionNumber, FunctionNumber
+from .dependencies import State, IGlobalService, set_global_usual_number, IGlobalService2, INumberService, LazyNumber, get_lazy_number, get_function_number, FunctionNumber
 from .constants import QUERY_TEXT, GLOBAL_SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER2, SERVICE_NUMBER, LAZY_NUMBER, FUNCTION_NUMBER, GLOBAL_USUAL_NUMBER
 
 
@@ -15,22 +15,22 @@ def test_app(state: State, container: Container):
 
     router = _APIRouter()
     @router.get('/test2')
-    def endpoint2(text: str, number: int = Depends(GetFunctionNumber)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    def endpoint2(text: str, number: int = Depends(get_function_number)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
             'num': number,
         }
 
-    app = FastAPI(container=container, dependencies=[IGlobalService, Depends(SetGlobalUsualNumber)])  # pyright: ignore[reportArgumentType]
+    app = FastAPI(container=container, dependencies=[IGlobalService, Depends(set_global_usual_number)])  # pyright: ignore[reportArgumentType]
     client = TestClient(app)
 
-    app.AddScoped(LazyNumber, GetLazyNumber)
+    app.add_scoped(LazyNumber, get_lazy_number)
 
     @app.get('/test', dependencies=[IGlobalService2])  # pyright: ignore[reportArgumentType]
     async def endpoint(text: str, service: INumberService, number: Annotated[int, LazyNumber]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
-            'num': service.GetNumber(),
+            'num': service.get_number(),
             'lzy': number
         }
     
@@ -46,9 +46,9 @@ def test_app(state: State, container: Container):
     assert data['txt'] == QUERY_TEXT # Simple query parameter
     assert data['num'] == SERVICE_NUMBER # Simple dependency
     assert data['lzy'] == LAZY_NUMBER # Added afterwards dependency
-    assert state.get().GlobalServiceNumber == GLOBAL_SERVICE_NUMBER # Global application dependecny (FastDI)
-    assert state.get().GlobalServiceNumber2 == GLOBAL_SERVICE_NUMBER2 # Endpoint passive dependecny
-    assert state.get().GlobalUsualNumber ==  GLOBAL_USUAL_NUMBER # Global application dependency (FastAPI)
+    assert state.get().global_service_number == GLOBAL_SERVICE_NUMBER # Global application dependecny (FastDI)
+    assert state.get().global_service_number_2 == GLOBAL_SERVICE_NUMBER2 # Endpoint passive dependecny
+    assert state.get().global_usual_number ==  GLOBAL_USUAL_NUMBER # Global application dependency (FastAPI)
 
     # Make sure simple router works correctly
     assert response2.status_code == 200
@@ -59,28 +59,28 @@ def test_app(state: State, container: Container):
 # --- Router instance test
 def test_router(state: State, app: _FastAPI, router: _APIRouter, client: TestClient, container: Container):
 
-    irouter = APIRouter(container = container, dependencies=[IGlobalService, Depends(SetGlobalUsualNumber)]) # pyright: ignore[reportCallIssue]
-    irouter.AddScoped(LazyNumber, GetLazyNumber)
+    irouter = APIRouter(container = container, dependencies=[IGlobalService, Depends(set_global_usual_number)]) # pyright: ignore[reportCallIssue]
+    irouter.add_scoped(LazyNumber, get_lazy_number)
 
     @irouter.get('/test', dependencies=[IGlobalService2] ) # pyright: ignore[reportArgumentType]
     async def endpoint(text: str, service: INumberService, number: Annotated[int, LazyNumber]) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
-            'srv': service.GetNumber(),
+            'srv': service.get_number(),
             'num': number
         }
     
     app.include_router(irouter)
 
     @app.get('/test2')
-    def endpoint2(text: str, number: int = Depends(GetFunctionNumber)) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
+    def endpoint2(text: str, number: int = Depends(get_function_number)) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
             'txt': text,
             'num': number
         }
     
     iapp = FastAPI()
-    iapp.AddScoped(FunctionNumber, GetFunctionNumber)
+    iapp.add_scoped(FunctionNumber, get_function_number)
     iapp.include_router(irouter)
 
     @iapp.get('/test2')
@@ -108,8 +108,8 @@ def test_router(state: State, app: _FastAPI, router: _APIRouter, client: TestCli
     assert data['num'] == idata['num'] == LAZY_NUMBER
     assert data['srv'] == idata['srv'] == SERVICE_NUMBER
     assert data2['num'] == idata2['num'] == FUNCTION_NUMBER
-    assert state.get().GlobalServiceNumber == GLOBAL_SERVICE_NUMBER
-    assert state.get().GlobalUsualNumber == GLOBAL_USUAL_NUMBER
+    assert state.get().global_service_number == GLOBAL_SERVICE_NUMBER
+    assert state.get().global_usual_number == GLOBAL_USUAL_NUMBER
 
 # --- Container replacement test
 def test_changeContainer(container: Container):
@@ -120,14 +120,14 @@ def test_changeContainer(container: Container):
     @app.get('/test')
     async def endpoint(service: INumberService) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
-            'srv': service.GetNumber()
+            'srv': service.get_number()
         }
 
-    newContainer = Container()
+    new_container = Container()
 
-    newContainer.AddScoped(LazyNumber, GetLazyNumber)
+    new_container.add_scoped(LazyNumber, get_lazy_number)
 
-    app.container = newContainer
+    app.container = new_container
 
     @app.get('/test2')
     async def endpoint2(number: Annotated[int, LazyNumber]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]

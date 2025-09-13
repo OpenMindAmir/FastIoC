@@ -17,7 +17,7 @@ from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
 
 from fastdi.container import Container
 from fastdi.definitions import FastDIConcrete, DEPENDENCIES
-from fastdi.utils import pretendSignatureOf
+from fastdi.utils import pretend_signature_of
 
 def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[Any, Any]) -> dict[Any, Any]:
 
@@ -28,7 +28,7 @@ def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[
     if container:
         self._container = container  # pyright: ignore[reportPrivateUsage]
         if DEPENDENCIES in kwargs and kwargs[DEPENDENCIES]:
-            kwargs[DEPENDENCIES] = self._container._processDependenciesList(kwargs[DEPENDENCIES]) # pyright: ignore[reportPrivateUsage]
+            kwargs[DEPENDENCIES] = self._container._process_dependencies_list(kwargs[DEPENDENCIES]) # pyright: ignore[reportPrivateUsage]
     else:
         self._container = Container() # pyright: ignore[reportPrivateUsage]
 
@@ -71,9 +71,9 @@ class Injectified:
         """
 
         self._container = value
-        self._container.Injectify(cast(FastAPI | APIRouter, self))
+        self._container.injectify(cast(FastAPI | APIRouter, self))
 
-    def AddSingleton(self, protocol: type, concrete: FastDIConcrete):
+    def add_singleton(self, protocol: type, implementation: FastDIConcrete):
         
         """
         Register a singleton dependency into the internal container.
@@ -81,16 +81,16 @@ class Injectified:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
-            SingletonGeneratorNotAllowedError: If 'concrete' is a generator or async generator.
+            SingletonGeneratorNotAllowedError: If 'implementation' is a generator or async generator.
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self._container.AddSingleton(protocol, concrete)
+        self._container.add_singleton(protocol, implementation)
 
-    def AddScoped(self, protocol: type, concrete: FastDIConcrete):
+    def add_scoped(self, protocol: type, implementation: FastDIConcrete):
 
         """
         Register a request-scoped dependency into the internal container.
@@ -98,15 +98,15 @@ class Injectified:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self._container.AddScoped(protocol, concrete)
+        self._container.add_scoped(protocol, implementation)
 
-    def AddFactory(self, protocol: type, concrete: FastDIConcrete):
+    def add_factory(self, protocol: type, implementation: FastDIConcrete):
 
         """
         Register a factory (transient) dependency into the internal container.
@@ -114,13 +114,13 @@ class Injectified:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            concrete (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self._container.AddFactory(protocol, concrete)
+        self._container.add_factory(protocol, implementation)
 
 
 class FastAPI(_FastAPI, Injectified):
@@ -133,12 +133,11 @@ class FastAPI(_FastAPI, Injectified):
           A default container is created automatically, but it can be replaced via the `container` property.
         - Lazy injection of dependencies into route endpoints.
         - Developer-friendly DX sugar:
-            - `AddGlobalDependency` to add a single global dependency.
-            - `AddSingleton`, `AddScoped`, `AddFactory` to register dependencies in the container.
+            - `add_singleton`, `add_scoped`, `add_factory` to register dependencies in the container.
         - Global and route-level dependencies are automatically processed.
     """
 
-    @pretendSignatureOf(_FastAPI.__init__)
+    @pretend_signature_of(_FastAPI.__init__)
     def __init__(self, *args: Any, container: Container | None = None, **kwargs: Any):
 
         """
@@ -149,7 +148,7 @@ class FastAPI(_FastAPI, Injectified):
 
         super().__init__(*args, **kwargs)
 
-        self._container.Injectify(self)
+        self._container.injectify(self)
 
 class APIRouter(_APIRouter, Injectified):
 
@@ -161,12 +160,11 @@ class APIRouter(_APIRouter, Injectified):
           A default container is created automatically, but it can be replaced via the `container` property.
         - Lazy injection of dependencies into route endpoints.
         - Developer-friendly DX sugar:
-            - `AddGlobalDependency` to add a single global dependency.
-            - `AddSingleton`, `AddScoped`, `AddFactory` to register dependencies in the container.
+            - `add_singleton`, `add_scoped`, `add_factory` to register dependencies in the container.
         - Global and route-level dependencies are automatically processed.
     """
 
-    @pretendSignatureOf(_APIRouter.__init__)
+    @pretend_signature_of(_APIRouter.__init__)
     def __init__(self, *args: Any, container: Container | None = None, **kwargs: Any):
 
         """
@@ -177,4 +175,4 @@ class APIRouter(_APIRouter, Injectified):
 
         super().__init__(*args, **kwargs)
 
-        self._container.Injectify(self)
+        self._container.injectify(self)

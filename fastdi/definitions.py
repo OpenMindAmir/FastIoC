@@ -8,6 +8,7 @@ from dataclasses import dataclass
 
 from fastapi.params import Depends
 
+
 class LifeTime(Enum):
     """
     Dependency lifetime policy.
@@ -26,6 +27,7 @@ FastDIDependency = type | Depends
 
 D = TypeVar('D')
 
+
 @dataclass
 class Dependency(Generic[D]):
     """
@@ -33,19 +35,19 @@ class Dependency(Generic[D]):
 
     This class holds all the necessary metadata for a dependency, including:
     - The interface or protocol it implements (`protocol`).
-    - The concrete implementation or class (`concrete`).
+    - The implementation implementation or class (`implementation`).
     - Its lifetime (`lifeTime`), controlling how the container caches or reuses the instance.
 
     Attributes:
         protocol (type): The interface or protocol type that this dependency implements.
-        concrete (type[D]): The concrete implementation class of type `D`.
+        implementation (type[D]): The implementation implementation class of type `D`.
         lifeTime (LifeTime): The lifetime of the dependency. Can be one of:
             - `LifeTime.SINGLETON`: Single shared instance for the entire container.
             - `LifeTime.SCOPED`: One instance per request or scope.
             - `LifeTime.FACTORY`: A new instance every time it is resolved.
 
     Generic Type Parameters:
-        D: The type of the concrete implementation.
+        D: The type of the implementation implementation.
 
     Usage:
         This class is typically used internally by the DI container, but can be instantiated
@@ -54,29 +56,29 @@ class Dependency(Generic[D]):
     Example:
 
         class INumberService:
-            def GetNumber(self) -> int: ...
+            def get_number(self) -> int: ...
         
         class NumberService(INumberService):
-            def GetNumber(self) -> int:
+            def get_number(self) -> int:
                 return 42
 
         dep = Dependency[INumberService](
             protocol=INumberService,
-            concrete=NumberService,
+            implementation=NumberService,
             lifeTime=LifeTime.SCOPED
         )
 
         print(dep.protocol)   # <class '__main__.INumberService'>
-        print(dep.concrete)   # <class '__main__.NumberService'>
+        print(dep.implementation)   # <class '__main__.NumberService'>
         print(dep.lifeTime)   # LifeTime.SCOPED
 
     Notes:
-        - The container may call `concrete()` to instantiate the dependency when resolving it.
-        - Generic typing helps with static type checking and ensures the concrete class
+        - The container may call `implementation()` to instantiate the dependency when resolving it.
+        - Generic typing helps with static type checking and ensures the implementation class
           implements the expected interface.
     """
     protocol: type
-    concrete: type[D]
+    implementation: type[D]
     lifeTime: LifeTime
 
 

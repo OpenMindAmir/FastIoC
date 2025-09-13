@@ -10,13 +10,13 @@ from .constants import *
 
 @dataclass
 class State:
-    GlobalServiceNumber: int = 0
-    GlobalServiceNumber2: int = 0
-    GlobalServiceNumber3: int = 0
-    GlobalDirectNumber: int = 0
-    GlobalUsualNumber: int = 0
-    GeneratorExitNumber: int = 0
-    NestedNumber: int = 0
+    global_service_number: int = 0
+    global_service_number_2: int = 0
+    global_service_number_3: int = 0
+    global_direct_number: int = 0
+    global_usual_number: int = 0
+    generator_exit_number: int = 0
+    nested_number: int = 0
 
     _instance: 'State | None' = None
 
@@ -38,14 +38,14 @@ state = State()
 
 class INumberService(Protocol):
 
-    def GetNumber(self) -> int: ...
+    def get_number(self) -> int: ...
 
 
 class NumberService(INumberService):
     def __init__(self) -> None:
         self.number = SERVICE_NUMBER
 
-    def GetNumber(self) -> int:
+    def get_number(self) -> int:
         return self.number
 
 
@@ -55,7 +55,7 @@ class IGlobalService(Protocol):
 
 class GlobalService(IGlobalService):
     def __init__(self) -> None:
-        state.get().GlobalServiceNumber = GLOBAL_SERVICE_NUMBER
+        state.get().global_service_number = GLOBAL_SERVICE_NUMBER
 
 
 # --- Function Based Depedencies ---
@@ -64,7 +64,7 @@ class FunctionNumber(int):
     ...
 
 
-def GetFunctionNumber() -> int:
+def get_function_number() -> int:
     return FUNCTION_NUMBER
 
 
@@ -72,29 +72,29 @@ class GlobalFunctionNumber(int):
     ...
 
 
-def SetGlobalFunctionNumber():
-    state.get().GlobalDirectNumber = GLOBAL_FUNCTION_NUMBER
+def set_global_function_number():
+    state.get().global_direct_number = GLOBAL_FUNCTION_NUMBER
 
 
-def SetGlobalUsualNumber():
-    state.get().GlobalUsualNumber = GLOBAL_USUAL_NUMBER
+def set_global_usual_number():
+    state.get().global_usual_number = GLOBAL_USUAL_NUMBER
 
 
 class GeneratorDependencyType(int):
     ...
 
 
-def GeneratorDependency() -> Generator[int, None, None]:
+def generator_dependency() -> Generator[int, None, None]:
     try:
         yield GENERATOR_NUMBER
     finally:
-        state.get().GeneratorExitNumber = GENERATOR_EXIT_NUMBER
+        state.get().generator_exit_number = GENERATOR_EXIT_NUMBER
 
 
 # --- Nested Dependencies ---
 
 
-def GetUsualNestedNumber() -> int:
+def get_usual_nested_number() -> int:
     return NESTED_NUMBER
 
 
@@ -102,33 +102,33 @@ class DependentNestedNumber(int):
     ...
 
 
-def GetDependentNestedNumber(number: int = Depends(GetUsualNestedNumber)) -> int:
+def get_dependent_nested_number(number: int = Depends(get_usual_nested_number)) -> int:
     return number
 
 
 class INestedService(Protocol):
 
-    def GetNumber(self) -> int: ...
+    def get_number(self) -> int: ...
 
-    def GetServiceNumber(self) -> int: ...
+    def get_service_number(self) -> int: ...
 
-    def GetNestedNumber(self) -> int: ...
+    def get_nested_number(self) -> int: ...
 
 
 class NestedService(INestedService):
 
-    def __init__(self, service: INumberService, nested: Annotated[int, DependentNestedNumber], number: int = Depends(GetUsualNestedNumber)):
-        self.serviceNumber = service.GetNumber()
+    def __init__(self, service: INumberService, nested: Annotated[int, DependentNestedNumber], number: int = Depends(get_usual_nested_number)):
+        self.serviceNumber = service.get_number()
         self.usualNumber = number
         self.nestedNumber = nested
 
-    def GetNumber(self) -> int:
+    def get_number(self) -> int:
         return self.usualNumber
 
-    def GetServiceNumber(self) -> int:
+    def get_service_number(self) -> int:
         return self.serviceNumber
 
-    def GetNestedNumber(self) -> int:
+    def get_nested_number(self) -> int:
         return self.nestedNumber
 
 
@@ -137,7 +137,7 @@ class IGlobalNestedNumber(type):
 
 
 def GlobalNestedNumber():
-    state.get().NestedNumber = NESTED_NUMBER
+    state.get().nested_number = NESTED_NUMBER
 
 
 class IGlobalNestedService(Protocol):
@@ -155,7 +155,7 @@ class ILifetimeService(Protocol):
 
     index: int
 
-    def GetCurrentItem(self) -> int: ...
+    def get_current_item(self) -> int: ...
 
 
 class ILifetimeServiceSingleton(ILifetimeService):
@@ -175,7 +175,7 @@ class LifetimeServiceSingleton(ILifetimeServiceSingleton):
     def __init__(self) -> None:
         self.index = 0
 
-    def GetCurrentItem(self) -> int:
+    def get_current_item(self) -> int:
         self.index += 1
         return NUMBERS[self.index]
 
@@ -185,7 +185,7 @@ class LifetimeServiceScoped(ILifetimeServiceScoped):
     def __init__(self) -> None:
         self.index = 0
 
-    def GetCurrentItem(self) -> int:
+    def get_current_item(self) -> int:
         self.index += 1
         return NUMBERS[self.index]
 
@@ -195,7 +195,7 @@ class LifetimeServiceFactory(ILifetimeServiceFactory):
     def __init__(self) -> None:
         self.index = 0
 
-    def GetCurrentItem(self) -> int:
+    def get_current_item(self) -> int:
         self.index += 1
         return NUMBERS[self.index]
     
@@ -206,7 +206,7 @@ class LifetimeServiceFactory(ILifetimeServiceFactory):
 class LazyNumber(int): ...
 
 
-def GetLazyNumber() -> int:
+def get_lazy_number() -> int:
     return LAZY_NUMBER
 
 
@@ -216,4 +216,4 @@ class IGlobalService2(Protocol):
 
 class GlobalService2(IGlobalService2):
     def __init__(self) -> None:
-        state.get().GlobalServiceNumber2 = GLOBAL_SERVICE_NUMBER2
+        state.get().global_service_number_2 = GLOBAL_SERVICE_NUMBER2

@@ -12,11 +12,11 @@ def test_Lifetime(app: FastAPI, client: TestClient):
     @app.get('/test')
     async def endpoint(singleton: ILifetimeServiceSingleton, scoped: ILifetimeServiceScoped, _scoped: Annotated[ILifetimeService, ILifetimeServiceScoped], factory: ILifetimeServiceFactory, _factory: Annotated[ILifetimeService, ILifetimeServiceFactory]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
-            's': singleton.GetCurrentItem(),
-            'r1': scoped.GetCurrentItem(),
-            'r2': _scoped.GetCurrentItem(),
-            'f1': factory.GetCurrentItem(),
-            'f2': _factory.GetCurrentItem(),
+            's': singleton.get_current_item(),
+            'r1': scoped.get_current_item(),
+            'r2': _scoped.get_current_item(),
+            'f1': factory.get_current_item(),
+            'f2': _factory.get_current_item(),
         }
     
     response = client.get('/test')

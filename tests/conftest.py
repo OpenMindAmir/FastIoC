@@ -1,3 +1,5 @@
+"""Pytest fixtures for FastDI integration tests with FastAPI and APIRouter."""
+
 import pytest
 
 from fastapi import FastAPI, APIRouter
@@ -5,54 +7,63 @@ from fastapi.testclient import TestClient
 
 from fastdi.container import Container
 
-from .dependencies import State, state as _state, IGlobalService, INumberService, GlobalService, NumberService, FunctionNumber, GetFunctionNumber, GlobalFunctionNumber, SetGlobalFunctionNumber, GeneratorDependency, GeneratorDependencyType, DependentNestedNumber, GetDependentNestedNumber, INestedService, NestedService, IGlobalNestedNumber, GlobalNestedNumber, IGlobalNestedService, GlobalNestedService, ILifetimeServiceSingleton, ILifetimeServiceScoped, ILifetimeServiceFactory, LifetimeServiceSingleton, LifetimeServiceScoped, LifetimeServiceFactory, IGlobalService2, GlobalService2
+from .dependencies import (State, state as _state, IGlobalService, INumberService, GlobalService,
+                            NumberService, FunctionNumber, get_function_number, GlobalFunctionNumber,
+                            set_global_function_number, generator_dependency, GeneratorDependencyType,
+                            DependentNestedNumber, get_dependent_nested_number, INestedService,
+                            NestedService, IGlobalNestedNumber, GlobalNestedNumber,
+                            IGlobalNestedService, GlobalNestedService, ILifetimeServiceSingleton,
+                            ILifetimeServiceScoped, ILifetimeServiceFactory, LifetimeServiceSingleton,
+                            LifetimeServiceScoped, LifetimeServiceFactory, IGlobalService2, GlobalService2)
 
 
 @pytest.fixture
 def container():
+    """Provide a DI container with common test dependencies registered."""
     container = Container()
     # General (Injection)
-    container.AddScoped(INumberService, NumberService)
-    container.AddScoped(IGlobalService, GlobalService)
-    container.AddScoped(FunctionNumber, GetFunctionNumber)
-    container.AddScoped(GlobalFunctionNumber, SetGlobalFunctionNumber)
-    container.AddScoped(GeneratorDependencyType, GeneratorDependency)
+    container.add_scoped(INumberService, NumberService)
+    container.add_scoped(IGlobalService, GlobalService)
+    container.add_scoped(FunctionNumber, get_function_number)
+    container.add_scoped(GlobalFunctionNumber, set_global_function_number)
+    container.add_scoped(GeneratorDependencyType, generator_dependency)
     # Nested
-    container.AddScoped(DependentNestedNumber, GetDependentNestedNumber)
-    container.AddScoped(IGlobalNestedNumber, GlobalNestedNumber)
-    container.AddScoped(IGlobalNestedService, GlobalNestedService)
-    container.AddScoped(INestedService, NestedService)
+    container.add_scoped(DependentNestedNumber, get_dependent_nested_number)
+    container.add_scoped(IGlobalNestedNumber, GlobalNestedNumber)
+    container.add_scoped(IGlobalNestedService, GlobalNestedService)
+    container.add_scoped(INestedService, NestedService)
     # Lifetime
-    container.AddSingleton(ILifetimeServiceSingleton, LifetimeServiceSingleton)
-    container.AddScoped(ILifetimeServiceScoped, LifetimeServiceScoped)
-    container.AddFactory(ILifetimeServiceFactory, LifetimeServiceFactory)
+    container.add_singleton(ILifetimeServiceSingleton,
+                            LifetimeServiceSingleton)
+    container.add_scoped(ILifetimeServiceScoped, LifetimeServiceScoped)
+    container.add_factory(ILifetimeServiceFactory, LifetimeServiceFactory)
     # Integrations
-    container.AddScoped(IGlobalService2, GlobalService2)
+    container.add_scoped(IGlobalService2, GlobalService2)
 
     return container
 
 
 @pytest.fixture
-def router(container: Container):
+def router(container: Container) -> APIRouter:
     router = APIRouter()
-    container.Injectify(router)
+    container.injectify(router)
     return router
 
 
 @pytest.fixture
-def app(container: Container):
+def app(container: Container) -> FastAPI:
     app = FastAPI()
-    container.Injectify(app)
+    container.injectify(app)
     return app
 
 
 @pytest.fixture
-def client(app: FastAPI):
+def client(app: FastAPI) -> TestClient:
     return TestClient(app)
 
 
 @pytest.fixture
-def state():
+def state() -> State:
     return _state
 
 
