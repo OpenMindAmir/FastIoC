@@ -239,3 +239,33 @@ class GlobalOverrideService(IGlobalService):
 
 def get_override_function_number() -> int:
     return OVERRIDE_NUMBER
+
+class LifetimeOverrideServiceSingleton(ILifetimeServiceSingleton):
+
+    def __init__(self) -> None:
+        self.index = 0
+
+    def get_current_item(self) -> int:
+        self.index += 1
+        return OVERRIDE_NUMBERS[self.index]
+
+
+class LifetimeOverrideServiceScoped(ILifetimeServiceScoped):
+
+    def __init__(self) -> None:
+        self.index = 0
+
+    def get_current_item(self) -> int:
+        self.index += 1
+        return OVERRIDE_NUMBERS[self.index]
+
+
+class LifetimeOverrideServiceFactory(ILifetimeServiceFactory):
+
+    def __init__(self) -> None:
+        self.index = 0
+
+    def get_current_item(self) -> int:
+        self.index += 1
+        return OVERRIDE_NUMBERS[self.index]
+    

@@ -3,14 +3,18 @@ from typing import Any, Annotated
 from fastapi import FastAPI, APIRouter, Depends
 from fastapi.testclient import TestClient
 
-from .dependencies import State, IGlobalService, INumberService, FunctionNumber, GlobalFunctionNumber, get_function_number, set_global_usual_number, GeneratorDependencyType
-from .constants import QUERY_TEXT, SERVICE_NUMBER, GENERATOR_NUMBER, FUNCTION_NUMBER, GENERATOR_EXIT_NUMBER, GLOBAL_FUNCTION_NUMBER, GLOBAL_SERVICE_NUMBER, GLOBAL_USUAL_NUMBER
+from .dependencies import (State, IGlobalService, INumberService, FunctionNumber, GlobalFunctionNumber,
+                        get_function_number, set_global_usual_number, GeneratorDependencyType)
+from .constants import (QUERY_TEXT, SERVICE_NUMBER, GENERATOR_NUMBER, FUNCTION_NUMBER, GENERATOR_EXIT_NUMBER,
+                        GLOBAL_FUNCTION_NUMBER, GLOBAL_SERVICE_NUMBER, GLOBAL_USUAL_NUMBER)
 
 # --- Application Endpoint Test (Async) ---
 def test_app_endpoint(app: FastAPI, client: TestClient, state: State):
 
     @app.get('/test', dependencies=[IGlobalService, GlobalFunctionNumber, Depends(set_global_usual_number)])  # pyright: ignore[reportArgumentType]
-    async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, number: FunctionNumber, number2: Annotated[int, FunctionNumber], number3: int = Depends(get_function_number)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+    async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, # pyright: ignore[reportUnusedFunction]
+                        number: FunctionNumber, number2: Annotated[int, FunctionNumber], 
+                        number3: int = Depends(get_function_number)) -> dict[str, Any]: 
         return {
             'txt': text,
             'srv': service.get_number(),

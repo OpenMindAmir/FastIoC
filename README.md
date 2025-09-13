@@ -4,9 +4,6 @@ options pattern note in description
 
 r&d multiprocessing.Manager
 
-check router follows override or not
-check lifetime
-add override to integration
 
 Interface
 FastAPIController (see fastapi-controller)

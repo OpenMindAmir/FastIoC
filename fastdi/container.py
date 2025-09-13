@@ -243,6 +243,9 @@ class Container:
         1. A dictionary of user-provided overrides.
         2. An optional secondary FastDI container (e.g., a mock container for testing).
 
+        NOTE: The lifetime of each dependency is preserved: 
+        overridden dependencies are injected with the same lifetime as the original container registration.
+
         Parameters:
             dependencies (dict[Callable[..., Any], Callable[..., Any]]):
                 A dictionary where keys are the original dependency callables or
@@ -250,7 +253,7 @@ class Container:
                 and values are the new callables that should override them.
 
                 - If a key is registered in the container, it will be replaced
-                with the corresponding FastAPI `Depends` instance as the key,
+                with the registered dependancy,
                 while the value remains the provided override callable.
                 - Keys not registered in the container are left unchanged.
                 - This means you can mix normal FastAPI overrides with container-based
@@ -259,7 +262,7 @@ class Container:
             container (Optional[Container]):
                 An optional secondary container (e.g., a test or mock container).
                 - For each protocol in this container that is also registered in
-                the main container, the resolved `Depends` from the main container
+                the main container, the resolved dependency from the main container
                 will be used as the key, and the dependency from the secondary
                 container will be used as the value.
                 - Protocols in the secondary container that are not registered
@@ -278,7 +281,7 @@ class Container:
             >>> container = Container()
             >>> container.add_scoped(IService, Service)
             >>> overrides = {
-            ...     IService: lambda: MockService(),
+            ...     IService: MockService,
             ...     some_dependency: custom_callable
             ... }
             >>> app.dependency_overrides.update(container.override(overrides))
