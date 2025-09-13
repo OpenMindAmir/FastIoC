@@ -77,6 +77,7 @@ class Injectified:
         
         """
         Register a singleton dependency into the internal container.
+
         One single shared instance will be used throughout the entire process/worker.
 
         Args:
@@ -94,6 +95,7 @@ class Injectified:
 
         """
         Register a request-scoped dependency into the internal container.
+
         A new instance is created for each HTTP request and reused throughout that request.
 
         Args:
@@ -110,6 +112,7 @@ class Injectified:
 
         """
         Register a factory (transient) dependency into the internal container.
+        
         A new instance is created each time the dependency is resolved.
 
         Args:

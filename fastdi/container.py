@@ -185,6 +185,7 @@ class Container:
 
         """
         Register a singleton dependency.
+
         One single shared instance will be used throughout the entire process/worker.
 
         Args:
@@ -203,6 +204,7 @@ class Container:
 
         """
         Register a request-scoped dependency.
+
         A new instance is created for each HTTP request and reused throughout that request.
 
         Args:
@@ -219,7 +221,8 @@ class Container:
     def add_factory(self, protocol: type, implementation: FastDIConcrete):
 
         """
-        Register a factory (transient) dependency.k
+        Register a factory (transient) dependency.
+
         A new instance is created each time the dependency is resolved.
 
         Args:
@@ -277,7 +280,7 @@ class Container:
                 A new dictionary suitable for assigning to
                 `app.dependency_overrides`.
 
-        Example usage:
+        Example:
             >>> from fastdi import Container, FastAPI
             >>> app = FastAPI()
             >>> container = Container()
