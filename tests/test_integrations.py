@@ -112,7 +112,7 @@ def test_router(state: State, app: _FastAPI, router: _APIRouter, client: TestCli
     assert state.get().global_usual_number == GLOBAL_USUAL_NUMBER
 
 # --- Container replacement test
-def test_changeContainer(container: Container):
+def test_change_container(container: Container):
 
     app = FastAPI(container = container)
     client = TestClient(app)

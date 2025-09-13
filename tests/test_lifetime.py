@@ -7,7 +7,7 @@ from .dependencies import ILifetimeServiceSingleton, ILifetimeServiceScoped, ILi
 from .constants import NUMBERS
 
 # --- Lifetime Test ---
-def test_Lifetime(app: FastAPI, client: TestClient):
+def test_lifetime(app: FastAPI, client: TestClient):
 
     @app.get('/test')
     async def endpoint(singleton: ILifetimeServiceSingleton, scoped: ILifetimeServiceScoped, _scoped: Annotated[ILifetimeService, ILifetimeServiceScoped], factory: ILifetimeServiceFactory, _factory: Annotated[ILifetimeService, ILifetimeServiceFactory]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]

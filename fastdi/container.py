@@ -124,7 +124,7 @@ class Container:
     # --- Register & Resolve ---
 
     @typechecked
-    def register(self, protocol: type, implementation: FastDIConcrete, lifeTime: LifeTime):
+    def register(self, protocol: type, implementation: FastDIConcrete, lifetime: LifeTime):
 
         """
         Register a dependency with a given lifetime.
@@ -132,20 +132,20 @@ class Container:
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
             implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
-            lifeTime (LifeTime): SINGLETON, SCOPED, or FACTORY.
+            lifetime (Lifetime): SINGLETON, SCOPED, or FACTORY.
 
         Raises:
             SingletonGeneratorNotAllowedError: If a generator or async generator is registered as singleton.
         """
 
-        dependency: Dependency[Any] | None = self.before_register_hook(Dependency[Any](protocol, implementation, lifeTime))   # pyright: ignore[reportArgumentType]
+        dependency: Dependency[Any] | None = self.before_register_hook(Dependency[Any](protocol, implementation, lifetime))   # pyright: ignore[reportArgumentType]
         if dependency:
             protocol = dependency.protocol
             implementation = dependency.implementation
-            lifeTime = dependency.lifeTime
+            lifetime = dependency.lifetime
 
         implementation = self._nested_injector(implementation)
-        if lifeTime is LifeTime.SINGLETON:
+        if lifetime is LifeTime.SINGLETON:
             impl = implementation()
             if inspect.isgenerator(impl) or inspect.isasyncgen(impl):
                 raise SingletonGeneratorNotAllowedError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
@@ -153,7 +153,7 @@ class Container:
                 return impl
             self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
         else:
-            self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifeTime is LifeTime.FACTORY else True)
+            self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifetime is LifeTime.FACTORY else True)
 
 
     def resolve(self, protocol: type) -> Depends:
@@ -411,7 +411,7 @@ class Container:
             dependency (Dependency[Any]): The dependency instance about to be registered.
                 - `dependency.protocol`: The interface or protocol type.
                 - `dependency.implementation`: The implementation implementation or factory.
-                - `dependency.lifeTime`: The lifetime of the dependency (SINGLETON, SCOPED, FACTORY).
+                - `dependency.lifetime`: The lifetime of the dependency (SINGLETON, SCOPED, FACTORY).
 
         Returns:
             Dependency[Any]: The (optionally modified) dependency that will actually be registered.

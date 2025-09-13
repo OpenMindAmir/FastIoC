@@ -36,12 +36,12 @@ class Dependency(Generic[D]):
     This class holds all the necessary metadata for a dependency, including:
     - The interface or protocol it implements (`protocol`).
     - The implementation implementation or class (`implementation`).
-    - Its lifetime (`lifeTime`), controlling how the container caches or reuses the instance.
+    - Its lifetime (`lifetime`), controlling how the container caches or reuses the instance.
 
     Attributes:
         protocol (type): The interface or protocol type that this dependency implements.
         implementation (type[D]): The implementation implementation class of type `D`.
-        lifeTime (LifeTime): The lifetime of the dependency. Can be one of:
+        lifetime (LifeTime): The lifetime of the dependency. Can be one of:
             - `LifeTime.SINGLETON`: Single shared instance for the entire container.
             - `LifeTime.SCOPED`: One instance per request or scope.
             - `LifeTime.FACTORY`: A new instance every time it is resolved.
@@ -65,12 +65,12 @@ class Dependency(Generic[D]):
         dep = Dependency[INumberService](
             protocol=INumberService,
             implementation=NumberService,
-            lifeTime=LifeTime.SCOPED
+            lifetime=LifeTime.SCOPED
         )
 
         print(dep.protocol)   # <class '__main__.INumberService'>
         print(dep.implementation)   # <class '__main__.NumberService'>
-        print(dep.lifeTime)   # LifeTime.SCOPED
+        print(dep.lifetime)   # LifeTime.SCOPED
 
     Notes:
         - The container may call `implementation()` to instantiate the dependency when resolving it.
@@ -79,7 +79,7 @@ class Dependency(Generic[D]):
     """
     protocol: type
     implementation: type[D]
-    lifeTime: LifeTime
+    lifetime: LifeTime
 
 
 DEPENDENCIES = 'dependencies'
