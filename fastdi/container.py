@@ -6,9 +6,9 @@ dependencies with different lifetimes (singleton, scoped, factory) in FastAPI.
 """
 
 import inspect
-from typing import Any, Callable, Annotated, get_origin, get_args
+from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast
 
-from typeguard import typechecked
+from typeguard import typechecked, TypeCheckError
 from fastapi.params import Depends
 from fastapi import FastAPI, APIRouter
 
@@ -163,8 +163,8 @@ class Container:
         self.check_if_registered(protocol)
         dependency: Depends = self.dependencies[protocol]
 
-        if hookedDependency := self.before_resolve_hook(dependency):
-            return hookedDependency
+        if hooked_dependency := self.before_resolve_hook(dependency):
+            return hooked_dependency
         
         return dependency
     
@@ -231,6 +231,76 @@ class Container:
         """
 
         self.register(protocol, implementation, LifeTime.FACTORY)
+
+    # --- Override
+
+    def override(self, dependencies: dict[Callable[..., Any], Callable[..., Any]] = {}, container: Optional['Container'] = None) -> dict[Callable[..., Any], Callable[..., Any]]:
+
+        """
+        Generate an updated dictionary suitable for FastAPI's `dependency_overrides`.
+
+        This method allows merging and overriding dependencies from two sources:
+        1. A dictionary of user-provided overrides.
+        2. An optional secondary FastDI container (e.g., a mock container for testing).
+
+        Parameters:
+            dependencies (dict[Callable[..., Any], Callable[..., Any]]):
+                A dictionary where keys are the original dependency callables or
+                protocol types that may have been registered in the container,
+                and values are the new callables that should override them.
+
+                - If a key is registered in the container, it will be replaced
+                with the corresponding FastAPI `Depends` instance as the key,
+                while the value remains the provided override callable.
+                - Keys not registered in the container are left unchanged.
+                - This means you can mix normal FastAPI overrides with container-based
+                dependencies without conflict.
+
+            container (Optional[Container]):
+                An optional secondary container (e.g., a test or mock container).
+                - For each protocol in this container that is also registered in
+                the main container, the resolved `Depends` from the main container
+                will be used as the key, and the dependency from the secondary
+                container will be used as the value.
+                - Protocols in the secondary container that are not registered
+                in the main container are ignored.
+
+        Returns:
+            dict[Callable[..., Any] | Depends, Callable[..., Any]]:
+                A new dictionary suitable for assigning to
+                `app.dependency_overrides`. Keys may be FastAPI `Depends` instances
+                (for registered container dependencies) or original callables, and
+                values are the corresponding override callables.
+
+        Example usage:
+            >>> from fastdi import Container, FastAPI
+            >>> app = FastAPI()
+            >>> container = Container()
+            >>> container.add_scoped(IService, Service)
+            >>> overrides = {
+            ...     IService: lambda: MockService(),
+            ...     some_dependency: custom_callable
+            ... }
+            >>> app.dependency_overrides.update(container.override(overrides))
+        """
+
+        for key, value in dependencies.items():
+            original = key
+            try:
+                original = cast(Callable[..., Any], self.resolve(cast(type, key)).dependency)
+                dependencies |= {original: value}
+            except (ProtocolNotRegisteredError, TypeCheckError):
+                pass
+        
+        if container:
+            for key, value in container.dependencies.items():
+                try:
+                    original = cast(Callable[..., Any], self.resolve(key).dependency)
+                    dependencies |= {original: cast(Callable[..., Any], value.dependency)}
+                except:
+                    pass
+
+        return dependencies
 
 
     # --- Internal helper functions

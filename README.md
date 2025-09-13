@@ -4,8 +4,9 @@ options pattern note in description
 
 r&d multiprocessing.Manager
 
-override (proccess dictionary and also get a container + integration for fastapi (may be router))
-maybe snake case finally :)
+check router follows override or not
+check lifetime
+add override to integration
 
 Interface
 FastAPIController (see fastapi-controller)

@@ -31,7 +31,7 @@ def test_hook():
 
 
     @app.get('/test')
-    def endpoint(service: INumberService) -> int:  # pyright: ignore[reportUnusedFunction]
+    async def endpoint(service: INumberService) -> int:  # pyright: ignore[reportUnusedFunction]
         return service.get_number()
     
     client = TestClient(app)

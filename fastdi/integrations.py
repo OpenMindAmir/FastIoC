@@ -10,7 +10,7 @@ automatic FastDI dependency injection support. It allows:
   requiring manual injection setup.
 """
 
-from typing import Any, cast
+from typing import Any, Optional, cast
 
 from typeguard import typechecked
 from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
@@ -138,7 +138,7 @@ class FastAPI(_FastAPI, Injectified):
     """
 
     @pretend_signature_of(_FastAPI.__init__)
-    def __init__(self, *args: Any, container: Container | None = None, **kwargs: Any):
+    def __init__(self, *args: Any, container: Optional[Container] = None, **kwargs: Any):
 
         """
         Initialize the extended FastAPI instance.

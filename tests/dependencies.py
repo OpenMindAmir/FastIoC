@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Protocol, Generator, Annotated
+from typing import Protocol, Generator, Annotated, Optional
 
 from fastapi import Depends
 
@@ -17,8 +17,9 @@ class State:
     global_usual_number: int = 0
     generator_exit_number: int = 0
     nested_number: int = 0
+    global_override_number: int = 0
 
-    _instance: 'State | None' = None
+    _instance: Optional['State'] = None
 
     @classmethod
     def get(cls) -> 'State':
@@ -217,3 +218,24 @@ class IGlobalService2(Protocol):
 class GlobalService2(IGlobalService2):
     def __init__(self) -> None:
         state.get().global_service_number_2 = GLOBAL_SERVICE_NUMBER2
+
+
+
+# --- Override dependencies ---
+
+
+class OverrideNumberSerivce(INumberService):
+    def __init__(self) -> None:
+        self.number = OVERRIDE_SERVICE_NUMBER
+
+    def get_number(self) -> int:
+        return self.number
+    
+
+class GlobalOverrideService(IGlobalService):
+    def __init__(self) -> None:
+        state.get().global_override_number = GLOBAL_OVERRIDE_NUMBER
+
+
+def get_override_function_number() -> int:
+    return OVERRIDE_NUMBER
