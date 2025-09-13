@@ -219,7 +219,7 @@ class Container:
     def add_factory(self, protocol: type, implementation: FastDIConcrete):
 
         """
-        Register a factory (transient) dependency.
+        Register a factory (transient) dependency.k
         A new instance is created each time the dependency is resolved.
 
         Args:
@@ -267,13 +267,15 @@ class Container:
                 container will be used as the value.
                 - Protocols in the secondary container that are not registered
                 in the main container are ignored.
+                - NOTE: The lifetime of each dependency should follow the main container, unless you know exactly what you are doing. 
+                    - - For SCOPED or FACTORY dependencies in the main container, the original lifetime is always preserved regardless of what is registered in the secondary container (except SINGLETON). 
+                    - - For SINGLETON dependencies in the main container: if the main container has SINGLETON and the secondary container has a different lifetime, the resulting lifetime will be SCOPED; 
+                    - - If the main container has a non-SINGLETON lifetime and the secondary container registers it as SINGLETON, the resulting lifetime will be SINGLETON.
 
         Returns:
             dict[Callable[..., Any] | Depends, Callable[..., Any]]:
                 A new dictionary suitable for assigning to
-                `app.dependency_overrides`. Keys may be FastAPI `Depends` instances
-                (for registered container dependencies) or original callables, and
-                values are the corresponding override callables.
+                `app.dependency_overrides`.
 
         Example usage:
             >>> from fastdi import Container, FastAPI
@@ -433,9 +435,9 @@ class Container:
                 return dep
 
             container = Container()
-            container.BeforeRegisterHook = my_register_hook  # Monkey patch the hook
+            container.before_register_hook = my_register_hook  # Monkey patch the hook
 
-            container.AddScoped(IService, Service)
+            container.add_scoped(IService, Service)
             # Now each register prints info before storing the dependency
         """
         ...
@@ -470,10 +472,10 @@ class Container:
                 return dep
 
             container = Container()
-            container.BeforeResolveHook = my_resolve_hook  # Monkey patch the hook
+            container.before_resolve_hook = my_resolve_hook  # Monkey patch the hook
 
             # Now, when resolving a dependency:
-            resolved_dep = container.Resolve(IService)
+            resolved_dep = container.resolve(IService)
             # Each resolve prints info before returning the instance
         """
         ...

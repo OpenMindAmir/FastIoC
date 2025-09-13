@@ -43,7 +43,7 @@ def test_override_lifetime(app: FastAPI, client: TestClient, container: Containe
 
     test_container = Container()
     test_container.add_singleton(ILifetimeServiceSingleton, LifetimeOverrideServiceSingleton)
-    test_container.add_scoped(ILifetimeServiceScoped, LifetimeOverrideServiceScoped)
+    test_container.add_factory(ILifetimeServiceScoped, LifetimeOverrideServiceScoped)
     test_container.add_factory(ILifetimeServiceFactory, LifetimeOverrideServiceFactory)
 
     app.dependency_overrides = container.override(container=test_container)
