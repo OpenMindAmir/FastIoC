@@ -244,7 +244,7 @@ class Container:
         2. An optional secondary FastDI container (e.g., a mock container for testing).
 
         NOTE: The lifetime of each dependency is preserved: 
-        overridden dependencies are injected with the same lifetime as the original container registration.
+        overridden dependencies are injected with the SAME LIFETIME AS ORIGINAL CONTAINER REGISTERATION.
 
         Parameters:
             dependencies (dict[Callable[..., Any], Callable[..., Any]]):
