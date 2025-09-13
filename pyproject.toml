@@ -1,19 +1,20 @@
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
-
-[tool.poetry]
+[project]
 name = "FastDI"
 version = "0.1.0"
 description = "IoC/DI container for FastAPI with automatic type-based dependency injection"
-authors = ["Amir R. Aliakbari (OpenMindAmir) <OpenMindAmir@gmail.com>"]
+authors = [
+    {name = "Amir R. Aliakbari (@OpenMindAmir)", email = "OpenMindAmir@gmail.com"}
+]
 readme = "README.md"
-packages = [{ include = "fastdi" }]
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.116.1",
+    "typeguard>=4.4.4",
+]
 
-[tool.poetry.dependencies]
-python = ">=3.12"
-fastapi = "*"
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
-pytest-cov = "^6.2.1"
+[dependency-groups]
+dev = [
+    "httpx>=0.28.1",
+    "pytest>=8.4.2",
+    "pytest-cov>=7.0.0",
+]
