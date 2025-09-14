@@ -4,7 +4,7 @@ from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 
 from .dependencies import State, INestedService, IGlobalNestedService, DependentNestedNumber, get_dependent_nested_number
-from .constants import QUERY_TEXT, SERVICE_NUMBER, NESTED_NUMBER
+from .constants import QUERY_TEXT, SERVICE_NUMBER, NESTED_NUMBER, SERVICE_NUMBER_2
 
 # --- Nested Dependencies Test
 def test_nested(app: FastAPI, client: TestClient, state: State):
@@ -17,6 +17,7 @@ def test_nested(app: FastAPI, client: TestClient, state: State):
             'n3': service.get_nested_number(),
             'n4': nested,
             'n5': usual,
+            'n6': service.get_service_number_2(),
             'txt': text
         }
     
@@ -26,4 +27,5 @@ def test_nested(app: FastAPI, client: TestClient, state: State):
     assert response.status_code == 200
     assert data['n2'] == SERVICE_NUMBER
     assert data['n1'] == data['n3'] == data['n4'] == data['n5'] == state.get().nested_number == NESTED_NUMBER
+    assert data['n6'] == SERVICE_NUMBER_2
     assert data['txt'] == QUERY_TEXT

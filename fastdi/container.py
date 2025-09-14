@@ -6,7 +6,9 @@ dependencies with different lifetimes (singleton, scoped, factory) in FastAPI.
 """
 
 import inspect
-from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast
+from inspect import Parameter, Signature
+from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast, get_type_hints
+from functools import wraps
 
 from typeguard import typechecked, TypeCheckError
 from fastapi.params import Depends
@@ -88,13 +90,13 @@ class Container:
                 if isinstance(param.default, Depends) or is_annotated_with_depends(param.annotation):
                     params.append(param)
                     continue
-                if annotatedDependency := self._get_annotated_dependency_if_registered(param.annotation):
-                    newParam = param.replace(default=annotatedDependency)
-                    params.append(newParam)
+                if annotated_dependency := self._get_annotated_dependency_if_registered(param.annotation):
+                    new_param = param.replace(default=annotated_dependency)
+                    params.append(new_param)
                     continue
                 try:
-                    newParam = param.replace(default=self.resolve(param.annotation))
-                    params.append(newParam)
+                    new_param = param.replace(default=self.resolve(param.annotation))
+                    params.append(new_param)
 
                 except ProtocolNotRegisteredError:
                     params.append(param)
@@ -321,25 +323,40 @@ class Container:
         Used to inject dependencies of a dependency
         """
 
-        signature: inspect.Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
-        params: list[inspect.Parameter] = []
+        signature: Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
+        hints: Optional[dict[str, Any]] = get_type_hints(implementation) if inspect.isclass(implementation) else None
+        params: list[Parameter] = []
         for name, param in signature.parameters.items():
             if name == 'self':
                 continue
             annotation = param.annotation
-            if annotation != inspect.Signature.empty:
+            if annotation != Signature.empty:
                 if isinstance(param.default, Depends) or is_annotated_with_depends(annotation):
                     params.append(param)
                     continue
-                if annotatedDependency := self._get_annotated_dependency_if_registered(param.annotation):
-                    newParam = param.replace(default=annotatedDependency)
-                    params.append(newParam)
+                if annotated_dependency := self._get_annotated_dependency_if_registered(param.annotation):
+                    new_param = param.replace(default=annotated_dependency)
+                    params.append(new_param)
                     continue
                 try:
-                    newParam = param.replace(default=self.resolve(annotation))
-                    params.append(newParam)
+                    new_param = param.replace(default=self.resolve(annotation))
+                    params.append(new_param)
                 except ProtocolNotRegisteredError:
                     params.append(param)
+        if hints:
+            original_init = implementation.__init__
+            @wraps(original_init) # pyright: ignore[reportArgumentType]
+            def __init__(_self: object, *args: Any, **kwargs: Any):
+                original_init(_self, *args, **kwargs)  # pyright: ignore[reportCallIssue]
+
+                for name, annotation in hints.items():
+                    if hasattr(_self, name):
+                        continue
+                    try:
+                        setattr(_self, name, self.resolve(annotation))
+                    except ProtocolNotRegisteredError:
+                        pass
+            implementation.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess]
         implementation.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
         return implementation

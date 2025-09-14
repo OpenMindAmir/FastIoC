@@ -107,6 +107,18 @@ def get_dependent_nested_number(number: int = Depends(get_usual_nested_number)) 
     return number
 
 
+class INumberService2(INumberService):
+    ...
+
+
+class NumberService2(INumberService2):
+    def __init__(self) -> None:
+        self.number = SERVICE_NUMBER_2
+
+    def get_number(self) -> int:
+        return self.number
+
+
 class INestedService(Protocol):
 
     def get_number(self) -> int: ...
@@ -115,22 +127,29 @@ class INestedService(Protocol):
 
     def get_nested_number(self) -> int: ...
 
+    def get_service_number_2(self) -> int: ...
+
 
 class NestedService(INestedService):
 
+    service2: INumberService2
+
     def __init__(self, service: INumberService, nested: Annotated[int, DependentNestedNumber], number: int = Depends(get_usual_nested_number)):
-        self.serviceNumber = service.get_number()
-        self.usualNumber = number
-        self.nestedNumber = nested
+        self.service_number = service.get_number()
+        self.usual_number = number
+        self.nested_number = nested
 
     def get_number(self) -> int:
-        return self.usualNumber
+        return self.usual_number
 
     def get_service_number(self) -> int:
-        return self.serviceNumber
+        return self.service_number
 
     def get_nested_number(self) -> int:
-        return self.nestedNumber
+        return self.nested_number
+    
+    def get_service_number_2(self) -> int:
+        return self.service2.get_number()
 
 
 class IGlobalNestedNumber(type):

@@ -14,7 +14,8 @@ from .dependencies import (State, state as _state, IGlobalService, INumberServic
                             NestedService, IGlobalNestedNumber, GlobalNestedNumber,
                             IGlobalNestedService, GlobalNestedService, ILifetimeServiceSingleton,
                             ILifetimeServiceScoped, ILifetimeServiceFactory, LifetimeServiceSingleton,
-                            LifetimeServiceScoped, LifetimeServiceFactory, IGlobalService2, GlobalService2)
+                            LifetimeServiceScoped, LifetimeServiceFactory, IGlobalService2, GlobalService2,
+                            INumberService2, NumberService2)
 
 
 @pytest.fixture
@@ -32,9 +33,9 @@ def container():
     container.add_scoped(IGlobalNestedNumber, GlobalNestedNumber)
     container.add_scoped(IGlobalNestedService, GlobalNestedService)
     container.add_scoped(INestedService, NestedService)
+    container.add_scoped(INumberService2, NumberService2)
     # Lifetime
-    container.add_singleton(ILifetimeServiceSingleton,
-                            LifetimeServiceSingleton)
+    container.add_singleton(ILifetimeServiceSingleton,LifetimeServiceSingleton)
     container.add_scoped(ILifetimeServiceScoped, LifetimeServiceScoped)
     container.add_factory(ILifetimeServiceFactory, LifetimeServiceFactory)
     # Integrations
