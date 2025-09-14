@@ -8,7 +8,6 @@ dependencies with different lifetimes (singleton, scoped, factory) in FastAPI.
 import inspect
 from inspect import Parameter, Signature
 from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast, get_type_hints
-from functools import wraps
 
 from typeguard import typechecked, TypeCheckError
 from fastapi.params import Depends
@@ -323,8 +322,24 @@ class Container:
         Used to inject dependencies of a dependency
         """
 
+        hint_params: list[Parameter] = []
         signature: Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
         hints: Optional[dict[str, Any]] = get_type_hints(implementation) if inspect.isclass(implementation) else None
+        if hints:
+            for name, annotation in hints.items():
+                if name in signature.parameters:
+                    continue
+                try:
+                    dependency: Depends = self.resolve(annotation)
+                    hint_params.append(Parameter(
+                        name=name,
+                        kind=Parameter.POSITIONAL_OR_KEYWORD,
+                        annotation=annotation,
+                        default=dependency
+                    ))
+                except ProtocolNotRegisteredError:
+                    pass
+        
         params: list[Parameter] = []
         for name, param in signature.parameters.items():
             if name == 'self':
@@ -343,21 +358,24 @@ class Container:
                     params.append(new_param)
                 except ProtocolNotRegisteredError:
                     params.append(param)
-        if hints:
-            original_init = implementation.__init__
-            @wraps(original_init) # pyright: ignore[reportArgumentType]
-            def __init__(_self: object, *args: Any, **kwargs: Any):
-                original_init(_self, *args, **kwargs)  # pyright: ignore[reportCallIssue]
-
-                for name, annotation in hints.items():
-                    if hasattr(_self, name):
-                        continue
-                    try:
-                        setattr(_self, name, self.resolve(annotation))
-                    except ProtocolNotRegisteredError:
-                        pass
-            implementation.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess]
+        params.extend(hint_params)
         implementation.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
+
+        original_new = implementation.__new__
+
+        def __new__(cls: type, *args: Any, **kwargs: Any): # pyright: ignore[reportUnknownParameterType]
+            try:
+                instance = original_new(cls, *args, **kwargs)  # pyright: ignore[reportUnknownVariableType]
+            except TypeError:
+                instance = original_new(cls)  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
+
+            for param in hint_params:
+                if param.name in kwargs:
+                    setattr(instance, param.name, param.default) # pyright: ignore[reportUnknownArgumentType]
+
+            return instance # pyright: ignore[reportUnknownVariableType]
+
+        implementation.__new__ = __new__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
 
         return implementation
     

@@ -29,11 +29,11 @@ def container():
     container.add_scoped(GlobalFunctionNumber, set_global_function_number)
     container.add_scoped(GeneratorDependencyType, generator_dependency)
     # Nested
+    container.add_scoped(INumberService2, NumberService2)
     container.add_scoped(DependentNestedNumber, get_dependent_nested_number)
     container.add_scoped(IGlobalNestedNumber, GlobalNestedNumber)
     container.add_scoped(IGlobalNestedService, GlobalNestedService)
     container.add_scoped(INestedService, NestedService)
-    container.add_scoped(INumberService2, NumberService2)
     # Lifetime
     container.add_singleton(ILifetimeServiceSingleton,LifetimeServiceSingleton)
     container.add_scoped(ILifetimeServiceScoped, LifetimeServiceScoped)
