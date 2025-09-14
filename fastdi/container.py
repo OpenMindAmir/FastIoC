@@ -15,7 +15,7 @@ from fastapi import FastAPI, APIRouter
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import is_annotated_with_depends, pretend_signature_of
+from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters
 
 
 class Container:
@@ -359,24 +359,21 @@ class Container:
                 except ProtocolNotRegisteredError:
                     params.append(param)
         params.extend(hint_params)
+        params = sort_parameters(params)
         implementation.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
-        original_new = implementation.__new__
+        original_init = implementation.__init__
 
-        def __new__(cls: type, *args: Any, **kwargs: Any): # pyright: ignore[reportUnknownParameterType]
-            try:
-                instance = original_new(cls, *args, **kwargs)  # pyright: ignore[reportUnknownVariableType]
-            except TypeError:
-                instance = original_new(cls)  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
+        if hint_params:
+            def __init__(_self: object, *args: Any, **kwargs: Any):
 
-            for param in hint_params:
-                if param.name in kwargs:
-                    setattr(instance, param.name, param.default) # pyright: ignore[reportUnknownArgumentType]
+                for param in hint_params:
+                    if param.name in kwargs: 
+                        setattr(_self, param.name, kwargs.pop(param.name, None))
 
-            return instance # pyright: ignore[reportUnknownVariableType]
+                original_init(_self, *args, **kwargs)  # pyright: ignore[reportCallIssue]
 
-        implementation.__new__ = __new__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
-
+            implementation.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
         return implementation
     
 

@@ -3,6 +3,7 @@ A set of helper utilities used internally by the FastDI library.
 """
 
 from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin
+from inspect import Parameter
 
 from fastapi.params import Depends
 
@@ -35,3 +36,32 @@ def is_annotated_with_depends(annotation: Any) -> bool:
             if isinstance(extra, Depends):
                 return True
     return False
+
+
+PARAM_KIND_ORDER = {
+    Parameter.POSITIONAL_ONLY: 0,
+    Parameter.POSITIONAL_OR_KEYWORD: 1,
+    Parameter.VAR_POSITIONAL: 2,
+    Parameter.KEYWORD_ONLY: 3,
+    Parameter.VAR_KEYWORD: 4,
+}
+
+def sort_parameters(params: list[Parameter]) -> list[Parameter]:
+
+    """
+    Sort parameters into a valid Python function signature order.
+
+    Rules:
+    1. POSITIONAL_ONLY
+    2. POSITIONAL_OR_KEYWORD (no default first, then with default)
+    3. VAR_POSITIONAL (*args)
+    4. KEYWORD_ONLY (no default first, then with default)
+    5. VAR_KEYWORD (**kwargs)
+    """
+
+    def key(param: Parameter):
+        order = PARAM_KIND_ORDER[param.kind]
+        has_default = 1 if param.default is not Parameter.empty else 0
+        return (order, has_default)
+    
+    return sorted(params, key=key)
