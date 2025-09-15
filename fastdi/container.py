@@ -43,7 +43,7 @@ class Container:
     # --- Injectify ---
 
     @typechecked
-    def injectify(self, target: FastAPI | APIRouter):
+    def injectify(self, *targets: FastAPI | APIRouter):
 
         """
         Wrap a FastAPI app or APIRouter to automatically inject dependencies.
@@ -64,62 +64,64 @@ class Container:
             >>> container.injectify(app)
         """
 
-        original_add_api_route: Callable[..., None]
+        for target in targets:
 
-        if isinstance(target, FastAPI):
-            if getattr(target.router, '_add_api_route', None):
-                original_add_api_route = target.router._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+            original_add_api_route: Callable[..., None]
+
+            if isinstance(target, FastAPI):
+                if getattr(target.router, '_add_api_route', None):
+                    original_add_api_route = target.router._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+                else:
+                    original_add_api_route = target.router.add_api_route
             else:
-                original_add_api_route = target.router.add_api_route
-        else:
-            if getattr(target, '_add_api_route', None):
-                original_add_api_route = target._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
-            else:
-                original_add_api_route = target.add_api_route
+                if getattr(target, '_add_api_route', None):
+                    original_add_api_route = target._add_api_route  # pyright: ignore[reportAttributeAccessIssue, reportUnknownVariableType, reportUnknownMemberType]
+                else:
+                    original_add_api_route = target.add_api_route
 
-        @pretend_signature_of(APIRouter.add_api_route)
-        def injective_add_api_route(path: str, endpoint: Callable[..., Any], **kwargs: Any):
+            @pretend_signature_of(APIRouter.add_api_route)
+            def injective_add_api_route(path: str, endpoint: Callable[..., Any], **kwargs: Any):
 
-            # --- Check Endpoint Params ---
+                # --- Check Endpoint Params ---
 
-            signature = inspect.signature(endpoint)  # pyright: ignore[reportUnknownArgumentType]
-            params: list[inspect.Parameter] = []
+                signature = inspect.signature(endpoint)  # pyright: ignore[reportUnknownArgumentType]
+                params: list[inspect.Parameter] = []
 
-            for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
-                if isinstance(param.default, Depends) or is_annotated_with_depends(param.annotation):
-                    params.append(param)
-                    continue
-                if annotated_dependency := self._get_annotated_dependency_if_registered(param.annotation):
-                    new_param = param.replace(default=annotated_dependency)
-                    params.append(new_param)
-                    continue
-                try:
-                    new_param = param.replace(default=self.resolve(param.annotation))
-                    params.append(new_param)
+                for name, param in signature.parameters.items():  # pyright: ignore[reportUnusedVariable]
+                    if isinstance(param.default, Depends) or is_annotated_with_depends(param.annotation):
+                        params.append(param)
+                        continue
+                    if annotated_dependency := self._get_annotated_dependency_if_registered(param.annotation):
+                        new_param = param.replace(default=annotated_dependency)
+                        params.append(new_param)
+                        continue
+                    try:
+                        new_param = param.replace(default=self.resolve(param.annotation))
+                        params.append(new_param)
 
-                except ProtocolNotRegisteredError:
-                    params.append(param)
+                    except ProtocolNotRegisteredError:
+                        params.append(param)
 
-            endpoint.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
+                endpoint.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
 
-            # --- Route Level Dependencies ---
+                # --- Route Level Dependencies ---
 
-            dependencies: list[Depends] = []
+                dependencies: list[Depends] = []
+                
+                for dependency in kwargs.get(DEPENDENCIES) or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
+                    self._inject_to_list(dependencies, dependency)
+
+                kwargs[DEPENDENCIES] = dependencies
+
+                original_add_api_route(path, endpoint, **kwargs)
             
-            for dependency in kwargs.get(DEPENDENCIES) or []:  # pyright: ignore[reportUnknownVariableType, reportUnknownMemberType]
-                self._inject_to_list(dependencies, dependency)
-
-            kwargs[DEPENDENCIES] = dependencies
-
-            original_add_api_route(path, endpoint, **kwargs)
-        
-        if isinstance(target, FastAPI):
-            target.router.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
-            target.router._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
-        else:
-            target.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
-            target._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+            if isinstance(target, FastAPI):
+                target.router.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+                target.router._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+            else:
+                target.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+                target._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
             
 
     # --- Register & Resolve ---
