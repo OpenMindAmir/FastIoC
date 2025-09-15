@@ -4,6 +4,8 @@ A set of helper utilities used internally by the FastDI library.
 
 from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin
 from inspect import Parameter
+import types
+import inspect
 
 from fastapi.params import Depends
 
@@ -65,3 +67,48 @@ def sort_parameters(params: list[Parameter]) -> list[Parameter]:
         return (order, has_default)
     
     return sorted(params, key=key)
+
+def clone_function(func: types.FunctionType) -> types.FunctionType:
+    """Clone a Python function (sync, async, or generator)."""
+    clone = types.FunctionType(
+        func.__code__,
+        func.__globals__,
+        name=func.__name__,
+        argdefs=func.__defaults__,
+        closure=func.__closure__,
+    )
+    # متادیتاها
+    clone.__dict__.update(func.__dict__)
+    clone.__annotations__ = func.__annotations__.copy() if func.__annotations__ else {}
+    clone.__kwdefaults__ = func.__kwdefaults__.copy() if func.__kwdefaults__ else None
+    clone.__doc__ = func.__doc__
+    clone.__module__ = func.__module__
+    clone.__qualname__ = func.__qualname__
+    return clone
+
+
+def clone_class(cls: type) -> type:
+    """Clone a Python class (with all methods and attributes)."""
+    namespace = dict(cls.__dict__)
+    # private متاهای خاصی که نباید کپی بشن
+    namespace.pop("__dict__", None)
+    namespace.pop("__weakref__", None)
+    clone = type(cls.__name__, cls.__bases__, namespace)
+    clone.__module__ = cls.__module__
+    clone.__doc__ = cls.__doc__
+    clone.__qualname__ = cls.__qualname__
+    return clone
+
+
+def clone_implementation(impl: Any) -> Any:
+    """
+    Clone either a function or a class.
+    - Preserves async / generator / closure for functions
+    - Preserves methods/attributes for classes
+    """
+    if inspect.isfunction(impl):
+        return clone_function(impl)
+    elif inspect.isclass(impl):
+        return clone_class(impl)
+    else:
+        raise TypeError(f"Unsupported implementation type: {type(impl)}")

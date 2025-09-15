@@ -15,7 +15,7 @@ from fastapi import FastAPI, APIRouter
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters
+from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_implementation
 
 
 class Container:
@@ -322,9 +322,11 @@ class Container:
         Used to inject dependencies of a dependency
         """
 
+        impl: FastDIConcrete = clone_implementation(implementation)
+
         hint_params: list[Parameter] = []
-        signature: Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
-        hints: Optional[dict[str, Any]] = get_type_hints(implementation) if inspect.isclass(implementation) else None
+        signature: Signature = inspect.signature(impl.__init__) if inspect.isclass(impl) else inspect.signature(impl)
+        hints: Optional[dict[str, Any]] = get_type_hints(impl) if inspect.isclass(impl) else None
         if hints:
             for name, annotation in hints.items():
                 if name in signature.parameters:
@@ -360,9 +362,9 @@ class Container:
                     params.append(param)
         params.extend(hint_params)
         params = sort_parameters(params)
-        implementation.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
+        impl.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
-        original_init = implementation.__init__
+        original_init = impl.__init__
 
         if hint_params:
             def __init__(_self: object, *args: Any, **kwargs: Any):
@@ -373,8 +375,8 @@ class Container:
 
                 original_init(_self, *args, **kwargs)  # pyright: ignore[reportCallIssue]
 
-            implementation.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
-        return implementation
+            impl.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
+        return impl
     
 
     def _inject_to_list(self, _list: list[Any], item: Any):
