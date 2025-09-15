@@ -100,7 +100,7 @@ def clone_class(cls: type) -> type:
     return clone
 
 
-def clone_implementation(impl: Any) -> Any:
+def clone_concrete(impl: Any) -> Any:
     """
     Clone either a function or a class.
     - Preserves async / generator / closure for functions

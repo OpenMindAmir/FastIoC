@@ -15,7 +15,7 @@ from fastapi import FastAPI, APIRouter
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_implementation
+from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete
 
 
 class Container:
@@ -145,7 +145,6 @@ class Container:
             implementation = dependency.implementation
             lifetime = dependency.lifetime
         
-        implementation: FastDIConcrete = clone_implementation(implementation)
         implementation = self._nested_injector(implementation)
         if lifetime is LifeTime.SINGLETON:
             impl = implementation()
@@ -363,9 +362,10 @@ class Container:
         params = sort_parameters(params)
         implementation.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
-        original_init = implementation.__init__
 
         if hint_params:
+            implementation = clone_concrete(implementation)
+            original_init = implementation.__init__
             def __init__(_self: object, *args: Any, **kwargs: Any):
 
                 for param in hint_params:
