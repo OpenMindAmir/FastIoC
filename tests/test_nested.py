@@ -29,3 +29,4 @@ def test_nested(app: FastAPI, client: TestClient, state: State):
     assert data['n1'] == data['n3'] == data['n4'] == data['n5'] == state.get().nested_number == NESTED_NUMBER
     assert data['n6'] == SERVICE_NUMBER_2
     assert data['txt'] == QUERY_TEXT
+    

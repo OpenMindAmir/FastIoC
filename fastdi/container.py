@@ -327,7 +327,7 @@ class Container:
         hints: Optional[dict[str, Any]] = get_type_hints(implementation) if inspect.isclass(implementation) else None
         if hints:
             for name, annotation in hints.items():
-                if name in signature.parameters:
+                if name in signature.parameters or hasattr(implementation, name):
                     continue
                 try:
                     dependency: Depends = self.resolve(annotation)
