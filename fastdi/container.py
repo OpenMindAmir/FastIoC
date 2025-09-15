@@ -144,7 +144,8 @@ class Container:
             protocol = dependency.protocol
             implementation = dependency.implementation
             lifetime = dependency.lifetime
-
+        
+        implementation: FastDIConcrete = clone_implementation(implementation)
         implementation = self._nested_injector(implementation)
         if lifetime is LifeTime.SINGLETON:
             impl = implementation()
@@ -322,11 +323,9 @@ class Container:
         Used to inject dependencies of a dependency
         """
 
-        impl: FastDIConcrete = clone_implementation(implementation)
-
         hint_params: list[Parameter] = []
-        signature: Signature = inspect.signature(impl.__init__) if inspect.isclass(impl) else inspect.signature(impl)
-        hints: Optional[dict[str, Any]] = get_type_hints(impl) if inspect.isclass(impl) else None
+        signature: Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
+        hints: Optional[dict[str, Any]] = get_type_hints(implementation) if inspect.isclass(implementation) else None
         if hints:
             for name, annotation in hints.items():
                 if name in signature.parameters:
@@ -362,9 +361,9 @@ class Container:
                     params.append(param)
         params.extend(hint_params)
         params = sort_parameters(params)
-        impl.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
+        implementation.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
-        original_init = impl.__init__
+        original_init = implementation.__init__
 
         if hint_params:
             def __init__(_self: object, *args: Any, **kwargs: Any):
@@ -375,8 +374,8 @@ class Container:
 
                 original_init(_self, *args, **kwargs)  # pyright: ignore[reportCallIssue]
 
-            impl.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
-        return impl
+            implementation.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
+        return implementation
     
 
     def _inject_to_list(self, _list: list[Any], item: Any):
