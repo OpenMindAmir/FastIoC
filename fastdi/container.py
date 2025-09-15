@@ -125,7 +125,7 @@ class Container:
     # --- Register & Resolve ---
 
     @typechecked
-    def register(self, protocol: type, implementation: FastDIConcrete, lifetime: LifeTime):
+    def register(self, protocol: type, implementation: FastDIConcrete, lifetime: LifeTime):  # pyright: ignore[reportRedeclaration]
 
         """
         Register a dependency with a given lifetime.
