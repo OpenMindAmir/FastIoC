@@ -7,7 +7,7 @@ from fastdi.definitions import Dependency
 from .dependencies import INumberService, NumberService
 from .constants import SERVICE_NUMBER
 
-# --- Test hook
+# --- Hook Test
 def test_hook():
     app = FastAPI()
 

@@ -6,7 +6,7 @@ from fastapi.testclient import TestClient
 from .dependencies import ILifetimeServiceSingleton, ILifetimeServiceScoped, ILifetimeServiceFactory, ILifetimeService
 from .constants import NUMBERS
 
-# --- Lifetime Test ---
+# --- Lifetime Test
 def test_lifetime(app: FastAPI, client: TestClient):
 
     @app.get('/test')

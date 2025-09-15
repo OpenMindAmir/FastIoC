@@ -12,7 +12,7 @@ from .dependencies import (State, INumberService, IGlobalService, OverrideNumber
 from .constants import OVERRIDE_NUMBER, OVERRIDE_SERVICE_NUMBER, GLOBAL_OVERRIDE_NUMBER, OVERRIDE_NUMBERS
 
 
-# --- Test override
+# --- Override Test
 def test_override(state: State, app: FastAPI, client: TestClient, container: Container):
 
     test_container = Container()
@@ -38,7 +38,7 @@ def test_override(state: State, app: FastAPI, client: TestClient, container: Con
     assert data['num'] == OVERRIDE_NUMBER
     assert state.get().global_override_number == GLOBAL_OVERRIDE_NUMBER
 
-# --- Test override with lifetime
+# --- Override with Lifetime Test
 def test_override_lifetime(app: FastAPI, client: TestClient, container: Container):
 
     test_container = Container()

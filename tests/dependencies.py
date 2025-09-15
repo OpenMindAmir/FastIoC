@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Protocol, Generator, Annotated, Optional
 
-from fastapi import Depends
+from fastapi import Depends, Request
 
 from .constants import *
 
@@ -220,7 +220,7 @@ class LifetimeServiceFactory(ILifetimeServiceFactory):
         return NUMBERS[self.index]
     
 
-# --- Integration dependencies ---
+# --- Integration Dependencies ---
 
 
 class LazyNumber(int): ...
@@ -287,4 +287,18 @@ class LifetimeOverrideServiceFactory(ILifetimeServiceFactory):
     def get_current_item(self) -> int:
         self.index += 1
         return OVERRIDE_NUMBERS[self.index]
+
+
+# --- Integrity Dependencies ---
+
+def get_extra_text(extra: str) -> str:
+    return extra
+
+class ExtraText(str): ...
+
+class DeepService:
+    def __init__(self, request: Request):
+        self.params = request.cookies.get('test')
     
+    def get_params(self):
+        return self.params

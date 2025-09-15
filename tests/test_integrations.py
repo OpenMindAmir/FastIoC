@@ -10,7 +10,7 @@ from .dependencies import State, IGlobalService, set_global_usual_number, IGloba
 from .constants import QUERY_TEXT, GLOBAL_SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER2, SERVICE_NUMBER, LAZY_NUMBER, FUNCTION_NUMBER, GLOBAL_USUAL_NUMBER
 
 
-# --- Application instance test
+# --- Application Instance Test
 def test_app(state: State, container: Container):
 
     router = _APIRouter()
@@ -56,7 +56,7 @@ def test_app(state: State, container: Container):
     assert data2['num'] == FUNCTION_NUMBER
 
 
-# --- Router instance test
+# --- Router Instance Test
 def test_router(state: State, app: _FastAPI, router: _APIRouter, client: TestClient, container: Container):
 
     irouter = APIRouter(container = container, dependencies=[IGlobalService, Depends(set_global_usual_number)]) # pyright: ignore[reportCallIssue]
@@ -111,7 +111,7 @@ def test_router(state: State, app: _FastAPI, router: _APIRouter, client: TestCli
     assert state.get().global_service_number == GLOBAL_SERVICE_NUMBER
     assert state.get().global_usual_number == GLOBAL_USUAL_NUMBER
 
-# --- Container replacement test
+# --- Container Replacement Test
 def test_change_container(container: Container):
 
     app = FastAPI(container = container)
