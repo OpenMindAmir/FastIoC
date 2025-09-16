@@ -297,7 +297,6 @@ def get_extra_text(extra: str, id: int = Cookie()) -> tuple[str, int]:
 class ExtraText(str): ...
 
 
-
 class DeeperSerivce:
 
     request: Request
