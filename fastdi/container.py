@@ -11,7 +11,7 @@ from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cas
 
 from typeguard import typechecked, TypeCheckError
 from fastapi.params import Depends
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Request, Response
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
@@ -330,6 +330,13 @@ class Container:
         if hints:
             for name, annotation in hints.items():
                 if name in signature.parameters or hasattr(implementation, name):
+                    continue
+                if annotation in (Request, Response):
+                    hint_params.append(Parameter(
+                        name=name,
+                        kind=Parameter.POSITIONAL_OR_KEYWORD,
+                        annotation=annotation
+                    ))
                     continue
                 try:
                     dependency: Depends = self.resolve(annotation)

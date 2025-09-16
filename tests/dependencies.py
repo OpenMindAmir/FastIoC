@@ -296,9 +296,25 @@ def get_extra_text(extra: str, id: int = Cookie()) -> tuple[str, int]:
 
 class ExtraText(str): ...
 
+
+
+class DeeperSerivce:
+
+    request: Request
+
+    def get_id(self) -> int:
+        return int(self.request.cookies.get('id'))  # pyright: ignore[reportArgumentType]
+
 class DeepService:
+
+    service: DeeperSerivce
+
     def __init__(self, request: Request):
         self.id = int(request.cookies.get('id'))  # pyright: ignore[reportArgumentType]
     
-    def get_id(self):
+    def get_id(self) -> int:
         return self.id
+    
+    def get_deep_id(self) -> int:
+        return self.service.get_id()
+    
