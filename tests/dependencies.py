@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Protocol, Generator, Annotated, Optional
 
-from fastapi import Depends, Request
+from fastapi import Depends, Request, Cookie
 
 from .constants import *
 
@@ -291,14 +291,14 @@ class LifetimeOverrideServiceFactory(ILifetimeServiceFactory):
 
 # --- Integrity Dependencies ---
 
-def get_extra_text(extra: str) -> str:
-    return extra
+def get_extra_text(extra: str, id: int = Cookie()) -> tuple[str, int]:
+    return extra, id
 
 class ExtraText(str): ...
 
 class DeepService:
     def __init__(self, request: Request):
-        self.params = request.cookies.get('test')
+        self.id = int(request.cookies.get('id'))  # pyright: ignore[reportArgumentType]
     
-    def get_params(self):
-        return self.params
+    def get_id(self):
+        return self.id

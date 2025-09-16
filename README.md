@@ -5,7 +5,6 @@ options pattern note in description
 r&d multiprocessing.Manager
 
 inject fastapi dependencies (like Request, ...) in type hints
-check fastapi data injection
 
 Interface
 FastAPIController (see fastapi-controller)

@@ -4,7 +4,7 @@ from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
 from .dependencies import State, ExtraText, DeepService
-from .constants import QUERY_TEXT
+from .constants import QUERY_TEXT, COOKIE_NUMBER
 
 # --- Endpoint Parameters Test
 def test_parameter(state: State, app: FastAPI, client: TestClient):
@@ -12,15 +12,14 @@ def test_parameter(state: State, app: FastAPI, client: TestClient):
     @app.get('/test')
     async def endpoint(text: Annotated[str, ExtraText], service: DeepService) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
-            'txt': text,
-            'srv': service.get_params()
+            'txt': text[0],
+            'id': text[1],
+            'srv': service.get_id()
         }
     
-    response = client.get('/test', params={'extra': QUERY_TEXT}, cookies= {'test': 'test'})
+    response = client.get('/test', params={'extra': QUERY_TEXT}, cookies= {'id': str(COOKIE_NUMBER)})
     data = response.json()
 
-    print(data)
-
-    # cookie constant in constants
-    # get from Cookie in ExtraText
-    # Try to get Request, Security, ... in class annotations
+    assert response.status_code == 200
+    assert data['txt'] == QUERY_TEXT
+    assert data['id'] == data['srv'] == COOKIE_NUMBER
