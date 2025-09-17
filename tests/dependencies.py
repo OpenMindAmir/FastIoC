@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Protocol, Generator, Annotated, Optional
 
-from fastapi import Depends, Request, Cookie
+from fastapi import Depends, Request, Cookie, BackgroundTasks
 
 from .constants import *
 
@@ -18,6 +18,7 @@ class State:
     generator_exit_number: int = 0
     nested_number: int = 0
     global_override_number: int = 0
+    background_number: int = 0
 
     _instance: Optional['State'] = None
 
@@ -297,6 +298,9 @@ def get_extra_text(extra: str, id: int = Cookie()) -> tuple[str, int]:
 class ExtraText(str): ...
 
 
+def background_task(number: int):
+    state.get().background_number = number
+
 class DeeperSerivce:
 
     request: Request
@@ -311,9 +315,11 @@ class DeeperSerivce:
 class DeepService:
 
     service: DeeperSerivce
+    background: BackgroundTasks
 
     def __init__(self, request: Request):
         self.id = int(request.cookies.get('id'))  # pyright: ignore[reportArgumentType]
+        self.background.add_task(background_task, BACKGROUND_NUMBER)
     
     def get_id(self) -> int:
         return self.id

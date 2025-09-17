@@ -11,7 +11,7 @@ from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cas
 
 from typeguard import typechecked, TypeCheckError
 from fastapi.params import Depends, Query, Body, File, Form, Path, Header, Cookie
-from fastapi import FastAPI, APIRouter, Request, Response
+from fastapi import FastAPI, APIRouter, Request, Response, BackgroundTasks
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
@@ -340,7 +340,7 @@ class Container:
                             default=value
                         ))
                     continue
-                if annotation in (Request, Response):
+                if annotation in (Request, Response, BackgroundTasks):
                     hint_params.append(Parameter(
                         name=name,
                         kind=Parameter.POSITIONAL_OR_KEYWORD,
