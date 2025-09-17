@@ -16,11 +16,13 @@ def test_parameter( app: FastAPI, client: TestClient):
             'id': text[1],
             'srv': service.get_id(),
             'dep': service.get_deep_id(),
+            'cki': service.get_deep_cookie()
         }
     
     response = client.get('/test', params={'extra': QUERY_TEXT}, cookies= {'id': str(COOKIE_NUMBER)})
     data = response.json()
+    print(data)
 
     assert response.status_code == 200
     assert data['txt'] == QUERY_TEXT
-    assert data['id'] == data['srv'] == data['dep'] == COOKIE_NUMBER
+    assert data['id'] == data['srv'] == data['dep'] == data['cki'] == COOKIE_NUMBER

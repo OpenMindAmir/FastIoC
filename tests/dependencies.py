@@ -300,9 +300,13 @@ class ExtraText(str): ...
 class DeeperSerivce:
 
     request: Request
+    id: int = Cookie()
 
     def get_id(self) -> int:
         return int(self.request.cookies.get('id'))  # pyright: ignore[reportArgumentType]
+    
+    def get_cookie(self) -> int:
+        return self.id
 
 class DeepService:
 
@@ -316,4 +320,7 @@ class DeepService:
     
     def get_deep_id(self) -> int:
         return self.service.get_id()
+    
+    def get_deep_cookie(self) -> int:
+        return self.service.get_cookie()
     

@@ -10,7 +10,7 @@ from inspect import Parameter, Signature
 from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast, get_type_hints
 
 from typeguard import typechecked, TypeCheckError
-from fastapi.params import Depends
+from fastapi.params import Depends, Query, Body, File, Form, Path, Header, Cookie
 from fastapi import FastAPI, APIRouter, Request, Response
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
@@ -329,7 +329,16 @@ class Container:
         hints: Optional[dict[str, Any]] = get_type_hints(implementation) if inspect.isclass(implementation) else None
         if hints:
             for name, annotation in hints.items():
-                if name in signature.parameters or hasattr(implementation, name):
+                if name in signature.parameters:
+                    continue
+                if hasattr(implementation, name):
+                    if isinstance(value := getattr(implementation, name), (Query, Body, Path, File, Form, Header, Cookie)):
+                        hint_params.append(Parameter(
+                            name=name,
+                            kind=Parameter.POSITIONAL_OR_KEYWORD,
+                            annotation=annotation,
+                            default=value
+                        ))
                     continue
                 if annotation in (Request, Response):
                     hint_params.append(Parameter(
