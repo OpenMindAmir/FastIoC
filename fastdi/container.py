@@ -7,15 +7,15 @@ dependencies with different lifetimes (singleton, scoped, factory) in FastAPI.
 
 import inspect
 from inspect import Parameter, Signature
-from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast, get_type_hints
-
+from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast
 from typeguard import typechecked, TypeCheckError
-from fastapi.params import Depends, Query, Body, File, Form, Path, Header, Cookie
-from fastapi import FastAPI, APIRouter, Request, Response, BackgroundTasks
+from fastapi import FastAPI, APIRouter, Request, Response, BackgroundTasks, WebSocket, UploadFile
+from fastapi.params import Depends
+from fastapi.security import SecurityScopes
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete
+from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete, is_annotated_with_marker
 
 
 class Container:
@@ -326,21 +326,12 @@ class Container:
 
         hint_params: list[Parameter] = []
         signature: Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
-        hints: Optional[dict[str, Any]] = get_type_hints(implementation) if inspect.isclass(implementation) else None
+        hints: Optional[dict[str, Any]] = implementation.__annotations__ if inspect.isclass(implementation) else None # TODO ForwardRef + Generics
         if hints:
             for name, annotation in hints.items():
-                if name in signature.parameters:
+                if name in signature.parameters or hasattr(implementation, name):
                     continue
-                if hasattr(implementation, name):
-                    if isinstance(value := getattr(implementation, name), (Query, Body, Path, File, Form, Header, Cookie)):
-                        hint_params.append(Parameter(
-                            name=name,
-                            kind=Parameter.POSITIONAL_OR_KEYWORD,
-                            annotation=annotation,
-                            default=value
-                        ))
-                    continue
-                if annotation in (Request, Response, BackgroundTasks):
+                if annotation in (Request, Response, BackgroundTasks, WebSocket, UploadFile, SecurityScopes) or is_annotated_with_marker(annotation):
                     hint_params.append(Parameter(
                         name=name,
                         kind=Parameter.POSITIONAL_OR_KEYWORD,

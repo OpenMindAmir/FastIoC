@@ -34,29 +34,6 @@ OpenIdConnect
 
 SecurityScopes 
 
-Query(...)	پارامترهای query string در URL 
-Shane's Personal Blog
-+3
-FastAPI
-+3
-FastAPI
-+3
-Path(...)	پارامترهای مسیر URL (مثلاً {item_id}) 
-FastAPI
-Body(...)	بدنه‌ی درخواست، معمولاً JSON یا مدل‌های Pydantic 
-FastAPI
-+1
-Header(...)	هدرهای HTTP 
-FastAPI
-+1
-Cookie(...)	کوکی‌ها 
-FastAPI
-+1
-Form(...)	فرم‌های ارسال شده (معمولاً برای application/x-www-form-urlencoded) 
-FastAPI
-File(...)	فایل‌هایی که از طرف کلاینت ارسال می‌شوند
-
-----
 
 علاوه بر این، Security() (که شبیه Depends() است اما برای ابزار امنیتی با قابلیت تعریف scope) 
 FastAPI
@@ -89,3 +66,36 @@ Mediator
 FastAPIEnterprize
 correct names for generator (openapisimplification) see fastapi utils
 Pascalcase
+
+
+
+
+
+---------------------------
+
+
+def resolve_forward_refs(annotation, globalns, localns):
+    from typing import get_origin, get_args, Annotated, ForwardRef
+    
+    origin = get_origin(annotation)
+    
+    if origin is Annotated:
+        base, *extras = get_args(annotation)
+        resolved_base = resolve_forward_refs(base, globalns, localns)
+        return Annotated[resolved_base, *extras]
+
+    if origin is not None:  # Generic
+        args = get_args(annotation)
+        resolved_args = tuple(resolve_forward_refs(a, globalns, localns) for a in args)
+        return origin[resolved_args]
+
+    if isinstance(annotation, str):  # simple forward ref
+        return ForwardRef(annotation)._evaluate(globalns, localns)
+
+    return annotation
+----
+import sys
+cls = Service
+globalns = vars(sys.modules[cls.__module__])
+localns = {}
+localns = dict(vars(cls))

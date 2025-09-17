@@ -7,7 +7,7 @@ from inspect import Parameter
 import types
 import inspect
 
-from fastapi.params import Depends
+from fastapi.params import Depends, Query, Body, Path, File, Form, Cookie, Header, Security
 
 T = TypeVar('T')
 
@@ -23,6 +23,20 @@ def pretend_signature_of(func: T) -> Callable[[Any], T]:
     return lambda f: f
 
 
+def is_annotated_with(annotation: Any, *markers: Any) -> bool:
+
+    """
+    Check if a type annotation is wrapped with any of given markers `Annotated[..., <marker>(...)]`.
+    """
+
+    if get_origin(annotation) is Annotated:
+        main_type, *extras = get_args(annotation) # pyright: ignore[reportUnusedVariable]
+        for extra in extras:
+            if isinstance(extra, markers):
+                return True
+    return False
+
+
 def is_annotated_with_depends(annotation: Any) -> bool:
 
     """
@@ -32,13 +46,20 @@ def is_annotated_with_depends(annotation: Any) -> bool:
     a `Depends` marker among its extra arguments, otherwise False.
     """
 
-    if get_origin(annotation) is Annotated:
-        mainType, *extras = get_args(annotation)  # pyright: ignore[reportUnusedVariable]
-        for extra in extras:
-            if isinstance(extra, Depends):
-                return True
-    return False
+    return is_annotated_with(annotation, Depends)
 
+def is_annotated_with_marker(annotation: Any) -> bool:
+
+    """
+    Check if a type annotation is wrapped with `Annotated[..., <Marker>(...)]`.
+
+    Marker: Query, Body, Path, File, Form, Cookie, Header, Security
+
+    Returns True if the given annotation is an `Annotated` type that includes
+    a `<Marker>` marker among its extra arguments, otherwise False.
+    """
+
+    return is_annotated_with(annotation, Query, Body, Path, File, Form, Cookie, Header, Security)
 
 PARAM_KIND_ORDER = {
     Parameter.POSITIONAL_ONLY: 0,
@@ -112,3 +133,6 @@ def clone_concrete(impl: Any) -> Any:
         return clone_class(impl)
     else:
         raise TypeError(f"Unsupported implementation type: {type(impl)}")
+    
+
+# def resolve_forward_refs(annotations: Any, globalns, localns)

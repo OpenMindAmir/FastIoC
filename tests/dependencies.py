@@ -304,7 +304,7 @@ def background_task(number: int):
 class DeeperSerivce:
 
     request: Request
-    id: int = Cookie()
+    id: Annotated[int, Cookie()]
 
     def get_id(self) -> int:
         return int(self.request.cookies.get('id'))  # pyright: ignore[reportArgumentType]
