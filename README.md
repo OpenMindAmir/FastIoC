@@ -7,30 +7,6 @@ r&d multiprocessing.Manager
 Singleton distructor ...
 singleton __call__
 
-
-APIKeyHeader
-
-APIKeyQuery
-
-APIKeyCookie
-
-HTTPBasic / HTTPBasicCredentials
-
-HTTPBearer / HTTPAuthorizationCredentials
-
-OAuth2 / OAuth2PasswordBearer
-
-OAuth2AuthorizationCodeBearer
-
-OAuth2PasswordRequestForm
-
-OAuth2PasswordRequestFormStrict
-
-OpenIdConnect
-
-SecurityScopes 
-
-
 rename container & may be add factory
 
 Interface

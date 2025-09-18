@@ -53,13 +53,13 @@ def is_annotated_with_marker(annotation: Any) -> bool:
     """
     Check if a type annotation is wrapped with `Annotated[..., <Marker>(...)]`.
 
-    Marker: Query, Body, Path, File, Form, Cookie, Header, Security
+    Marker: Query, Body, Path, File, Form, Cookie, Header, Security, Depends
 
     Returns True if the given annotation is an `Annotated` type that includes
     a `<Marker>` marker among its extra arguments, otherwise False.
     """
 
-    return is_annotated_with(annotation, Query, Body, Path, File, Form, Cookie, Header, Security)
+    return is_annotated_with(annotation, Query, Body, Path, File, Form, Cookie, Header, Security, Depends)
 
 PARAM_KIND_ORDER = {
     Parameter.POSITIONAL_ONLY: 0,
@@ -138,6 +138,14 @@ def clone_concrete(impl: Any) -> Any:
 def resolve_forward_refs(annotation: Any, globalns: dict[Any, Any], localns: dict[Any, Any]) -> Any:
     
     """
+    Recursively resolves forward references in type annotations.
+
+    Handles:
+    - ForwardRef strings
+    - Generic types (e.g., List[T], Dict[K, V])
+    - Annotated types
+
+    Returns the annotation with all forward references replaced by actual types.
     """
 
     origin = get_origin(annotation)
