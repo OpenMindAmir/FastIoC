@@ -2,7 +2,7 @@
 A set of helper utilities used internally by the FastDI library.
 """
 
-from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin
+from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, ForwardRef
 from inspect import Parameter
 import types
 import inspect
@@ -135,4 +135,24 @@ def clone_concrete(impl: Any) -> Any:
         raise TypeError(f"Unsupported implementation type: {type(impl)}")
     
 
-# def resolve_forward_refs(annotations: Any, globalns, localns)
+def resolve_forward_refs(annotation: Any, globalns: dict[Any, Any], localns: dict[Any, Any]) -> Any:
+    
+    """
+    """
+
+    origin = get_origin(annotation)
+
+    if origin is Annotated:
+        base, *extras = get_args(annotation)
+        resolved_base = resolve_forward_refs(base, globalns, localns)
+        return Annotated[resolved_base, *extras]
+    
+    if origin is not None: # Generic
+        args = get_args(annotation)
+        resolved_args = tuple(resolve_forward_refs(a, globalns, localns) for a in args)
+        return origin[resolved_args]
+    
+    if isinstance(annotation, str):
+        return ForwardRef(annotation)._evaluate(globalns, localns)  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
+    
+    return annotation

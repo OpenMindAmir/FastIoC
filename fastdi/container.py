@@ -5,6 +5,7 @@ Provides a dependency injection IoC container for registering and resolving
 dependencies with different lifetimes (singleton, scoped, factory) in FastAPI.
 """
 
+import sys
 import inspect
 from inspect import Parameter, Signature
 from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast
@@ -15,7 +16,7 @@ from fastapi.security import SecurityScopes
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete, is_annotated_with_marker
+from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete, is_annotated_with_marker, resolve_forward_refs
 
 
 class Container:
@@ -326,7 +327,7 @@ class Container:
 
         hint_params: list[Parameter] = []
         signature: Signature = inspect.signature(implementation.__init__) if inspect.isclass(implementation) else inspect.signature(implementation)
-        hints: Optional[dict[str, Any]] = implementation.__annotations__ if inspect.isclass(implementation) else None # TODO ForwardRef + Generics
+        hints: Optional[dict[str, Any]] = resolve_forward_refs(implementation.__annotations__, vars(sys.modules[implementation.__module__]), dict(vars(implementation))) if inspect.isclass(implementation) else None
         if hints:
             for name, annotation in hints.items():
                 if name in signature.parameters or hasattr(implementation, name):
