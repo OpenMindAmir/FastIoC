@@ -43,19 +43,19 @@ def test_override_lifetime(app: FastAPI, client: TestClient, container: Containe
 
     test_container = Container()
     test_container.add_singleton(ILifetimeServiceSingleton, LifetimeOverrideServiceSingleton)
-    test_container.add_factory(ILifetimeServiceScoped, LifetimeOverrideServiceScoped)
-    test_container.add_factory(ILifetimeServiceFactory, LifetimeOverrideServiceFactory)
+    test_container.add_transient(ILifetimeServiceScoped, LifetimeOverrideServiceScoped)
+    test_container.add_transient(ILifetimeServiceFactory, LifetimeOverrideServiceFactory)
 
     app.dependency_overrides = container.override(container=test_container)
 
     @app.get('/test')
-    async def endpoint(singleton: ILifetimeServiceSingleton, scoped: ILifetimeServiceScoped, _scoped: Annotated[ILifetimeService, ILifetimeServiceScoped], factory: ILifetimeServiceFactory, _factory: Annotated[ILifetimeService, ILifetimeServiceFactory]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
+    async def endpoint(singleton: ILifetimeServiceSingleton, scoped: ILifetimeServiceScoped, _scoped: Annotated[ILifetimeService, ILifetimeServiceScoped], transient: ILifetimeServiceFactory, _transient: Annotated[ILifetimeService, ILifetimeServiceFactory]) -> dict[str, Any]:  # pyright: ignore[reportUnusedFunction]
         return {
             's': singleton.get_current_item(),
             'r1': scoped.get_current_item(),
             'r2': _scoped.get_current_item(),
-            'f1': factory.get_current_item(),
-            'f2': _factory.get_current_item(),
+            't1': transient.get_current_item(),
+            't2': _transient.get_current_item(),
         }
     
     response = client.get('/test')
@@ -64,5 +64,5 @@ def test_override_lifetime(app: FastAPI, client: TestClient, container: Containe
     _data = _response.json()
 
     assert response.status_code == _response.status_code == 200
-    assert data['f1'] == data['f2'] == _data['f1'] == _data['f2'] == data['r1'] == _data['r1'] == data['s'] == OVERRIDE_NUMBERS[1]
+    assert data['t1'] == data['t2'] == _data['t1'] == _data['t2'] == data['r1'] == _data['r1'] == data['s'] == OVERRIDE_NUMBERS[1]
     assert data['r2'] == _data['r2'] == _data['s'] == OVERRIDE_NUMBERS[2]

@@ -7,8 +7,6 @@ r&d multiprocessing.Manager
 Singleton distructor ...
 singleton __call__
 
-rename container & may be add factory
-
 Interface
 FastAPIController (see fastapi-controller)
 Mediator

@@ -2,7 +2,7 @@
 FastDI Container module.
 
 Provides a dependency injection IoC container for registering and resolving
-dependencies with different lifetimes (singleton, scoped, factory) in FastAPI.
+dependencies with different lifetimes (singleton, request-scoped, transient) in FastAPI.
 """
 
 import sys
@@ -222,10 +222,10 @@ class Container:
         self.register(protocol, implementation, LifeTime.SCOPED)
 
 
-    def add_factory(self, protocol: type, implementation: FastDIConcrete):
+    def add_transient(self, protocol: type, implementation: FastDIConcrete):
 
         """
-        Register a factory (transient) dependency.
+        Register a transient dependency.
 
         A new instance is created each time the dependency is resolved.
 
@@ -461,8 +461,8 @@ class Container:
         Args:
             dependency (Dependency[Any]): The dependency instance about to be registered.
                 - `dependency.protocol`: The interface or protocol type.
-                - `dependency.implementation`: The implementation implementation or factory.
-                - `dependency.lifetime`: The lifetime of the dependency (SINGLETON, SCOPED, FACTORY).
+                - `dependency.implementation`: The implementation or factory.
+                - `dependency.lifetime`: The lifetime of the dependency (SINGLETON, SCOPED, TRANSIENT).
 
         Returns:
             Dependency[Any]: The (optionally modified) dependency that will actually be registered.

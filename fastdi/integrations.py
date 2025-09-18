@@ -5,7 +5,7 @@ This module provides extended versions of FastAPI and APIRouter with
 automatic FastDI dependency injection support. It allows:
 
 - Management of global dependencies via a built-in FastDI Container.
-- Developer-friendly DX helpers for registering singleton, scoped, and factory dependencies.
+- Developer-friendly DX helpers for registering singleton, request-scoped, and transient dependencies.
 - Seamless integration with existing FastAPI routes and APIRouters without
   requiring manual injection setup.
 """
@@ -108,10 +108,10 @@ class Injectified:
 
         self._container.add_scoped(protocol, implementation)
 
-    def add_factory(self, protocol: type, implementation: FastDIConcrete):
+    def add_transient(self, protocol: type, implementation: FastDIConcrete):
 
         """
-        Register a factory (transient) dependency into the internal container.
+        Register a transient dependency into the internal container.
         
         A new instance is created each time the dependency is resolved.
 
@@ -123,7 +123,7 @@ class Injectified:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self._container.add_factory(protocol, implementation)
+        self._container.add_transient(protocol, implementation)
 
 
 class FastAPI(_FastAPI, Injectified):
@@ -136,7 +136,7 @@ class FastAPI(_FastAPI, Injectified):
           A default container is created automatically, but it can be replaced via the `container` property.
         - Lazy injection of dependencies into route endpoints.
         - Developer-friendly DX sugar:
-            - `add_singleton`, `add_scoped`, `add_factory` to register dependencies in the container.
+            - `add_singleton`, `add_scoped`, `add_transient` to register dependencies in the container.
         - Global and route-level dependencies are automatically processed.
     """
 
@@ -163,7 +163,7 @@ class APIRouter(_APIRouter, Injectified):
           A default container is created automatically, but it can be replaced via the `container` property.
         - Lazy injection of dependencies into route endpoints.
         - Developer-friendly DX sugar:
-            - `add_singleton`, `add_scoped`, `add_factory` to register dependencies in the container.
+            - `add_singleton`, `add_scoped`, `add_transient` to register dependencies in the container.
         - Global and route-level dependencies are automatically processed.
     """
 

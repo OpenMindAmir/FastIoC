@@ -37,7 +37,7 @@ def container():
     # Lifetime
     container.add_singleton(ILifetimeServiceSingleton,LifetimeServiceSingleton)
     container.add_scoped(ILifetimeServiceScoped, LifetimeServiceScoped)
-    container.add_factory(ILifetimeServiceFactory, LifetimeServiceFactory)
+    container.add_transient(ILifetimeServiceFactory, LifetimeServiceFactory)
     # Integrations
     container.add_scoped(IGlobalService2, GlobalService2)
     # Integrity
