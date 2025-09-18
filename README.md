@@ -4,8 +4,10 @@ options pattern note in description
 
 r&d multiprocessing.Manager
 
-Singleton distructor ...
+Singleton distructor ... singleton in lifespan
 singleton __call__
+exception handlers
+middleware
 
 Interface
 FastAPIController (see fastapi-controller)
