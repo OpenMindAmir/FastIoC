@@ -15,11 +15,11 @@ class LifeTime(Enum):
 
     - SINGLETON: One instance shared for the whole process/worker.
     - SCOPED: One instance per HTTP request.
-    - FACTORY: A new instance on every resolve.
+    - TRANSIENT: A new instance on every resolve.
     """
     SINGLETON = auto()
     SCOPED = auto()
-    FACTORY = auto()
+    TRANSIENT = auto()
 
 
 FastDIConcrete = type | Callable[..., Any]

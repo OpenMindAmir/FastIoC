@@ -157,7 +157,7 @@ class Container:
                 return impl
             self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
         else:
-            self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifetime is LifeTime.FACTORY else True)
+            self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifetime is LifeTime.TRANSIENT else True)
 
 
     def resolve(self, protocol: type) -> Depends:
@@ -237,7 +237,7 @@ class Container:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
         """
 
-        self.register(protocol, implementation, LifeTime.FACTORY)
+        self.register(protocol, implementation, LifeTime.TRANSIENT)
 
     # --- Override
 
