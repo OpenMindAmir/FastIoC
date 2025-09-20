@@ -21,7 +21,7 @@ def test_dispose(state: State, container: Container):
     container.injectify(app)
 
     @app.get('/')
-    def endpoint() -> int:  # pyright: ignore[reportUnusedFunction]
+    async def endpoint() -> int:  # pyright: ignore[reportUnusedFunction]
         return 1
     
     with TestClient(app) as client:

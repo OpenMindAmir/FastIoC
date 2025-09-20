@@ -6,8 +6,11 @@ from fastapi.testclient import TestClient
 from fastdi.integrations import FastAPI, APIRouter
 from fastdi.container import Container
 
-from .dependencies import State, IGlobalService, set_global_usual_number, IGlobalService2, INumberService, LazyNumber, get_lazy_number, get_function_number, FunctionNumber
-from .constants import QUERY_TEXT, GLOBAL_SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER2, SERVICE_NUMBER, LAZY_NUMBER, FUNCTION_NUMBER, GLOBAL_USUAL_NUMBER
+from .dependencies import (State, IGlobalService, set_global_usual_number, IGlobalService2, INumberService,
+                            LazyNumber, get_lazy_number, get_function_number, FunctionNumber, OverrideNumberSerivce,
+                            GlobalOverrideService, get_override_function_number)
+from .constants import (QUERY_TEXT, GLOBAL_SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER2, SERVICE_NUMBER, LAZY_NUMBER, FUNCTION_NUMBER, GLOBAL_USUAL_NUMBER,
+                        OVERRIDE_SERVICE_NUMBER, OVERRIDE_NUMBER, GLOBAL_OVERRIDE_NUMBER)
 
 
 # --- Application Instance Test
@@ -143,3 +146,34 @@ def test_change_container(container: Container):
     assert response.status_code ==  response2.status_code == 200
     assert data['srv'] == SERVICE_NUMBER
     assert data2['num'] == LAZY_NUMBER
+
+# --- Override Test
+def test_override(state: State, container: Container):
+
+    app = FastAPI(container = container)
+    client = TestClient(app)
+
+    mock_container = Container()
+    mock_container.add_scoped(IGlobalService, GlobalOverrideService)
+    mock_container.add_scoped(INumberService, OverrideNumberSerivce)
+
+    dependency_overrides = {
+        get_function_number: get_override_function_number
+    }
+
+    app.override_dependencies(dependency_overrides, mock_container)
+
+    @app.get('/test', dependencies=[IGlobalService])  # pyright: ignore[reportArgumentType]
+    async def endpoint(service: INumberService, number: int = Depends(get_function_number)) -> dict[str, Any]: # pyright: ignore[reportUnusedFunction]
+        return {
+            'srv': service.get_number(),
+            'num': number
+        }
+    
+    response = client.get('/test')
+    data = response.json()
+
+    assert response.status_code == 200
+    assert data['srv'] == OVERRIDE_SERVICE_NUMBER
+    assert data['num'] == OVERRIDE_NUMBER
+    assert state.get().global_override_number == GLOBAL_OVERRIDE_NUMBER

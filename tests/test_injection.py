@@ -1,4 +1,5 @@
 from typing import Any, Annotated
+import logging
 
 from fastapi import FastAPI, APIRouter, Depends
 from fastapi.testclient import TestClient
@@ -10,6 +11,9 @@ from .constants import (QUERY_TEXT, SERVICE_NUMBER, GENERATOR_NUMBER, FUNCTION_N
 
 # --- Application Endpoint Test (Async) ---
 def test_app_endpoint(app: FastAPI, client: TestClient, state: State):
+
+    logger = logging.getLogger("FastDI")
+    logger.setLevel(logging.DEBUG)
 
     @app.get('/test', dependencies=[IGlobalService, GlobalFunctionNumber, Depends(set_global_usual_number)])  # pyright: ignore[reportArgumentType]
     async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, # pyright: ignore[reportUnusedFunction]

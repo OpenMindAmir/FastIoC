@@ -22,6 +22,11 @@ from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_p
 
 log = logging.getLogger('FastDI')
 
+if not log.handlers:
+    ch = logging.StreamHandler()
+    ch.setFormatter(logging.Formatter("FastDI: %(levelname)s: %(message)s"))
+    log.addHandler(ch)
+
 
 class Container:
 
@@ -44,6 +49,8 @@ class Container:
 
         self.dependencies: dict[type, Depends] = {}
         self._singleton_cleanups : list[Callable[..., Any]] = []
+
+        log.debug('IoC/DI Container initialized ...')
 
     # --- Injectify ---
 
@@ -124,9 +131,11 @@ class Container:
             if isinstance(target, FastAPI):
                 target.router.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
                 target.router._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+                log.debug('FastAPI application injectified')
             else:
                 target.add_api_route = injective_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
                 target._add_api_route = original_add_api_route  # pyright: ignore[reportAttributeAccessIssue]
+                log.debug('FastAPI router injectified')
             
 
     # --- Register & Resolve ---
@@ -148,6 +157,7 @@ class Container:
 
         dependency: Dependency[Any] | None = self.before_register_hook(Dependency[Any](protocol, implementation, lifetime))   # pyright: ignore[reportArgumentType]
         if dependency:
+            log.debug('Registeration hook executed for dependency "%s"', dependency)
             protocol = dependency.protocol
             implementation = dependency.implementation
             lifetime = dependency.lifetime
@@ -164,6 +174,7 @@ class Container:
             self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
         else:
             self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifetime is LifeTime.TRANSIENT else True)
+        log.debug('Dependency "%s" registered with "%s" lifetime', implementation, lifetime)
 
 
     def resolve(self, protocol: type) -> Depends:
@@ -172,8 +183,10 @@ class Container:
         
         self.check_if_registered(protocol)
         dependency: Depends = self.dependencies[protocol]
+        log.debug('Resolve called for protocol "%s"', protocol)
 
         if hooked_dependency := self.before_resolve_hook(dependency):
+            log.debug('Resolve hook executed for protocol "%s"', protocol)
             return hooked_dependency
         
         return dependency
@@ -307,6 +320,7 @@ class Container:
             try:
                 original = cast(Callable[..., Any], self.resolve(cast(type, key)).dependency)
                 dependencies |= {original: value}
+                log.debug('Registered dependency "%s" overrided', key)
             except (ProtocolNotRegisteredError, TypeCheckError):
                 pass
         
@@ -315,6 +329,7 @@ class Container:
                 try:
                     original = cast(Callable[..., Any], self.resolve(key).dependency)
                     dependencies |= {original: cast(Callable[..., Any], value.dependency)}
+                    log.debug('Registered dependency "%s" overrided by Mock Container', key)
                 except:
                     pass
 
@@ -323,7 +338,7 @@ class Container:
     # --- Dispose
 
     async def dispose(self):
-        
+
         """
         Dispose all registered singleton dependencies.
 
@@ -341,16 +356,17 @@ class Container:
         """
 
         for disposer in self._singleton_cleanups:
+            name: str
+            try:
+                name = disposer.__self__.__class__.__name__  # pyright: ignore[reportUnknownVariableType, reportAttributeAccessIssue, reportFunctionMemberAccess, reportUnknownMemberType]
+            except:
+                name = disposer.__name__ # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
             try: 
                 call = disposer()
                 if inspect.isawaitable(call):
-                    await call 
+                    await call
+                log.debug('Dependency "%s" disposed')
             except Exception as exception:
-                name: str
-                try:
-                    name = disposer.__self__.__class__.__name__  # pyright: ignore[reportUnknownVariableType, reportAttributeAccessIssue, reportFunctionMemberAccess, reportUnknownMemberType]
-                except:
-                    name = disposer.__name__ # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
                 log.exception('Error disposing "%s": %s', name, exception) # pyright: ignore[reportUnknownArgumentType]
 
 
@@ -377,6 +393,7 @@ class Container:
                         kind=Parameter.POSITIONAL_OR_KEYWORD,
                         annotation=annotation
                     ))
+                    log.debug('Resolved FastAPI built-in "%s" as nested dependency for "%s"', annotation, implementation)
                     continue
                 try:
                     dependency: Depends = self.resolve(annotation)
@@ -386,6 +403,7 @@ class Container:
                         annotation=annotation,
                         default=dependency
                     ))
+                    log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
                 except ProtocolNotRegisteredError:
                     pass
         
@@ -405,6 +423,7 @@ class Container:
                 try:
                     new_param = param.replace(default=self.resolve(annotation))
                     params.append(new_param)
+                    log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
                 except ProtocolNotRegisteredError:
                     params.append(param)
         params.extend(hint_params)
