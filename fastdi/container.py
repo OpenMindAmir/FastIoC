@@ -7,6 +7,7 @@ dependencies with different lifetimes (singleton, request-scoped, transient) in 
 
 import sys
 import inspect
+import logging
 from inspect import Parameter, Signature
 from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast
 from typeguard import typechecked, TypeCheckError
@@ -17,6 +18,9 @@ from fastapi.security import SecurityScopes
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
 from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete, is_annotated_with_marker, resolve_forward_refs
+
+
+log = logging.getLogger('FastDI')
 
 
 class Container:
@@ -39,7 +43,7 @@ class Container:
         """Initialize an empty dependency container."""
 
         self.dependencies: dict[type, Depends] = {}
-
+        self._singleton_cleanups : list[Callable[..., Any]] = []
 
     # --- Injectify ---
 
@@ -153,6 +157,8 @@ class Container:
             impl = implementation()
             if inspect.isgenerator(impl) or inspect.isasyncgen(impl):
                 raise SingletonGeneratorNotAllowedError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
+            if (dispose := getattr(impl, '__dispose__', None)) and callable(dispose):
+                self._singleton_cleanups.append(dispose)
             def singleton_provider() -> Any:
                 return impl
             self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
@@ -313,6 +319,22 @@ class Container:
                     pass
 
         return dependencies
+
+    # --- Dispose
+
+    async def dispose(self):
+        for disposer in self._singleton_cleanups:
+            try: 
+                disposer = disposer()
+                if inspect.isawaitable(disposer):
+                    await disposer 
+            except Exception as exception:
+                name: str
+                try:
+                    name = disposer.__self__.__class__.__name__  # pyright: ignore[reportUnknownVariableType, reportAttributeAccessIssue, reportFunctionMemberAccess, reportUnknownMemberType]
+                except:
+                    name = disposer.__name__ # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
+                log.exception('Error disposing %s: %s', name, exception) # pyright: ignore[reportUnknownArgumentType]
 
 
     # --- Internal helper functions

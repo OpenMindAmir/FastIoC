@@ -15,7 +15,8 @@ from .dependencies import (State, state as _state, IGlobalService, INumberServic
                             IGlobalNestedService, GlobalNestedService, ILifetimeServiceSingleton,
                             ILifetimeServiceScoped, ILifetimeServiceFactory, LifetimeServiceSingleton,
                             LifetimeServiceScoped, LifetimeServiceFactory, IGlobalService2, GlobalService2,
-                            INumberService2, NumberService2, ExtraText, get_extra_text, DeepService, DeeperSerivce)
+                            INumberService2, NumberService2, ExtraText, get_extra_text, DeepService,
+                            DeeperSerivce, IDisposable, Disposable)
 
 
 @pytest.fixture
@@ -44,6 +45,9 @@ def container():
     container.add_scoped(DeeperSerivce, DeeperSerivce)
     container.add_scoped(DeepService, DeepService)
     container.add_scoped(ExtraText, get_extra_text)
+    # Dispose
+    container.add_singleton(IDisposable, Disposable)
+
     return container
 
 

@@ -19,6 +19,7 @@ class State:
     nested_number: int = 0
     global_override_number: int = 0
     background_number: int = 0
+    dispose_number: int = 0
 
     _instance: Optional['State'] = None
 
@@ -292,6 +293,7 @@ class LifetimeOverrideServiceFactory(ILifetimeServiceFactory):
 
 # --- Integrity Dependencies ---
 
+
 def get_extra_text(extra: str, id: int = Cookie()) -> tuple[str, int]:
     return extra, id
 
@@ -330,3 +332,16 @@ class DeepService:
     def get_deep_cookie(self) -> int:
         return self.service.get_cookie()
     
+
+# --- Dispose Dependencies ---
+
+
+class IDisposable(Protocol):
+
+    async def __dispose__(self): ...
+
+
+class Disposable(IDisposable):
+
+    async def __dispose__(self):
+        state.get().dispose_number = DISPOSE_NUMBER
