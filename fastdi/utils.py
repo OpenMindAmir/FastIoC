@@ -106,7 +106,6 @@ def clone_function(func: types.FunctionType) -> types.FunctionType:
         argdefs=func.__defaults__,
         closure=func.__closure__,
     )
-    # متادیتاها
     clone.__dict__.update(func.__dict__)
     clone.__annotations__ = func.__annotations__.copy() if func.__annotations__ else {}
     clone.__kwdefaults__ = func.__kwdefaults__.copy() if func.__kwdefaults__ else None
@@ -119,7 +118,6 @@ def clone_function(func: types.FunctionType) -> types.FunctionType:
 def clone_class(cls: type) -> type:
     """Clone a Python class (with all methods and attributes)."""
     namespace = dict(cls.__dict__)
-    # private متاهای خاصی که نباید کپی بشن
     namespace.pop("__dict__", None)
     namespace.pop("__weakref__", None)
     clone = type(cls.__name__, cls.__bases__, namespace)
