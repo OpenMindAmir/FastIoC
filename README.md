@@ -5,10 +5,9 @@ add how to use logs in help
 
 r&d multiprocessing.Manager
 
-singleton __call__
 exception handlers
 middleware
-singleton parameter (__call__)
+lazy singleton
 
 Interface
 FastAPIController (see fastapi-controller)

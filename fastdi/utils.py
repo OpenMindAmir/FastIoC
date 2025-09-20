@@ -8,8 +8,8 @@ import types
 import inspect
 
 from fastapi.params import Depends, Query, Body, Path, File, Form, Cookie, Header, Security
-
 from fastdi.definitions import Dependency, LifeTime
+from fastdi.errors import SingletonLifetimeViolationError
 
 log = logging.getLogger('FastDI')
 if not log.handlers:
@@ -178,6 +178,6 @@ def check_lifetime_relations(parent: Dependency[Any], child: Dependency[Any]):
     """
 
     if parent.lifetime is LifeTime.SINGLETON and child.lifetime is not LifeTime.SINGLETON:
-        log.warning('Singleton dependency "%s" depends on a request-scoped/transient dependency: "%s"', parent.protocol, child.protocol)
+       raise SingletonLifetimeViolationError(f'Singleton dependency "{parent.implementation}" cannot depend on request-scoped/transient dependency "{child.implementation}" ')
     elif parent.lifetime is LifeTime.SCOPED and child.lifetime is LifeTime.TRANSIENT:
-        log.warning('Request-Scoped dependency "%s" depends on a transient dependency "%s"', parent.protocol, child.protocol)
+        log.warning('Request-Scoped dependency "%s" depends on a transient dependency "%s"', parent.implementation, child.implementation)

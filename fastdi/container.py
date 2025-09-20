@@ -15,7 +15,7 @@ from fastapi.params import Depends
 from fastapi.security import SecurityScopes
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
-from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
+from fastdi.errors import UnregisteredProtocolError, SingletonGeneratorError
 from fastdi.utils import log, is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete, is_annotated_with_marker, resolve_forward_refs, check_lifetime_relations
 
 C = TypeVar('C')
@@ -105,7 +105,7 @@ class Container:
                         new_param = param.replace(default=self.resolve(param.annotation))
                         params.append(new_param)
 
-                    except ProtocolNotRegisteredError:
+                    except UnregisteredProtocolError:
                         params.append(param)
 
                 endpoint.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
@@ -160,7 +160,7 @@ class Container:
         if lifetime is LifeTime.SINGLETON:
             impl = implementation()
             if inspect.isgenerator(impl) or inspect.isasyncgen(impl):
-                raise SingletonGeneratorNotAllowedError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
+                raise SingletonGeneratorError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
             if (dispose := getattr(impl, '__dispose__', None)) and callable(dispose):
                 self._singleton_cleanups.append(dispose)
                 log.debug('Disposal registered for dependency "%s"', implementation)
@@ -194,7 +194,7 @@ class Container:
         """Raises ProtocolNotRegisteredError if the protocol is not registered."""
 
         if not self.dependencies.get(protocol):
-            raise ProtocolNotRegisteredError(
+            raise UnregisteredProtocolError(
                 f"Protocol {protocol.__name__} is not registered in the container")
         
 
@@ -317,7 +317,7 @@ class Container:
                 original = cast(Callable[..., Any], self.resolve(cast(type, key)).dependency)
                 dependencies |= {original: value}
                 log.debug('Registered dependency "%s" overrided', key)
-            except (ProtocolNotRegisteredError, TypeCheckError):
+            except (UnregisteredProtocolError, TypeCheckError):
                 pass
         
         if container:
@@ -417,7 +417,7 @@ class Container:
                         self._dependency_factory(dependency, annotation)
                     )
                     log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
-                except ProtocolNotRegisteredError:
+                except UnregisteredProtocolError:
                     pass
         
         params: list[Parameter] = []
@@ -447,7 +447,7 @@ class Container:
                         self._dependency_factory(dependency, annotation)
                     )
                     log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
-                except ProtocolNotRegisteredError:
+                except UnregisteredProtocolError:
                     params.append(param)
         params.extend(hint_params)
         params = sort_parameters(params)
@@ -487,7 +487,7 @@ class Container:
             dependency: Depends = self.resolve(item)
             _list.append(dependency)
 
-        except ProtocolNotRegisteredError:
+        except UnregisteredProtocolError:
             _list.append(item)
     
 
@@ -525,7 +525,7 @@ class Container:
                     try:
                         dependency = self.resolve(extra)
                         break
-                    except ProtocolNotRegisteredError:
+                    except UnregisteredProtocolError:
                         continue
         return dependency
     
