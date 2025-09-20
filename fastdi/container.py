@@ -325,16 +325,16 @@ class Container:
     async def dispose(self):
         for disposer in self._singleton_cleanups:
             try: 
-                disposer = disposer()
-                if inspect.isawaitable(disposer):
-                    await disposer 
+                call = disposer()
+                if inspect.isawaitable(call):
+                    await call 
             except Exception as exception:
                 name: str
                 try:
                     name = disposer.__self__.__class__.__name__  # pyright: ignore[reportUnknownVariableType, reportAttributeAccessIssue, reportFunctionMemberAccess, reportUnknownMemberType]
                 except:
                     name = disposer.__name__ # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
-                log.exception('Error disposing %s: %s', name, exception) # pyright: ignore[reportUnknownArgumentType]
+                log.exception('Error disposing "%s": %s', name, exception) # pyright: ignore[reportUnknownArgumentType]
 
 
     # --- Internal helper functions
