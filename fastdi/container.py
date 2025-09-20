@@ -151,7 +151,7 @@ class Container:
 
         dependency: Dependency[Any] | None = self.before_register_hook(Dependency[Any](protocol, implementation, lifetime))   # pyright: ignore[reportArgumentType]
         if dependency:
-            log.debug('Registeration hook executed for dependency "%s"', dependency)
+            log.debug('Registeration hook executed for dependency "%s->%s@%s"', protocol, implementation, lifetime)
             protocol = dependency.protocol
             implementation = dependency.implementation
             lifetime = dependency.lifetime
@@ -163,13 +163,14 @@ class Container:
                 raise SingletonGeneratorNotAllowedError('Cannot register Generators or AsyncGenerators as Singleton dependencies.')
             if (dispose := getattr(impl, '__dispose__', None)) and callable(dispose):
                 self._singleton_cleanups.append(dispose)
+                log.debug('Disposal registered for dependency "%s"', implementation)
             def singleton_provider() -> Any:
                 return impl
             self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
             self._singletons[protocol] = implementation
         else:
             self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifetime is LifeTime.TRANSIENT else True)
-        log.debug('Dependency "%s" registered with "%s" lifetime', implementation, lifetime)
+        log.debug('Dependency "%s" registered with "%s" lifetime for protocol: "%s"', implementation, lifetime, protocol)
 
 
     def resolve(self, protocol: type) -> Depends:
