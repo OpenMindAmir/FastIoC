@@ -317,6 +317,7 @@ class DeeperSerivce:
 class DeepService:
 
     service: DeeperSerivce
+    aservice: Annotated[DeeperSerivce, DeeperSerivce]
     background: BackgroundTasks
 
     def __init__(self, request: Request):
@@ -331,6 +332,9 @@ class DeepService:
     
     def get_deep_cookie(self) -> int:
         return self.service.get_cookie()
+    
+    def get_annotated_id(self) -> int:
+        return self.aservice.get_id()
     
 
 # --- Dispose Dependencies ---

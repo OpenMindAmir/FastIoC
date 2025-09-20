@@ -16,7 +16,8 @@ def test_parameter(state: State , app: FastAPI, client: TestClient):
             'id': text[1],
             'srv': service.get_id(),
             'dep': service.get_deep_id(),
-            'cki': service.get_deep_cookie()
+            'cki': service.get_deep_cookie(),
+            'ann': service.get_annotated_id()
         }
     
     response = client.get('/test', params={'extra': QUERY_TEXT}, cookies= {'id': str(COOKIE_NUMBER)})
@@ -25,5 +26,5 @@ def test_parameter(state: State , app: FastAPI, client: TestClient):
 
     assert response.status_code == 200
     assert data['txt'] == QUERY_TEXT
-    assert data['id'] == data['srv'] == data['dep'] == data['cki'] == COOKIE_NUMBER
+    assert data['id'] == data['srv'] == data['dep'] == data['cki'] == data['ann'] == COOKIE_NUMBER
     assert state.get().background_number == BACKGROUND_NUMBER

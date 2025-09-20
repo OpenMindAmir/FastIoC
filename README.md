@@ -8,7 +8,7 @@ r&d multiprocessing.Manager
 singleton __call__
 exception handlers
 middleware
-singleton parameter
+singleton parameter (__call__)
 
 Interface
 FastAPIController (see fastapi-controller)
