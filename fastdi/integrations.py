@@ -159,7 +159,25 @@ class Injectified:
 
         self.dependency_overrides.update(self._container.override(dependencies, container))  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
 
+    async def dispose(self):
 
+        """
+        Dispose all registered singleton dependencies.
+
+        This method calls the disposal function of each singleton that was registered
+        in the container. Both synchronous and asynchronous disposal functions are supported.
+        If a disposal function raises an exception, it will be caught and logged, and
+        the disposal process will continue for the remaining singletons.
+
+        Logging format:
+            'Error disposing "ClassName": exception'
+
+        Notes:
+            - Async disposal functions will be awaited.
+            - Errors during disposal do not prevent other singletons from being disposed.
+        """
+
+        await self._container.dispose()
 class FastAPI(_FastAPI, Injectified):
 
     """

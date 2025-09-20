@@ -1,4 +1,5 @@
 from typing import Any, Annotated
+from contextlib import asynccontextmanager
 
 from fastapi import Depends, APIRouter as _APIRouter, FastAPI as _FastAPI
 from fastapi.testclient import TestClient
@@ -10,7 +11,7 @@ from .dependencies import (State, IGlobalService, set_global_usual_number, IGlob
                             LazyNumber, get_lazy_number, get_function_number, FunctionNumber, OverrideNumberSerivce,
                             GlobalOverrideService, get_override_function_number)
 from .constants import (QUERY_TEXT, GLOBAL_SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER2, SERVICE_NUMBER, LAZY_NUMBER, FUNCTION_NUMBER, GLOBAL_USUAL_NUMBER,
-                        OVERRIDE_SERVICE_NUMBER, OVERRIDE_NUMBER, GLOBAL_OVERRIDE_NUMBER)
+                        OVERRIDE_SERVICE_NUMBER, OVERRIDE_NUMBER, GLOBAL_OVERRIDE_NUMBER, DISPOSE_NUMBER)
 
 
 # --- Application Instance Test
@@ -177,3 +178,23 @@ def test_override(state: State, container: Container):
     assert data['srv'] == OVERRIDE_SERVICE_NUMBER
     assert data['num'] == OVERRIDE_NUMBER
     assert state.get().global_override_number == GLOBAL_OVERRIDE_NUMBER
+
+# --- Dispose Test
+def test_dispose(state: State, container: Container):
+
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        yield
+        await app.dispose()
+
+    app = FastAPI(lifespan=lifespan, container=container)  # pyright: ignore[reportArgumentType]
+
+    @app.get('/')
+    async def endpoint() -> int:  # pyright: ignore[reportUnusedFunction]
+        return 1
+    
+    with TestClient(app) as client:
+        response = client.get('/')
+
+    assert response.status_code == 200
+    assert state.get().dispose_number == DISPOSE_NUMBER
