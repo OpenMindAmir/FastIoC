@@ -8,7 +8,8 @@ import types
 import inspect
 
 from fastapi.params import Depends, Query, Body, Path, File, Form, Cookie, Header, Security
-from fastdi.definitions import Dependency, LifeTime
+
+from fastdi.definitions import FastDIConcrete, LifeTime
 from fastdi.errors import SingletonLifetimeViolationError
 
 log = logging.getLogger('FastDI')
@@ -171,13 +172,20 @@ def resolve_forward_refs(annotation: Any, globalns: dict[Any, Any], localns: dic
     
     return annotation
 
-def check_lifetime_relations(parent: Dependency[Any], child: Dependency[Any]):
+def check_singleton_dependency(dependency: Depends, parent: FastDIConcrete):
 
     """
-    Logs warnings for potentially dangerous dependency lifetime relationships
+    Raises error if a singleton dependency depends on a non-singleton one.
     """
 
-    if parent.lifetime is LifeTime.SINGLETON and child.lifetime is not LifeTime.SINGLETON:
-       raise SingletonLifetimeViolationError(f'Singleton dependency "{parent.implementation}" cannot depend on request-scoped/transient dependency "{child.implementation}" ')
-    elif parent.lifetime is LifeTime.SCOPED and child.lifetime is LifeTime.TRANSIENT:
-        log.warning('Request-Scoped dependency "%s" depends on a transient dependency "%s"', parent.implementation, child.implementation)
+    if not getattr(dependency.dependency, '_fastdi_singleton', False):
+        raise SingletonLifetimeViolationError(f'Singleton dependency "{parent}" cannot depend on request-scoped/transient dependency "{dependency.dependency}"')
+    
+def warn_if_scoped_depends_transient(dependency: Depends, lifetime: LifeTime, parent: FastDIConcrete):
+
+    """
+    Logs a warning if a request-scoped dependency depends on a transient dependency.
+    """
+
+    if lifetime is LifeTime.SCOPED and not dependency.use_cache:
+        log.warning('Request-scoped dependency "%s" depends on transient dependency "%s"', parent, dependency.dependency)

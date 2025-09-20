@@ -171,6 +171,25 @@ class GlobalNestedService(IGlobalNestedService):
         return None
 
 
+class ISingletonNumberService2(INumberService): ...
+
+
+class ISingletonNestedService(INestedService): ...
+
+class SingletonNestedService(ISingletonNestedService):
+
+    service2: ISingletonNumberService2
+
+    def __init__(self, service: ISingletonNumberService2):
+        self.service_number = service.get_number()
+
+    def get_service_number(self) -> int:
+        return self.service_number
+    
+    def get_service_number_2(self) -> int:
+        print(self.service2)
+        return self.service2.get_number()
+
 # --- Lifetime Dependencies ---
 
 class ILifetimeService(Protocol):

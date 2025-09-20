@@ -8,6 +8,7 @@ r&d multiprocessing.Manager
 exception handlers
 middleware
 lazy singleton
+if not int, type, object, pydantic model .... log warning
 
 Interface
 FastAPIController (see fastapi-controller)
