@@ -1,7 +1,7 @@
 """
 A set of helper utilities used internally by the FastDI library.
 """
-
+import logging
 from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, ForwardRef
 from inspect import Parameter
 import types
@@ -9,8 +9,16 @@ import inspect
 
 from fastapi.params import Depends, Query, Body, Path, File, Form, Cookie, Header, Security
 
-T = TypeVar('T')
+from fastdi.definitions import Dependency, LifeTime
 
+log = logging.getLogger('FastDI')
+if not log.handlers:
+    ch = logging.StreamHandler()
+    ch.setFormatter(logging.Formatter("FastDI: %(levelname)s: %(message)s"))
+    log.addHandler(ch)
+
+
+T = TypeVar('T')
 
 def pretend_signature_of(func: T) -> Callable[[Any], T]:
 
@@ -164,3 +172,14 @@ def resolve_forward_refs(annotation: Any, globalns: dict[Any, Any], localns: dic
         return ForwardRef(annotation)._evaluate(globalns, localns)  # pyright: ignore[reportUnknownVariableType, reportCallIssue]
     
     return annotation
+
+def check_lifetime_relations(parent: Dependency[Any], child: Dependency[Any]):
+
+    """
+    Logs warnings for potentially dangerous dependency lifetime relationships
+    """
+
+    if parent.lifetime is LifeTime.SINGLETON and child.lifetime is not LifeTime.SINGLETON:
+        log.warning('Singleton dependency "%s" depends on a request-scoped/transient dependency: "%s"', parent.protocol, child.protocol)
+    elif parent.lifetime is LifeTime.SCOPED and child.lifetime is LifeTime.TRANSIENT:
+        log.warning('Request-Scoped dependency "%s" depends on a transient dependency "%s"', parent.protocol, child.protocol)

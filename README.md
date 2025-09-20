@@ -8,8 +8,7 @@ r&d multiprocessing.Manager
 singleton __call__
 exception handlers
 middleware
-singleton parameter (lifetimewarnings)
-Pascalcase alternatives
+singleton parameter
 
 Interface
 FastAPIController (see fastapi-controller)

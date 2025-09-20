@@ -7,9 +7,8 @@ dependencies with different lifetimes (singleton, request-scoped, transient) in 
 
 import sys
 import inspect
-import logging
 from inspect import Parameter, Signature
-from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast
+from typing import Any, Callable, Annotated, Optional, get_origin, get_args, cast, TypeVar
 from typeguard import typechecked, TypeCheckError
 from fastapi import FastAPI, APIRouter, Request, Response, BackgroundTasks, WebSocket, UploadFile
 from fastapi.params import Depends
@@ -17,15 +16,9 @@ from fastapi.security import SecurityScopes
 
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import ProtocolNotRegisteredError, SingletonGeneratorNotAllowedError
-from fastdi.utils import is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete, is_annotated_with_marker, resolve_forward_refs
+from fastdi.utils import log, is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete, is_annotated_with_marker, resolve_forward_refs, check_lifetime_relations
 
-
-log = logging.getLogger('FastDI')
-
-if not log.handlers:
-    ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter("FastDI: %(levelname)s: %(message)s"))
-    log.addHandler(ch)
+C = TypeVar('C')
 
 
 class Container:
@@ -48,6 +41,7 @@ class Container:
         """Initialize an empty dependency container."""
 
         self.dependencies: dict[type, Depends] = {}
+        self._singletons: dict[type, FastDIConcrete] = {}
         self._singleton_cleanups : list[Callable[..., Any]] = []
 
         log.debug('IoC/DI Container initialized ...')
@@ -162,7 +156,7 @@ class Container:
             implementation = dependency.implementation
             lifetime = dependency.lifetime
         
-        implementation = self._nested_injector(implementation)
+        implementation = self._nested_injector(implementation, protocol, lifetime)
         if lifetime is LifeTime.SINGLETON:
             impl = implementation()
             if inspect.isgenerator(impl) or inspect.isasyncgen(impl):
@@ -172,6 +166,7 @@ class Container:
             def singleton_provider() -> Any:
                 return impl
             self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
+            self._singletons[protocol] = implementation
         else:
             self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifetime is LifeTime.TRANSIENT else True)
         log.debug('Dependency "%s" registered with "%s" lifetime', implementation, lifetime)
@@ -373,7 +368,7 @@ class Container:
     # --- Internal helper functions
     
     @typechecked
-    def _nested_injector(self, implementation: FastDIConcrete) -> FastDIConcrete:
+    def _nested_injector(self, implementation: FastDIConcrete, protocol: type, lifetime: LifeTime) -> FastDIConcrete:
 
         """
         Inject dependencies into class or callable signatures automatically.
@@ -395,6 +390,19 @@ class Container:
                     ))
                     log.debug('Resolved FastAPI built-in "%s" as nested dependency for "%s"', annotation, implementation)
                     continue
+                if annotated_dependency := self._get_annotated_dependency_if_registered(annotation):
+                    hint_params.append(Parameter(
+                        name=name,
+                        kind=Parameter.POSITIONAL_OR_KEYWORD,
+                        annotation=annotation,
+                        default=annotated_dependency
+                    ))
+                    check_lifetime_relations(
+                        Dependency[protocol](protocol, implementation, lifetime),  # pyright: ignore[reportArgumentType, reportUnknownArgumentType]
+                        self._dependency_factory(annotated_dependency, annotation)
+                    )
+                    log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
+                    continue
                 try:
                     dependency: Depends = self.resolve(annotation)
                     hint_params.append(Parameter(
@@ -403,6 +411,10 @@ class Container:
                         annotation=annotation,
                         default=dependency
                     ))
+                    check_lifetime_relations(
+                        Dependency[protocol](protocol, implementation, lifetime),  # pyright: ignore[reportArgumentType, reportUnknownArgumentType]
+                        self._dependency_factory(dependency, annotation)
+                    )
                     log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
                 except ProtocolNotRegisteredError:
                     pass
@@ -416,13 +428,23 @@ class Container:
                 if isinstance(param.default, Depends) or is_annotated_with_depends(annotation):
                     params.append(param)
                     continue
-                if annotated_dependency := self._get_annotated_dependency_if_registered(param.annotation):
+                if annotated_dependency := self._get_annotated_dependency_if_registered(annotation):
                     new_param = param.replace(default=annotated_dependency)
                     params.append(new_param)
+                    check_lifetime_relations(
+                        Dependency[protocol](protocol, implementation, lifetime),  # pyright: ignore[reportArgumentType, reportUnknownArgumentType]
+                        self._dependency_factory(annotated_dependency, annotation)
+                    )
+                    log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
                     continue
                 try:
-                    new_param = param.replace(default=self.resolve(annotation))
+                    dependency = self.resolve(annotation)
+                    new_param = param.replace(default=dependency)
                     params.append(new_param)
+                    check_lifetime_relations(
+                        Dependency[protocol](protocol, implementation, lifetime),  # pyright: ignore[reportArgumentType, reportUnknownArgumentType]
+                        self._dependency_factory(dependency, annotation)
+                    )
                     log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
                 except ProtocolNotRegisteredError:
                     params.append(param)
@@ -506,6 +528,13 @@ class Container:
                         continue
         return dependency
     
+    def _dependency_factory(self, resolve: Depends, protocol: type[C]) -> Dependency[C]:
+
+        """
+        Created dependencies from standard 'Dependency' model
+        """
+
+        return Dependency[protocol](protocol, resolve.dependency, LifeTime.SINGLETON if protocol in self._singletons else (LifeTime.SCOPED if resolve.use_cache else LifeTime.TRANSIENT))  # pyright: ignore[reportArgumentType]
 
     # --- Hooks ---
 
