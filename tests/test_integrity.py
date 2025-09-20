@@ -22,7 +22,6 @@ def test_parameter(state: State , app: FastAPI, client: TestClient):
     
     response = client.get('/test', params={'extra': QUERY_TEXT}, cookies= {'id': str(COOKIE_NUMBER)})
     data = response.json()
-    print(data)
 
     assert response.status_code == 200
     assert data['txt'] == QUERY_TEXT
