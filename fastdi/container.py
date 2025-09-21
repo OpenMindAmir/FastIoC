@@ -17,7 +17,8 @@ from fastapi.security import SecurityScopes
 from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
 from fastdi.errors import UnregisteredProtocolError, SingletonGeneratorError
 from fastdi.utils import (log, is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete,
-                          is_annotated_with_marker, resolve_forward_refs, check_singleton_dependency, warn_if_scoped_depends_transient)
+                          is_annotated_with_marker, resolve_forward_refs, check_singleton_dependency, warn_if_scoped_depends_transient
+                          , log_skip)
 
 
 class Container:
@@ -105,6 +106,8 @@ class Container:
 
                     except UnregisteredProtocolError:
                         params.append(param)
+                        log_skip(param.annotation)
+
 
                 endpoint.__signature__ = signature.replace(parameters=params)  # pyright: ignore[reportFunctionMemberAccess]
 
@@ -405,7 +408,7 @@ class Container:
                     warn_if_scoped_depends_transient(dependency, lifetime, implementation)
                     log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
                 except UnregisteredProtocolError:
-                    pass
+                    log_skip(annotation, True)
         
         params: list[Parameter] = []
         for name, param in signature.parameters.items():
@@ -429,6 +432,7 @@ class Container:
                     warn_if_scoped_depends_transient(dependency, lifetime, implementation)
                     log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
                 except UnregisteredProtocolError:
+                    log_skip(annotation, True)
                     params.append(param)
         params.extend(hint_params)
         params = sort_parameters(params)
@@ -474,7 +478,7 @@ class Container:
                     hint_args[name] = dependency.dependency()  # pyright: ignore[reportOptionalCall]
                     log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
                 except UnregisteredProtocolError:
-                    pass
+                    log_skip(annotation, True)
 
         args: dict[str, Any] = {}
         for name, param in signature.parameters.items():
@@ -493,7 +497,7 @@ class Container:
                     args[name] = dependency.dependency()  # pyright: ignore[reportOptionalCall]
                     log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
                 except UnregisteredProtocolError:
-                    pass
+                    log_skip(annotation, True)
 
         impl = implementation(**args)
 
@@ -531,6 +535,7 @@ class Container:
 
         except UnregisteredProtocolError:
             _list.append(item)
+            log_skip(item)
     
 
     def _process_dependencies_list(self, dependencies: list[FastDIDependency]) -> list[Depends]:
