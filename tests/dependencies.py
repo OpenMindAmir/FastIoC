@@ -187,7 +187,6 @@ class SingletonNestedService(ISingletonNestedService):
         return self.service_number
     
     def get_service_number_2(self) -> int:
-        print(self.service2)
         return self.service2.get_number()
 
 # --- Lifetime Dependencies ---

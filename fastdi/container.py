@@ -18,7 +18,7 @@ from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Depen
 from fastdi.errors import UnregisteredProtocolError, SingletonGeneratorError
 from fastdi.utils import (log, is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete,
                           is_annotated_with_marker, resolve_forward_refs, check_singleton_dependency, warn_if_scoped_depends_transient
-                          , log_skip)
+                          , log_skip, log_builtin_protocol)
 
 
 class Container:
@@ -167,6 +167,8 @@ class Container:
             implementation = self._nested_injector(implementation, lifetime)
             self.dependencies[protocol] = Depends(dependency=implementation, use_cache = False if lifetime is LifeTime.TRANSIENT else True)
         log.debug('Dependency "%s" registered with "%s" lifetime for protocol: "%s"', implementation, lifetime, protocol)
+        log_builtin_protocol(protocol, implementation)
+        
 
 
     def resolve(self, protocol: type) -> Depends:

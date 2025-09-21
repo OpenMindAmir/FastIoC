@@ -13,7 +13,7 @@ from .constants import (QUERY_TEXT, SERVICE_NUMBER, GENERATOR_NUMBER, FUNCTION_N
 def test_app_endpoint(app: FastAPI, client: TestClient, state: State):
 
     logger = logging.getLogger("FastDI")
-    logger.setLevel(logging.DEBUG)
+    logger.setLevel(logging.INFO)
 
     @app.get('/test', dependencies=[IGlobalService, GlobalFunctionNumber, Depends(set_global_usual_number)])  # pyright: ignore[reportArgumentType]
     async def endpoint(text: str, service: INumberService, generator: GeneratorDependencyType, # pyright: ignore[reportUnusedFunction]

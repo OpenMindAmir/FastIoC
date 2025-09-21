@@ -2,12 +2,14 @@
 A set of helper utilities used internally by the FastDI library.
 """
 import logging
-from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, ForwardRef, Union, Optional, List, Dict, Tuple, Set, FrozenSet, Type
+from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, ForwardRef
 from inspect import Parameter
 import types
 import inspect
 
+from fastapi import Request, Response, UploadFile, WebSocket, BackgroundTasks
 from fastapi.params import Depends, Query, Body, Path, File, Form, Cookie, Header, Security
+from fastapi.security import SecurityScopes
 from pydantic import BaseModel
 
 from fastdi.definitions import FastDIConcrete, LifeTime
@@ -193,30 +195,18 @@ def warn_if_scoped_depends_transient(dependency: Depends, lifetime: LifeTime, pa
 
 
 SKIP_TYPES: set[Any] = {
-    str,
-    int,
-    float,
-    bool,
-    bytes,
-    bytearray,
-    dict,
-    list,
-    tuple,
-    set,
-    frozenset,
-    object,
-    type,
-    Any,
-    Union,
-    Optional,
-    List,
-    Dict,
-    Tuple,
-    Set,
-    FrozenSet,
-    Type,
+    Request,
+    Response, 
+    BackgroundTasks, 
+    WebSocket, 
+    UploadFile,
+    SecurityScopes
 }
 
 def log_skip(annotation: type, nested: bool = False):
-    if not annotation in SKIP_TYPES and not isinstance(annotation, BaseModel):
-        log.info('(Nested)' if nested else '' + 'Skipped protocol "%s": No register provider found')
+    if not annotation in SKIP_TYPES and not isinstance(annotation, BaseModel) and not is_annotated_with_marker(annotation) and not annotation.__module__ in ('builtins', 'typing'):
+        log.info(('(Nested)' if nested else '') + 'Skipped protocol "%s": No registered dependency found', annotation)
+
+def log_builtin_protocol(annotation: type, dependency: FastDIConcrete):
+    if annotation in SKIP_TYPES or isinstance(annotation, BaseModel) or is_annotated_with_marker(annotation) or (annotation.__module__ in ('builtins', 'typing') and get_origin(annotation) is not Annotated):
+        log.warning('Dependency "%s" registered for protocol "%s" which is a built-in, type, Pydantic model, FastAPI special class. This may override default behavior; make sure this is what you intend', dependency, annotation)

@@ -55,8 +55,6 @@ def test_nested_singleton(app: FastAPI, client: TestClient, container: Container
     
     response = client.get('/test', params={'text': QUERY_TEXT})
     data = response.json()
-
-    print(data)
     
     assert response.status_code == 200
     assert data['n1'] == data['n2'] == SERVICE_NUMBER_2
