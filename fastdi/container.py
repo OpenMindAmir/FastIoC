@@ -331,7 +331,7 @@ class Container:
 
     # --- Dispose
 
-    async def dispose(self):
+    async def dispose(self, app: Optional[FastAPI] = None):
 
         """
         Dispose all registered singleton dependencies.
@@ -356,7 +356,7 @@ class Container:
             except:
                 name = disposer.__name__ # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAttributeAccessIssue]
             try: 
-                call = disposer()
+                call = disposer(app) if 'app' in inspect.signature(disposer).parameters.keys() else disposer()
                 if inspect.isawaitable(call):
                     await call
                 log.debug('Dependency "%s" disposed')
