@@ -24,9 +24,12 @@ plugins:
         python:
           options:
             docstring_style: google
-            show_source: true
+            show_source: false
+            show_signature_annotations: true
 
 nav:
   - Home: index.md
   - API Reference:
       - Container: reference/container.md
+      - Integrations: reference/integrations.md
+      - Errors:  reference/errors.md

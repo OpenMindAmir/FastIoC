@@ -63,10 +63,12 @@ class Container:
         Args:
             *targets (FastAPI | APIRouter): The FastAPI apps or APIRouters to wrap.
 
-        Example:
-            >>> app = FastAPI()
-            >>> container = Container()
-            >>> container.injectify(app)
+        Examples:
+            ```python
+            app = FastAPI()
+            container = Container()
+            container.injectify(app)
+            ```
         """
 
         for target in targets:
@@ -281,13 +283,17 @@ class Container:
 
             container (Optional[Container]):
                 An optional secondary container (e.g., a test or mock container).
+
                 - For each protocol in this container that is also registered in
                 the main container, the resolved dependency from the main container
                 will be used as the key, and the dependency from the secondary
                 container will be used as the value.
+
                 - Protocols in the secondary container that are not registered
                 in the main container are ignored.
+
                 - NOTE: The lifetime of each dependency should follow the main container, unless you know exactly what you are doing. 
+
                     - - For SCOPED or FACTORY dependencies in the main container, the original lifetime is always preserved regardless of what is registered in the secondary container (except SINGLETON). 
                     - - For SINGLETON dependencies in the main container: if the main container has SINGLETON and the secondary container has a different lifetime, the resulting lifetime will be SCOPED; 
                     - - If the main container has a non-SINGLETON lifetime and the secondary container registers it as SINGLETON, the resulting lifetime will be SINGLETON.
@@ -297,15 +303,15 @@ class Container:
                 A new dictionary suitable for assigning to
                 `app.dependency_overrides`.
 
-        Example:
+        Examples:
             >>> from fastdi import Container, FastAPI
             >>> app = FastAPI()
             >>> container = Container()
             >>> container.add_scoped(IService, Service)
             >>> overrides = {
-            ...     IService: MockService,
-            ...     some_dependency: custom_callable
-            ... }
+            >>>   IService: MockService,
+            >>>    some_dependency: custom_callable
+            >>> }
             >>> app.dependency_overrides.update(container.override(overrides))
         """
 

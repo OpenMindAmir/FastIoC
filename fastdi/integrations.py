@@ -64,7 +64,7 @@ class Injectified:
         Args:
             value (Container): A valid FastDI Container instance.
 
-        NOTE:
+        Note:
             Endpoints defined earlier have already been bound to the
             previous container. Only endpoints defined after this call
             will be processed with the new container.
@@ -134,27 +134,31 @@ class Injectified:
         and **directly updates** the app’s `dependency_overrides`.
         The original lifetime of each dependency is preserved.
 
-        Parameters:
-            dependencies (dict[Callable[..., Any], Callable[..., Any]]):
+        Args:
+            dependencies (dict[Callable[..., Any], Callable[..., Any]], optional): 
                 Mapping from original dependency callables or protocol types to override callables.
-
-            container (Optional[Container]):
+            container (Optional[Container], optional): 
                 An optional secondary container (e.g., for testing or mocking).
                 Only protocols registered in the main container are considered.
-                - NOTE: The lifetime of each dependency should follow the main container, unless you know exactly what you are doing. 
-                    - - For SCOPED or FACTORY dependencies in the main container, the original lifetime is always preserved regardless of what is registered in the secondary container (except SINGLETON). 
-                    - - For SINGLETON dependencies in the main container: if the main container has SINGLETON and the secondary container has a different lifetime, the resulting lifetime will be SCOPED; 
-                    - - If the main container has a non-SINGLETON lifetime and the secondary container registers it as SINGLETON, the resulting lifetime will be SINGLETON.
-                    
-        Example:
-            >>> from fastdi import FastAPI
-            >>> app = FastAPI()
-            >>> app.add_scoped(IService, Service)
-            >>> overrides = {
-            ...     IService: MockService,
-            ...     some_dependency: custom_callable
-            ... }
-            >>> app.override_dependencies(overrides)
+
+        Note:
+            The lifetime of each dependency should follow the main container, unless you know exactly what you are doing.
+
+            - For SCOPED or FACTORY dependencies in the main container, the original lifetime is always preserved regardless of what is registered in the secondary container (except SINGLETON).
+            - For SINGLETON dependencies in the main container: if the main container has SINGLETON and the secondary container has a different lifetime, the resulting lifetime will be SCOPED;
+            - If the main container has a non-SINGLETON lifetime and the secondary container registers it as SINGLETON, the resulting lifetime will be SINGLETON.
+
+        Examples:
+            ```python
+            from fastdi import FastAPI
+            app = FastAPI()
+            app.add_scoped(IService, Service)
+            overrides = {
+                IService: MockService,
+                some_dependency: custom_callable
+            }
+            app.override_dependencies(overrides)
+            ```
         """
 
         self.dependency_overrides.update(self._container.override(dependencies, container))  # pyright: ignore[reportAttributeAccessIssue, reportUnknownMemberType]
