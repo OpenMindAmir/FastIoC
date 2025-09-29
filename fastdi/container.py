@@ -61,7 +61,7 @@ class Container:
             - Support both FastAPI application and APIRouter instances.
 
         Args:
-            target (FastAPI | APIRouter): The FastAPI app or APIRouter to wrap.
+            *targets (FastAPI | APIRouter): The FastAPI apps or APIRouters to wrap.
 
         Example:
             >>> app = FastAPI()
