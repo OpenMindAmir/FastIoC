@@ -1,21 +1,36 @@
 site_name: FastDI
+site_url: https://OpenMindAmir.github.io/FastDI
 repo_url: https://github.com/OpenMindAmir/FastDI
 
 theme:
   name: material
+  logo: logo.png
+  favicon: logo.png
+  icon:
+    repo: fontawesome/brands/github
+  extra:
+    footer: "hey"
+  features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.instant.progress
+    - navigation.instant.preview
+    - navigation.tracking
+    - navigation.path
   palette:
     - scheme: default
-      primary: indigo
-      accent: indigo
+      primary: yellow
+      accent: yellow
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
     - scheme: slate
-      primary: indigo
-      accent: indigo
+      primary: yellow
+      accent: yellow
       toggle:
         icon: material/weather-sunny
         name: Switch to light mode
+
 
 plugins:
   - search
@@ -28,8 +43,29 @@ plugins:
             show_signature_annotations: true
 
 nav:
+  - 💝DONATE💝: https://OpenMindAmir.ir/donate
   - Home: index.md
   - API Reference:
       - Container: reference/container.md
       - Integrations: reference/integrations.md
       - Errors:  reference/errors.md
+
+extra_css:
+  - style.css
+
+
+extra:
+  homepage: https://OpenMindAmir.github.io/FastDI
+  social:
+    - icon: fontawesome/solid/globe
+      link: https://OpenMindAmir.ir
+    - icon: fontawesome/solid/envelope
+      link: mailto:OpenMindAmir@gmail.com
+    - icon: fontawesome/brands/linkedin 
+      link: https://linkedin.com/in/OpenMindAmir
+    - icon: fontawesome/brands/github
+      link: https://github.com/OpenMindAmir
+    - icon: fontawesome/brands/twitter
+      link: https://twitter.com/OpenMindAmir
+
+copyright: Amir R. Aliakbari &lt<a href="https://OpenMindAmir.ir" class="openmindamir">OpenMindAmir</a>&gt &copy 2025
