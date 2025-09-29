@@ -1,11 +1,12 @@
 [project]
 name = "FastIoC"
-version = "0.1.0"
+version = "0.1.1"
 description = "IoC/DI container for FastAPI with automatic type-based dependency injection"
 authors = [
-    {name = "Amir R. Aliakbari (@OpenMindAmir)", email = "OpenMindAmir@gmail.com"}
+    {name = "Amir R. Aliakbari", email = "OpenMindAmir@gmail.com"}
 ]
 readme = "README.md"
+license = "MIT"
 requires-python = ">=3.12"
 dependencies = [
     "fastapi>=0.116.1",
@@ -21,3 +22,8 @@ dev = [
     "pytest>=8.4.2",
     "pytest-cov>=7.0.0",
 ]
+
+[project.urls]
+Documentation = "https://OpenMindAmir.github.io/FastIoC"
+GitHub = "https://github.com/OpenMindAmir/FastIoC"
+Donation = "https://OpenMindAmir.ir/donate"
