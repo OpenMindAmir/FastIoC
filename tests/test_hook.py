@@ -1,8 +1,8 @@
 from fastapi.testclient import TestClient
 from fastapi.params import Depends
 
-from fastdi.integrations import FastAPI
-from fastdi.definitions import Dependency
+from fastioc.integrations import FastAPI
+from fastioc.definitions import Dependency
 
 from .dependencies import INumberService, NumberService
 from .constants import SERVICE_NUMBER

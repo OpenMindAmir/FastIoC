@@ -4,8 +4,8 @@ from contextlib import asynccontextmanager
 from fastapi import Depends, APIRouter as _APIRouter, FastAPI as _FastAPI
 from fastapi.testclient import TestClient
 
-from fastdi.integrations import FastAPI, APIRouter
-from fastdi.container import Container
+from fastioc.integrations import FastAPI, APIRouter
+from fastioc.container import Container
 
 from .dependencies import (State, IGlobalService, set_global_usual_number, IGlobalService2, INumberService,
                             LazyNumber, get_lazy_number, get_function_number, FunctionNumber, OverrideNumberSerivce,
@@ -50,7 +50,7 @@ def test_app(state: State, container: Container):
     assert data['txt'] == QUERY_TEXT # Simple query parameter
     assert data['num'] == SERVICE_NUMBER # Simple dependency
     assert data['lzy'] == LAZY_NUMBER # Added afterwards dependency
-    assert state.get().global_service_number == GLOBAL_SERVICE_NUMBER # Global application dependecny (FastDI)
+    assert state.get().global_service_number == GLOBAL_SERVICE_NUMBER # Global application dependecny (FastIoC)
     assert state.get().global_service_number_2 == GLOBAL_SERVICE_NUMBER2 # Endpoint passive dependecny
     assert state.get().global_usual_number ==  GLOBAL_USUAL_NUMBER # Global application dependency (FastAPI)
 

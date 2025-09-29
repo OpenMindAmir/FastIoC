@@ -4,8 +4,8 @@ import pytest
 from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 
-from fastdi.container import Container
-from fastdi.errors import SingletonLifetimeViolationError, SingletonGeneratorError
+from fastioc.container import Container
+from fastioc.errors import SingletonLifetimeViolationError, SingletonGeneratorError
 
 from .dependencies import State, INestedService, IGlobalNestedService, DependentNestedNumber, get_dependent_nested_number, NestedService, ISingletonNestedService
 from .constants import QUERY_TEXT, SERVICE_NUMBER, NESTED_NUMBER, SERVICE_NUMBER_2

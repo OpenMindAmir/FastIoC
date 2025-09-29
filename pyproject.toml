@@ -1,5 +1,5 @@
 [project]
-name = "FastDI"
+name = "FastIoC"
 version = "0.1.0"
 description = "IoC/DI container for FastAPI with automatic type-based dependency injection"
 authors = [

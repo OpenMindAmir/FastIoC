@@ -1,5 +1,5 @@
 """
-A set of helper utilities used internally by the FastDI library.
+A set of helper utilities used internally by the FastIoC library.
 """
 import logging
 from typing import Any, Callable, TypeVar, Annotated, get_args, get_origin, ForwardRef
@@ -12,13 +12,13 @@ from fastapi.params import Depends, Query, Body, Path, File, Form, Cookie, Heade
 from fastapi.security import SecurityScopes
 from pydantic import BaseModel
 
-from fastdi.definitions import FastDIConcrete, LifeTime
-from fastdi.errors import SingletonLifetimeViolationError
+from fastioc.definitions import FastIoCConcrete, LifeTime
+from fastioc.errors import SingletonLifetimeViolationError
 
-log = logging.getLogger('FastDI')
+log = logging.getLogger('FastIoC')
 if not log.handlers:
     ch = logging.StreamHandler()
-    ch.setFormatter(logging.Formatter("FastDI: %(levelname)s: %(message)s"))
+    ch.setFormatter(logging.Formatter("FastIoC: %(levelname)s: %(message)s"))
     log.addHandler(ch)
 
 
@@ -175,16 +175,16 @@ def resolve_forward_refs(annotation: Any, globalns: dict[Any, Any], localns: dic
     
     return annotation
 
-def check_singleton_dependency(dependency: Depends, parent: FastDIConcrete):
+def check_singleton_dependency(dependency: Depends, parent: FastIoCConcrete):
 
     """
     Raises error if a singleton dependency depends on a non-singleton one.
     """
 
-    if not getattr(dependency.dependency, '_fastdi_singleton', False):
+    if not getattr(dependency.dependency, '_fastioc_singleton', False):
         raise SingletonLifetimeViolationError(f'Singleton dependency "{parent}" cannot depend on request-scoped/transient dependency "{dependency.dependency}"')
     
-def warn_if_scoped_depends_transient(dependency: Depends, lifetime: LifeTime, parent: FastDIConcrete):
+def warn_if_scoped_depends_transient(dependency: Depends, lifetime: LifeTime, parent: FastIoCConcrete):
 
     """
     Logs a warning if a request-scoped dependency depends on a transient dependency.
@@ -207,6 +207,6 @@ def log_skip(annotation: type, nested: bool = False):
     if not annotation in SKIP_TYPES and not isinstance(annotation, BaseModel) and not is_annotated_with_marker(annotation) and not annotation.__module__ in ('builtins', 'typing'):
         log.info(('(Nested)' if nested else '') + 'Skipped protocol "%s": No registered dependency found', annotation)
 
-def log_builtin_protocol(annotation: type, dependency: FastDIConcrete):
+def log_builtin_protocol(annotation: type, dependency: FastIoCConcrete):
     if annotation in SKIP_TYPES or isinstance(annotation, BaseModel) or is_annotated_with_marker(annotation) or (annotation.__module__ in ('builtins', 'typing') and get_origin(annotation) is not Annotated):
         log.warning('Dependency "%s" registered for protocol "%s" which is a built-in, type, Pydantic model, FastAPI special class. This may override default behavior; make sure this is what you intend', dependency, annotation)

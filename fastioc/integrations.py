@@ -1,10 +1,10 @@
 """
-FastDI-Enhanced FastAPI Integration
+FastIoC-Enhanced FastAPI Integration
 
 This module provides extended versions of FastAPI and APIRouter with
-automatic FastDI dependency injection support. It allows:
+automatic FastIoC dependency injection support. It allows:
 
-- Management of global dependencies via a built-in FastDI Container.
+- Management of global dependencies via a built-in FastIoC Container.
 - Developer-friendly DX helpers for registering singleton, request-scoped, and transient dependencies.
 - Seamless integration with existing FastAPI routes and APIRouters without
   requiring manual injection setup.
@@ -15,9 +15,9 @@ from typing import Any, Optional, cast, Callable
 from typeguard import typechecked
 from fastapi import FastAPI as _FastAPI, APIRouter as _APIRouter
 
-from fastdi.container import Container
-from fastdi.definitions import FastDIConcrete, DEPENDENCIES
-from fastdi.utils import pretend_signature_of
+from fastioc.container import Container
+from fastioc.definitions import FastIoCConcrete, DEPENDENCIES
+from fastioc.utils import pretend_signature_of
 
 def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[Any, Any]) -> dict[Any, Any]:
 
@@ -37,7 +37,7 @@ def init(self: 'FastAPI | APIRouter', container: Container | None, kwargs: dict[
 class Injectified:
 
     """
-    Base class providing shared FastDI integration functionality.
+    Base class providing shared FastIoC integration functionality.
     """
 
     _container: Container
@@ -46,7 +46,7 @@ class Injectified:
     def container(self) -> Container:
 
         """
-        Get the FastDI container.
+        Get the FastIoC container.
 
         Returns:
             Container: The container instance used for dependency injection.
@@ -59,10 +59,10 @@ class Injectified:
     def container(self, value: Container):
 
         """
-        Set a new FastDI container.
+        Set a new FastIoC container.
 
         Args:
-            value (Container): A valid FastDI Container instance.
+            value (Container): A valid FastIoC Container instance.
 
         Note:
             Endpoints defined earlier have already been bound to the
@@ -73,7 +73,7 @@ class Injectified:
         self._container = value
         self._container.injectify(cast(FastAPI | APIRouter, self))
 
-    def add_singleton(self, protocol: type, implementation: FastDIConcrete):
+    def add_singleton(self, protocol: type, implementation: FastIoCConcrete):
         
         """
         Register a singleton dependency into the internal container.
@@ -82,7 +82,7 @@ class Injectified:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastIoCConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             SingletonGeneratorNotAllowedError: If 'implementation' is a generator or async generator.
@@ -91,7 +91,7 @@ class Injectified:
 
         self._container.add_singleton(protocol, implementation)
 
-    def add_scoped(self, protocol: type, implementation: FastDIConcrete):
+    def add_scoped(self, protocol: type, implementation: FastIoCConcrete):
 
         """
         Register a request-scoped dependency into the internal container.
@@ -100,7 +100,7 @@ class Injectified:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastIoCConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
@@ -108,7 +108,7 @@ class Injectified:
 
         self._container.add_scoped(protocol, implementation)
 
-    def add_transient(self, protocol: type, implementation: FastDIConcrete):
+    def add_transient(self, protocol: type, implementation: FastIoCConcrete):
 
         """
         Register a transient dependency into the internal container.
@@ -117,7 +117,7 @@ class Injectified:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastIoCConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
@@ -128,7 +128,7 @@ class Injectified:
     def override_dependencies(self, dependencies: dict[Callable[..., Any], Callable[..., Any]] = {}, container: Optional['Container'] = None):
 
         """
-        Override dependencies in a FastAPI app using the integrated FastDI container.
+        Override dependencies in a FastAPI app using the integrated FastIoC container.
 
         This method merges user-provided overrides with the container’s registered dependencies
         and **directly updates** the app’s `dependency_overrides`.
@@ -150,7 +150,7 @@ class Injectified:
 
         Examples:
             ```python
-            from fastdi import FastAPI
+            from fastioc import FastAPI
             app = FastAPI()
             app.add_scoped(IService, Service)
             overrides = {
@@ -185,10 +185,10 @@ class Injectified:
 class FastAPI(_FastAPI, Injectified):
 
     """
-    Extended FastAPI class with automatic FastDI integration.
+    Extended FastAPI class with automatic FastIoC integration.
 
     Features:
-        - Supports global dependencies via an internal FastDI Container.
+        - Supports global dependencies via an internal FastIoC Container.
           A default container is created automatically, but it can be replaced via the `container` property.
         - Lazy injection of dependencies into route endpoints.
         - Developer-friendly DX sugar:
@@ -212,10 +212,10 @@ class FastAPI(_FastAPI, Injectified):
 class APIRouter(_APIRouter, Injectified):
 
     """
-    Extended APIRouter class with automatic FastDI integration.
+    Extended APIRouter class with automatic FastIoC integration.
 
     Features:
-        - Supports global dependencies via an internal FastDI Container.
+        - Supports global dependencies via an internal FastIoC Container.
           A default container is created automatically, but it can be replaced via the `container` property.
         - Lazy injection of dependencies into route endpoints.
         - Developer-friendly DX sugar:

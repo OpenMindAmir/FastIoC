@@ -1,5 +1,5 @@
 """
-Defines core types, enums, and aliases used throughout the FastDI library.
+Defines core types, enums, and aliases used throughout the FastIoC library.
 """
 
 from enum import Enum, auto
@@ -22,8 +22,8 @@ class LifeTime(Enum):
     TRANSIENT = auto()
 
 
-FastDIConcrete = type | Callable[..., Any]
-FastDIDependency = type | Depends
+FastIoCConcrete = type | Callable[..., Any]
+FastIoCDependency = type | Depends
 
 D = TypeVar('D')
 

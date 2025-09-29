@@ -1,5 +1,5 @@
 """
-FastDI Container module.
+FastIoC Container module.
 
 Provides a dependency injection IoC container for registering and resolving
 dependencies with different lifetimes (singleton, request-scoped, transient) in FastAPI.
@@ -14,9 +14,9 @@ from fastapi import FastAPI, APIRouter, Request, Response, BackgroundTasks, WebS
 from fastapi.params import Depends
 from fastapi.security import SecurityScopes
 
-from fastdi.definitions import LifeTime, FastDIConcrete, FastDIDependency, Dependency, DEPENDENCIES
-from fastdi.errors import UnregisteredProtocolError, SingletonGeneratorError
-from fastdi.utils import (log, is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete,
+from fastioc.definitions import LifeTime, FastIoCConcrete, FastIoCDependency, Dependency, DEPENDENCIES
+from fastioc.errors import UnregisteredProtocolError, SingletonGeneratorError
+from fastioc.utils import (log, is_annotated_with_depends, pretend_signature_of, sort_parameters, clone_concrete,
                           is_annotated_with_marker, resolve_forward_refs, check_singleton_dependency, warn_if_scoped_depends_transient
                           , log_skip, log_builtin_protocol)
 
@@ -138,14 +138,14 @@ class Container:
     # --- Register & Resolve ---
 
     @typechecked
-    def register(self, protocol: type, implementation: FastDIConcrete, lifetime: LifeTime):  # pyright: ignore[reportRedeclaration]
+    def register(self, protocol: type, implementation: FastIoCConcrete, lifetime: LifeTime):  # pyright: ignore[reportRedeclaration]
 
         """
         Register a dependency with a given lifetime.
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastIoCConcrete): The actual implementation to be provided when the protocol is resolved.
             lifetime (Lifetime): SINGLETON, SCOPED, or FACTORY.
 
         Raises:
@@ -163,7 +163,7 @@ class Container:
             impl = self._initialize_singleton(implementation)
             def singleton_provider() -> Any:
                 return impl
-            singleton_provider._fastdi_singleton = True # pyright: ignore[reportFunctionMemberAccess]
+            singleton_provider._fastioc_singleton = True # pyright: ignore[reportFunctionMemberAccess]
             self.dependencies[protocol] = Depends(dependency=singleton_provider, use_cache=True)
         else:
             implementation = self._nested_injector(implementation, lifetime)
@@ -200,7 +200,7 @@ class Container:
 
     # --- Registeration sugar methods ---   
     
-    def add_singleton(self, protocol: type, implementation: FastDIConcrete):
+    def add_singleton(self, protocol: type, implementation: FastIoCConcrete):
 
         """
         Register a singleton dependency.
@@ -209,7 +209,7 @@ class Container:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastIoCConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             SingletonGeneratorNotAllowedError: If 'implementation' is a generator or async generator.
@@ -219,7 +219,7 @@ class Container:
         self.register(protocol, implementation, LifeTime.SINGLETON)
 
 
-    def add_scoped(self, protocol: type, implementation: FastDIConcrete):
+    def add_scoped(self, protocol: type, implementation: FastIoCConcrete):
 
         """
         Register a request-scoped dependency.
@@ -228,7 +228,7 @@ class Container:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastIoCConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
@@ -237,7 +237,7 @@ class Container:
         self.register(protocol, implementation, LifeTime.SCOPED)
 
 
-    def add_transient(self, protocol: type, implementation: FastDIConcrete):
+    def add_transient(self, protocol: type, implementation: FastIoCConcrete):
 
         """
         Register a transient dependency.
@@ -246,7 +246,7 @@ class Container:
 
         Args:
             protocol (type): The interface or protocol type that acts as the key for resolving this dependency.
-            implementation (FastDIConcrete): The actual implementation to be provided when the protocol is resolved.
+            implementation (FastIoCConcrete): The actual implementation to be provided when the protocol is resolved.
 
         Raises:
             ProtocolNotRegisteredError: If a nested dependency is not registered.
@@ -263,7 +263,7 @@ class Container:
 
         This method allows merging and overriding dependencies from two sources:
         1. A dictionary of user-provided overrides.
-        2. An optional secondary FastDI container (e.g., a mock container for testing).
+        2. An optional secondary FastIoC container (e.g., a mock container for testing).
 
         NOTE: The lifetime of each dependency is preserved: 
         overridden dependencies are injected with the SAME LIFETIME AS ORIGINAL CONTAINER REGISTERATION.
@@ -304,7 +304,7 @@ class Container:
                 `app.dependency_overrides`.
 
         Examples:
-            >>> from fastdi import Container, FastAPI
+            >>> from fastioc import Container, FastAPI
             >>> app = FastAPI()
             >>> container = Container()
             >>> container.add_scoped(IService, Service)
@@ -373,7 +373,7 @@ class Container:
     # --- Internal helper functions
     
     @typechecked
-    def _nested_injector(self, implementation: FastDIConcrete, lifetime: LifeTime) -> FastDIConcrete:
+    def _nested_injector(self, implementation: FastIoCConcrete, lifetime: LifeTime) -> FastIoCConcrete:
 
         """
         Inject dependencies into class or callable signatures automatically.
@@ -461,7 +461,7 @@ class Container:
             implementation.__init__ = __init__  # pyright: ignore[reportFunctionMemberAccess, reportAttributeAccessIssue]
         return implementation
     
-    def _initialize_singleton(self, implementation: FastDIConcrete) -> Any:
+    def _initialize_singleton(self, implementation: FastIoCConcrete) -> Any:
 
         """
         Inject nested dependencies, register disposals, do required checks and finally initialize a singleton dependency.
@@ -546,7 +546,7 @@ class Container:
             log_skip(item)
     
 
-    def _process_dependencies_list(self, dependencies: list[FastDIDependency]) -> list[Depends]:
+    def _process_dependencies_list(self, dependencies: list[FastIoCDependency]) -> list[Depends]:
 
         """
         Process a list of global dependencies.

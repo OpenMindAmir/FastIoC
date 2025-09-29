@@ -3,7 +3,7 @@ from typing import Any, Annotated
 from fastapi import FastAPI, Depends
 from fastapi.testclient import TestClient
 
-from fastdi.container import Container
+from fastioc.container import Container
 
 from .dependencies import (State, INumberService, IGlobalService, OverrideNumberSerivce, GlobalOverrideService,
                             get_function_number, get_override_function_number, LifetimeOverrideServiceFactory, 

@@ -12,7 +12,7 @@ from .constants import (QUERY_TEXT, SERVICE_NUMBER, GENERATOR_NUMBER, FUNCTION_N
 # --- Application Endpoint Test (Async) ---
 def test_app_endpoint(app: FastAPI, client: TestClient, state: State):
 
-    logger = logging.getLogger("FastDI")
+    logger = logging.getLogger("FastIoC")
     logger.setLevel(logging.INFO)
 
     @app.get('/test', dependencies=[IGlobalService, GlobalFunctionNumber, Depends(set_global_usual_number)])  # pyright: ignore[reportArgumentType]
@@ -35,10 +35,10 @@ def test_app_endpoint(app: FastAPI, client: TestClient, state: State):
     assert data['txt'] == QUERY_TEXT  # Get & parse query parameter correctly (alongside dependencies)
     assert data['srv'] == SERVICE_NUMBER  # Inject class instance as dependency 
     assert data['gnr'] == GENERATOR_NUMBER  # Inject generator as dependency
-    assert data['n1'] == data['n2'] == data['n3'] == FUNCTION_NUMBER  # Inject function as dependency (n1) + Resolve dependency from annotations (n2) + Use FastAPI dependencies alongside FastDI deps (n3)
+    assert data['n1'] == data['n2'] == data['n3'] == FUNCTION_NUMBER  # Inject function as dependency (n1) + Resolve dependency from annotations (n2) + Use FastAPI dependencies alongside FastIoC deps (n3)
     assert state.get().global_service_number == GLOBAL_SERVICE_NUMBER  # Class instance injection in POD (Path Operation Decorator) 
     assert state.get().global_direct_number == GLOBAL_FUNCTION_NUMBER  # Function injection in POD
-    assert state.get().global_usual_number == GLOBAL_USUAL_NUMBER  # Use FastAPI dependencies in POD alongside FastDI deps 
+    assert state.get().global_usual_number == GLOBAL_USUAL_NUMBER  # Use FastAPI dependencies in POD alongside FastIoC deps 
     assert state.get().generator_exit_number == GENERATOR_EXIT_NUMBER  # Ensure that clean-up block of generator works
 
 

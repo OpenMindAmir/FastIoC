@@ -1,17 +1,17 @@
 """
-Exceptions used by the FastDI library.
+Exceptions used by the FastIoC library.
 """
 
 
-class FastDIError(Exception):
+class FastIoCError(Exception):
     """
-    Base class for all exceptions raised by the FastDI library.
-    Allows users to catch all FastDI-related errors with a single except clause.
+    Base class for all exceptions raised by the FastIoC library.
+    Allows users to catch all FastIoC-related errors with a single except clause.
     """
     pass
 
 
-class UnregisteredProtocolError(FastDIError):
+class UnregisteredProtocolError(FastIoCError):
     """
     Raised when a requested protocol, interface, or service has not been
     registered in the container.
@@ -19,7 +19,7 @@ class UnregisteredProtocolError(FastDIError):
     pass
 
 
-class SingletonGeneratorError(FastDIError):
+class SingletonGeneratorError(FastIoCError):
     """
     Raised when attempting to register a generator or async generator as
     a singleton dependency in the DI container.
@@ -30,7 +30,7 @@ class SingletonGeneratorError(FastDIError):
     pass
 
 
-class SingletonLifetimeViolationError(FastDIError):
+class SingletonLifetimeViolationError(FastIoCError):
     """
     Raised when a singleton dependency attempts to depend on a scoped or transient
     dependency. 

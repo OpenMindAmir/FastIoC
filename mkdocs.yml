@@ -1,6 +1,6 @@
-site_name: FastDI
-site_url: https://OpenMindAmir.github.io/FastDI
-repo_url: https://github.com/OpenMindAmir/FastDI
+site_name: FastIoC
+site_url: https://OpenMindAmir.github.io/FastIoC
+repo_url: https://github.com/OpenMindAmir/FastIoC
 
 theme:
   name: material
@@ -55,8 +55,10 @@ extra_css:
 
 
 extra:
-  homepage: https://OpenMindAmir.github.io/FastDI
+  homepage: https://OpenMindAmir.github.io/FastIoC
   social:
+    - icon: fontawesome/solid/heart
+      link: https://OpenMindAmir.ir/donate
     - icon: fontawesome/solid/globe
       link: https://OpenMindAmir.ir
     - icon: fontawesome/solid/envelope

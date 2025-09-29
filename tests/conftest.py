@@ -1,11 +1,11 @@
-"""Pytest fixtures for FastDI integration tests with FastAPI and APIRouter."""
+"""Pytest fixtures for FastIoC integration tests with FastAPI and APIRouter."""
 
 import pytest
 
 from fastapi import FastAPI, APIRouter
 from fastapi.testclient import TestClient
 
-from fastdi.container import Container
+from fastioc.container import Container
 
 from .dependencies import (State, state as _state, IGlobalService, INumberService, GlobalService,
                             NumberService, FunctionNumber, get_function_number, GlobalFunctionNumber,

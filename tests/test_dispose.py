@@ -3,7 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastdi.container import Container
+from fastioc.container import Container
 
 from .dependencies import State
 from .constants import DISPOSE_NUMBER
