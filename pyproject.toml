@@ -1,6 +1,6 @@
 [project]
 name = "FastIoC"
-version = "0.1.1"
+version = "0.1.2"
 description = "IoC/DI container for FastAPI with automatic type-based dependency injection"
 authors = [
     {name = "Amir R. Aliakbari", email = "OpenMindAmir@gmail.com"}
