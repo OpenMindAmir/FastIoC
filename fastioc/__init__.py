@@ -7,5 +7,24 @@ endpoints and route-level dependencies based on type hints.
 It simplifies dependency management and promotes clean, modular code.
 """
 
-from fastioc.container import Container  # pyright: ignore[reportUnusedImport]
-from fastioc.integrations import FastAPI, APIRouter  # pyright: ignore[reportUnusedImport]
+from fastioc.container import Container
+from fastioc.integrations import FastAPI, APIRouter
+from fastioc.controller import APIController
+
+from fastapi_controllers.routing import get, post, delete, put, patch, options, head, trace, websocket  # pyright: ignore[reportMissingTypeStubs]
+
+__all__ = [
+    'Container',
+    'FastAPI',
+    'APIRouter',
+    'APIController',
+    'get',
+    'post',
+    'delete',
+    'put',
+    'patch',
+    'options',
+    'head',
+    'trace',
+    'websocket'
+]
