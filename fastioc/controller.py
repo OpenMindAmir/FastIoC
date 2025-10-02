@@ -4,7 +4,7 @@ from typing import Optional, Sequence, List, Union, Dict, Any
 from enum import Enum
 
 from fastapi import params, APIRouter as _APIRouter
-from fastapi_controllers.definitions import WebsocketRouteMeta, Route, HTTPRouteMeta
+from fastapi_controllers.definitions import WebsocketRouteMeta, Route, HTTPRouteMeta, RouteMetadata
 from fastapi_controllers.helpers import _replace_signature, _validate_against_signature
 from fastapi_controllers.routing import _RouteDecorator
 
@@ -85,7 +85,7 @@ class APIController:
         for param in ["prefix", "dependencies", "tags"]:
             if not cls.__router_params__.get(param):
                 cls.__router_params__[param] = getattr(cls, param)
-        _validate_against_signature(_APIRouter.__init__, kwargs=cls.__router_params__)
+        _validate_against_signature(APIRouter.__init__, kwargs=cls.__router_params__) # TODO Check scenarios may be tests ...
 
     @classmethod
     def create_router(cls) -> APIRouter:

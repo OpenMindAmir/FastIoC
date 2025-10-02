@@ -5,7 +5,8 @@ from fastioc.controller import APIController
 from fastioc.container import Container
 from fastioc import get
 
-from .dependencies import State
+from .dependencies import State, INumberService, IGlobalService
+from .constants import SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER
 
 
 # --- Controller Test
@@ -13,14 +14,16 @@ def test_controller(state: State, app: FastAPI, client: TestClient, container: C
 
     class TestController(APIController):
         prefix = '/ctrl'
+        __router_params__= {'container': container}
 
-        @get('/test')
-        async def endpoint(self) -> int:
-            return 1
+        @get('/test', dependencies=[IGlobalService])  # pyright: ignore[reportArgumentType]
+        async def endpoint(self, service: INumberService) -> int:
+            return service.get_number()
 
     app.include_router(TestController.create_router())
 
     response = client.get('/ctrl/test')
 
     assert response.status_code == 200
-    assert response.json() == 1
+    assert response.json() == SERVICE_NUMBER
+    assert state.get().global_service_number == GLOBAL_SERVICE_NUMBER
