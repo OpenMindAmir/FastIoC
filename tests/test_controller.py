@@ -17,7 +17,6 @@ def test_controller(state: State, app: FastAPI, client: TestClient, container: C
         @get('/test')
         async def endpoint(self) -> int:
             return 1
-        
 
     app.include_router(TestController.create_router())
 

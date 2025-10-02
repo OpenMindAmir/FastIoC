@@ -6,8 +6,60 @@ from enum import Enum
 from fastapi import params, APIRouter as _APIRouter
 from fastapi_controllers.definitions import WebsocketRouteMeta, Route, HTTPRouteMeta
 from fastapi_controllers.helpers import _replace_signature, _validate_against_signature
+from fastapi_controllers.routing import _RouteDecorator
 
 from fastioc.integrations import APIRouter
+from fastioc.utils import pretend_signature_of
+
+router = APIRouter()
+
+class delete(_RouteDecorator, route_meta=RouteMetadata.delete):
+    @pretend_signature_of(router.delete)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class get(_RouteDecorator, route_meta=RouteMetadata.get):
+    @pretend_signature_of(router.get)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class head(_RouteDecorator, route_meta=RouteMetadata.head):
+    @pretend_signature_of(router.head)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class options(_RouteDecorator, route_meta=RouteMetadata.options):
+    @pretend_signature_of(router.options)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class patch(_RouteDecorator, route_meta=RouteMetadata.patch):
+    @pretend_signature_of(router.patch)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class post(_RouteDecorator, route_meta=RouteMetadata.post):
+    @pretend_signature_of(router.post)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class put(_RouteDecorator, route_meta=RouteMetadata.put):
+    @pretend_signature_of(router.put)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class trace(_RouteDecorator, route_meta=RouteMetadata.trace):
+    @pretend_signature_of(router.trace)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+class websocket(_RouteDecorator, route_meta=RouteMetadata.websocket):
+    @pretend_signature_of(router.websocket)
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+del router
+
 
 def _is_route(obj: Any) -> bool:
     """

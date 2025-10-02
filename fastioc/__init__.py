@@ -10,8 +10,7 @@ It simplifies dependency management and promotes clean, modular code.
 from fastioc.container import Container
 from fastioc.integrations import FastAPI, APIRouter
 from fastioc.controller import APIController
-
-from fastapi_controllers.routing import get, post, delete, put, patch, options, head, trace, websocket  # pyright: ignore[reportMissingTypeStubs]
+from fastioc.controller import get, post, delete, put, patch, options, head, trace, websocket  # pyright: ignore[reportMissingTypeStubs]
 
 __all__ = [
     'Container',
