@@ -431,14 +431,14 @@ class Container:
                     new_param = param.replace(default=annotated_dependency)
                     params.append(new_param)
                     warn_if_scoped_depends_transient(annotated_dependency, lifetime, implementation)
-                    log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
+                    log.debug('Resolved Protocol "%s" as nested dependency for "%s"', annotation, implementation)
                     continue
                 try:
                     dependency = self.resolve(annotation)
                     new_param = param.replace(default=dependency)
                     params.append(new_param)
                     warn_if_scoped_depends_transient(dependency, lifetime, implementation)
-                    log.debug('Resolved "%s" protocol as nested dependency for "%s"', annotation, implementation)
+                    log.debug('Resolved Protocol "%s" as nested dependency for "%s"', annotation, implementation)
                 except UnregisteredProtocolError:
                     log_skip(annotation, True)
                     params.append(param)

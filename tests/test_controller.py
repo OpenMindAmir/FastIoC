@@ -12,14 +12,16 @@ from .constants import SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER
 def test_controller(state: State, app: FastAPI, client: TestClient, container: Container):
 
     class TestController(APIController):
-        prefix = '/ctrl'
-        __router_params__= {'container': container}
+        RouterConfig = {
+            'container': container,
+            'prefix': '/ctrl'
+        }
 
         @get('/test', dependencies=[IGlobalService])  # pyright: ignore[reportArgumentType]
         async def endpoint(self, service: INumberService) -> int:
             return service.get_number()
 
-    app.include_router(TestController.create_router())
+    app.include_router(TestController.router())
 
     response = client.get('/ctrl/test')
 
