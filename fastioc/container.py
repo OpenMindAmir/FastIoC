@@ -403,7 +403,7 @@ class Container:
                         default=annotated_dependency
                     ))
                     warn_if_scoped_depends_transient(annotated_dependency, lifetime, implementation)
-                    log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
+                    log.debug('Resolved Protocol "%s" as nested dependency for "%s" (from class annotations)', annotation, implementation)
                     continue
                 try:
                     dependency: Depends = self.resolve(annotation)
@@ -414,7 +414,7 @@ class Container:
                         default=dependency
                     ))
                     warn_if_scoped_depends_transient(dependency, lifetime, implementation)
-                    log.debug('Resolved "%s" protocol as nested dependency for "%s" (from class annotations)', annotation, implementation)
+                    log.debug('Resolved Protocol "%s" as nested dependency for "%s" (from class annotations)', annotation, implementation)
                 except UnregisteredProtocolError:
                     log_skip(annotation, True)
         

@@ -1,9 +1,8 @@
 from fastapi import FastAPI
 from fastapi.testclient import TestClient
 
-from fastioc.controller import APIController
 from fastioc.container import Container
-from fastioc import get
+from fastioc.controller import APIController, get
 
 from .dependencies import State, INumberService, IGlobalService
 from .constants import SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER
