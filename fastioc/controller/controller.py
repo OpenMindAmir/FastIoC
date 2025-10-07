@@ -11,11 +11,9 @@ from fastioc.definitions import LifeTime
 
 class APIController:
     RouterConfig: APIRouterParams = {}
-    container: Container
-        
 
     @classmethod
-    def router(cls, container: Optional[Container] = None, RouterConfig: Optional[APIRouterParams] = None) -> APIRouter:
+    def router(cls, RouterConfig: Optional[APIRouterParams] = {}) -> APIRouter:  # pyright: ignore[reportRedeclaration]
         """
         Create a new APIRouter instance and populate the APIRoutes.
 
@@ -23,11 +21,11 @@ class APIController:
             APIRouter: An APIRouter instance.
         """
 
-        container = container or cls.container if hasattr(cls, 'container') else Container()
+        if not RouterConfig:
+            RouterConfig = cls.RouterConfig
+        container = RouterConfig['container'] or Container() # pyright: ignore[reportTypedDictNotRequiredAccess]
 
-        RouterConfig = cls.RouterConfig.update(RouterConfig) if RouterConfig else cls.RouterConfig
-
-        controller: type['APIController'] = container._nested_injector(cls, lifetime=LifeTime.SINGLETON)  # pyright: ignore[reportAssignmentType, reportPrivateUsage]
+        controller: type['APIController'] = container._nested_injector(cls, lifetime=LifeTime.SINGLETON)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAssignmentType, reportPrivateUsage]
         
         router = APIRouter(**(RouterConfig or {}))  # pyright: ignore[reportCallIssue]
         for _, route in inspect.getmembers(controller, predicate=lambda r: isinstance(r, Route)):

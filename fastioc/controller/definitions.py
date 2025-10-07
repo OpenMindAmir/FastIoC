@@ -19,7 +19,7 @@ class APIRouterParams(TypedDict, total=False):
     prefix: str
     tags: Optional[List[Union[str, Any]]]
     container: Optional[Container]
-    dependencies: Optional[Sequence[Depends]]
+    dependencies: Optional[Sequence[Depends | type]]
     responses: Optional[Dict[Union[int, str], Dict[str, Any]]]
     callbacks: Optional[List[BaseRoute]]
     routes: Optional[List[BaseRoute]]
