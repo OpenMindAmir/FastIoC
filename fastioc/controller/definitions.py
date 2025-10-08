@@ -1,3 +1,7 @@
+"""
+FastIoc APIController definitions
+"""
+
 from typing import Any, Callable, Dict, List, Optional, Sequence, Type, Union, TypedDict
 
 from fastapi import APIRouter
@@ -16,6 +20,9 @@ from fastioc.container import Container
 # --- APIRouter Parameters class ---
 
 class APIRouterParams(TypedDict, total=False):
+    """
+    FastIoC APIRouter config model
+    """
     prefix: str
     tags: Optional[List[Union[str, Any]]]
     container: Optional[Container]
