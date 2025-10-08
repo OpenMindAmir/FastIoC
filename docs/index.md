@@ -10,22 +10,20 @@
 
 **Features:**
 
-- 🧹 Write cleaner, loosely coupled code while staying true to the Dependency Inversion Principle (SOLID - D) — with ABSOLUTELY ZERO boilerplate!
+- 🧹 Write cleaner, loosely coupled code while staying true to the ⛓️‍💥 Dependency Inversion Principle (SOLID - D) — with **ABSOLUTELY ZERO** boilerplate! ⚡
 
-- ⚙️ Enjoy hassle-free, automatic nested dependency resolution using Python type hints with flexible lifetimes: 🧩 Singleton, 🌿 Scoped, and ⚡ Transient (inspired by .NET)
+- ⚙️ Enjoy hassle-free, automatic nested dependency resolution using Python type hints with flexible lifetimes: ♻️ Singleton, 🧺 Scoped, and ♨️ Transient (inspired by .NET)
 
 - 🚀 Zero runtime overhead — everything is resolved at startup!
 
-- 🧠 100% compatible & based on FastAPI’s native dependency injection — no black boxes, no magic 🪄
+- 🤝 100% compatible & based on FastAPI’s native dependency injection — no black boxes, no magic 🪄
 
-- 🧺 Singleton support with automatic cleanup on application shutdown 🧘
+- ♻️ Singleton support with automatic cleanup on application shutdown 🧹
 
-- 🧪 Full support for FastAPI's dependency_overrides using type annotations — even with mock containers 🧰
+- 🧪 Full support for FastAPI's `dependency_overrides` using type annotations — even with mock containers 💉
 
-- 🧱 Comes with the amazing APIController — the best class-based view (CBV) system ever seen in Python 🏆
+- 📦 Comes with the amazing **`APIController`** — the best class-based view (CBV) system ever seen in Python 🏆
 
 - 🔄 Two operation modes: standalone 🏕️ and integrated 🧩
 
-- 🌐 Open standard and fully customizable, with hooks and standardized error handling 🧷
-
-- 🪵 Detailed multi-level logging for total observability 📊
+- 🔧 Comes with customizable hooks, detailed logs & ... 📊
