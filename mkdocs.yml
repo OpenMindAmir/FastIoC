@@ -49,6 +49,7 @@ nav:
       - Container: reference/container.md
       - Integrations: reference/integrations.md
       - Exceptions:  reference/exceptions.md
+      - APIController: reference/controller.md
 
 extra_css:
   - style.css

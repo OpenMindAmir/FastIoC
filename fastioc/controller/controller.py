@@ -62,7 +62,8 @@ class APIController:
         Args:
             config (Optional[APIRouterParams]): Optional configuration parameters for the APIRouter. 
                 If not provided, uses the controller's default config.
-            NOTE: If you provide this argument, it will completely override the controller config
+                
+                NOTE: If you provide this argument, it will completely override the controller config
 
         Returns:
             APIRouter: An instance of fastioc.integrations.APIRouter with routes registered.
