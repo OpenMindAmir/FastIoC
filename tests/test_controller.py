@@ -13,7 +13,7 @@ from .constants import SERVICE_NUMBER, GLOBAL_SERVICE_NUMBER, GLOBAL_SERVICE_NUM
 def test_controller(state: State, app: FastAPI, client: TestClient, container: Container):
 
     class TestController(APIController):
-        RouterConfig = {
+        config = {
             'prefix': '/ctrl',
             'container': container,
             'dependencies': [IGlobalService2]

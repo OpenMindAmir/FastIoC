@@ -10,24 +10,28 @@ from fastioc.container import Container
 from fastioc.definitions import LifeTime
 
 class APIController:
-    RouterConfig: APIRouterParams = {}
+    config: APIRouterParams = {}
 
     @classmethod
-    def router(cls, RouterConfig: Optional[APIRouterParams] = {}) -> APIRouter:  # pyright: ignore[reportRedeclaration]
+    def router(cls, config: Optional[APIRouterParams] = {}) -> APIRouter:  # pyright: ignore[reportRedeclaration]
         """
-        Create a new APIRouter instance and populate the APIRoutes.
+        Create a new FastIoc APIRouter instance and populate it with APIRoutes.
+
+        Args:
+            config (Optional[APIRouterParams]): Optional configuration parameters for the APIRouter. 
+                If not provided, uses the controller's default config.
 
         Returns:
-            APIRouter: An APIRouter instance.
+            APIRouter: An instance of fastioc.integrations.APIRouter with routes registered.
         """
 
-        if not RouterConfig:
-            RouterConfig = cls.RouterConfig
-        container = RouterConfig['container'] or Container() # pyright: ignore[reportTypedDictNotRequiredAccess]
+        if not config:
+            config = cls.config
+        container = config['container'] or Container() # pyright: ignore[reportTypedDictNotRequiredAccess]
 
         controller: type['APIController'] = container._nested_injector(cls, lifetime=LifeTime.SINGLETON)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAssignmentType, reportPrivateUsage]
         
-        router = APIRouter(**(RouterConfig or {}))  # pyright: ignore[reportCallIssue]
+        router = APIRouter(**(config or {}))  # pyright: ignore[reportCallIssue]
         for _, route in inspect.getmembers(controller, predicate=lambda r: isinstance(r, Route)):
             _replace_signature(controller, route.endpoint)
             if isinstance(route.route_meta, HTTPRouteMeta):
