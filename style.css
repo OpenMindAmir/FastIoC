@@ -1,0 +1,22 @@
+/* Light mode (default scheme) */
+[data-md-color-scheme="default"] {
+  --md-primary-fg-color: #EAB308;
+  --md-primary-fg-color--light: #facc15;
+  --md-primary-fg-color--dark: #ca8a04;
+
+  --md-accent-fg-color: #EAB308;
+}
+
+/* Dark mode (slate scheme) */
+[data-md-color-scheme="slate"] {
+  --md-primary-fg-color: #EAB308;
+  --md-primary-fg-color--light: #facc15;
+  --md-primary-fg-color--dark: #ca8a04;
+
+  --md-accent-fg-color: #EAB308;
+}
+
+
+.openmindamir {
+  color: #EAB308 !important;
+}
