@@ -1223,16 +1223,16 @@ before it is stored in the container.</p>
 - Validating dependency types
 - Applying decorators or configuration</p>
 </details>        <p>Example (monkey patch):</p>
-<pre><code>def my_register_hook(dep):
-    print(f"Registering {dep.protocol.__name__} -&gt; {dep.implementation}")
-    return dep
+<div class="codehilite"><pre><span></span><code><span class="nx">def</span><span class="w"> </span><span class="nx">my_register_hook</span><span class="p">(</span><span class="nx">dep</span><span class="p">):</span>
+<span class="w">    </span><span class="nx">print</span><span class="p">(</span><span class="nx">f</span><span class="s">&quot;Registering {dep.protocol.__name__} -&gt; {dep.implementation}&quot;</span><span class="p">)</span>
+<span class="w">    </span><span class="k">return</span><span class="w"> </span><span class="nx">dep</span>
 
-container = Container()
-container.before_register_hook = my_register_hook  # Monkey patch the hook
+<span class="nx">container</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">Container</span><span class="p">()</span>
+<span class="nx">container</span><span class="p">.</span><span class="nx">before_register_hook</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="nx">my_register_hook</span><span class="w">  </span><span class="err">#</span><span class="w"> </span><span class="nx">Monkey</span><span class="w"> </span><span class="nx">patch</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">hook</span>
 
-container.add_scoped(IService, Service)
-# Now each register prints info before storing the dependency
-</code></pre>
+<span class="nx">container</span><span class="p">.</span><span class="nx">add_scoped</span><span class="p">(</span><span class="nx">IService</span><span class="p">,</span><span class="w"> </span><span class="nx">Service</span><span class="p">)</span>
+<span class="err">#</span><span class="w"> </span><span class="nx">Now</span><span class="w"> </span><span class="nx">each</span><span class="w"> </span><span class="nx">register</span><span class="w"> </span><span class="nx">prints</span><span class="w"> </span><span class="nx">info</span><span class="w"> </span><span class="nx">before</span><span class="w"> </span><span class="nx">storing</span><span class="w"> </span><span class="nx">the</span><span class="w"> </span><span class="nx">dependency</span>
+</code></pre></div>
 
 
     </div>
@@ -1320,17 +1320,17 @@ about to be resolved.
 - Injecting default parameters
 - Applying metrics or tracing</p>
 </details>        <p>Example (monkey patch):</p>
-<pre><code>def my_resolve_hook(dep):
-    print(f"Resolving dependency {dep.dependency.__name__}")
+<div class="codehilite"><pre><span></span><code>def my_resolve_hook(dep):
+    print(f&quot;Resolving dependency {dep.dependency.__name__}&quot;)
     return dep
 
 container = Container()
 container.before_resolve_hook = my_resolve_hook  # Monkey patch the hook
 
-# Now, when resolving a dependency:
+<span class="gh">#</span> Now, when resolving a dependency:
 resolved_dep = container.resolve(IService)
-# Each resolve prints info before returning the instance
-</code></pre>
+<span class="gh">#</span> Each resolve prints info before returning the instance
+</code></pre></div>
 
 
     </div>
@@ -1445,10 +1445,10 @@ the disposal process will continue for the remaining singletons.</p>
 
 
 <p><span class="doc-section-title">Examples:</span></p>
-    <pre><code class="language-python">app = FastAPI()
-container = Container()
-container.injectify(app)
-</code></pre>
+    <div class="highlight"><pre><span></span><code><span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<span class="n">container</span> <span class="o">=</span> <span class="n">Container</span><span class="p">()</span>
+<span class="n">container</span><span class="o">.</span><span class="n">injectify</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+</code></pre></div>
 
 
     </div>

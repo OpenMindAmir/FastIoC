@@ -8,26 +8,24 @@
       
       
       
-        <link rel="canonical" href="https://OpenMindAmir.github.io/FastIoC/reference/controller/">
-      
-      
-        <link rel="prev" href="../exceptions/">
+        <link rel="canonical" href="https://OpenMindAmir.github.io/FastIoC/controller/">
       
       
       
-      <link rel="icon" href="../../logo.png">
+      
+      <link rel="icon" href="../logo.png">
       <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.6.20">
     
     
       
-        <title>APIController - FastIoC</title>
+        <title>Controller - FastIoC</title>
       
     
     
-      <link rel="stylesheet" href="../../assets/stylesheets/main.e53b48f4.min.css">
+      <link rel="stylesheet" href="../assets/stylesheets/main.e53b48f4.min.css">
       
         
-        <link rel="stylesheet" href="../../assets/stylesheets/palette.06af60db.min.css">
+        <link rel="stylesheet" href="../assets/stylesheets/palette.06af60db.min.css">
       
       
 
@@ -46,11 +44,11 @@
       
     
     
-      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+      <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
-      <link rel="stylesheet" href="../../style.css">
+      <link rel="stylesheet" href="../style.css">
     
-    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
 
@@ -75,11 +73,6 @@
     <label class="md-overlay" for="__drawer"></label>
     <div data-md-component="skip">
       
-        
-        <a href="#fastioc.controller" class="md-skip">
-          Skip to content
-        </a>
-      
     </div>
     <div data-md-component="announce">
       
@@ -94,7 +87,7 @@
   <nav class="md-header__inner md-grid" aria-label="Header">
     <a href="https://OpenMindAmir.github.io/FastIoC" title="FastIoC" class="md-header__button md-logo" aria-label="FastIoC" data-md-component="logo">
       
-  <img src="../../logo.png" alt="logo">
+  <img src="../logo.png" alt="logo">
 
     </a>
     <label class="md-header__button md-icon" for="__drawer">
@@ -111,7 +104,7 @@
         <div class="md-header__topic" data-md-component="header-topic">
           <span class="md-ellipsis">
             
-              APIController
+              Controller
             
           </span>
         </div>
@@ -229,7 +222,7 @@
   <label class="md-nav__title" for="__drawer">
     <a href="https://OpenMindAmir.github.io/FastIoC" title="FastIoC" class="md-nav__button md-logo" aria-label="FastIoC" data-md-component="logo">
       
-  <img src="../../logo.png" alt="logo">
+  <img src="../logo.png" alt="logo">
 
     </a>
     FastIoC
@@ -278,7 +271,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../.." class="md-nav__link">
+      <a href=".." class="md-nav__link">
         
   
   
@@ -297,20 +290,18 @@
       
   
   
-    
   
   
-  
     
     
     
     
     
-    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+    <li class="md-nav__item md-nav__item--nested">
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
           <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
@@ -326,7 +317,7 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
           <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             API Reference
@@ -340,7 +331,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../container/" class="md-nav__link">
+      <a href="../reference/container/" class="md-nav__link">
         
   
   
@@ -363,7 +354,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../integrations/" class="md-nav__link">
+      <a href="../reference/integrations/" class="md-nav__link">
         
   
   
@@ -386,7 +377,7 @@
   
   
     <li class="md-nav__item">
-      <a href="../exceptions/" class="md-nav__link">
+      <a href="../reference/exceptions/" class="md-nav__link">
         
   
   
@@ -406,30 +397,10 @@
                 
   
   
-    
   
   
-  
-    <li class="md-nav__item md-nav__item--active">
-      
-      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
-      
-      
-      
-        <label class="md-nav__link md-nav__link--active" for="__toc">
-          
-  
-  
-  <span class="md-ellipsis">
-    APIController
-    
-  </span>
-  
-
-          <span class="md-nav__icon md-icon"></span>
-        </label>
-      
-      <a href="./" class="md-nav__link md-nav__link--active">
+    <li class="md-nav__item">
+      <a href="../reference/controller/" class="md-nav__link">
         
   
   
@@ -440,72 +411,6 @@
   
 
       </a>
-      
-        
-
-<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
-  
-  
-  
-  
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#fastioc.controller" class="md-nav__link">
-    <span class="md-ellipsis">
-      controller
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="controller">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fastioc.controller--example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fastioc.controller.APIController" class="md-nav__link">
-    <span class="md-ellipsis">
-      APIController
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="APIController">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fastioc.controller.APIController.router" class="md-nav__link">
-    <span class="md-ellipsis">
-      router
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
-</nav>
-      
     </li>
   
 
@@ -536,62 +441,6 @@
   
   
   
-    <label class="md-nav__title" for="__toc">
-      <span class="md-nav__icon md-icon"></span>
-      Table of contents
-    </label>
-    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
-      
-        <li class="md-nav__item">
-  <a href="#fastioc.controller" class="md-nav__link">
-    <span class="md-ellipsis">
-      controller
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="controller">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fastioc.controller--example" class="md-nav__link">
-    <span class="md-ellipsis">
-      Example:
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#fastioc.controller.APIController" class="md-nav__link">
-    <span class="md-ellipsis">
-      APIController
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="APIController">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#fastioc.controller.APIController.router" class="md-nav__link">
-    <span class="md-ellipsis">
-      router
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-    </ul>
-  
 </nav>
                   </div>
                 </div>
@@ -609,218 +458,9 @@
   
 
 
-  <h1>APIController</h1>
+  <h1>Controller</h1>
 
-<div class="doc doc-object doc-module">
 
-
-
-<a id="fastioc.controller"></a>
-    <div class="doc doc-contents first">
-
-        <p>This module serves as the main public interface for FastIoC's controller system.</p>
-<p>It re-exports the core <code>APIController</code> base class and all FastIoC-compatible 
-route decorators (<code>get</code>, <code>post</code>, <code>put</code>, <code>patch</code>, <code>head</code>, <code>options</code>, <code>delete</code>, <code>trace</code>, <code>websocket</code>) 
-to provide a clean and unified import path for building dependency-injected FastAPI controllers.</p>
-<p>By using these exports, developers can easily define fully type-hinted, dependency-injected 
-controllers that integrate seamlessly with FastAPI's routing system while leveraging 
-FastIoC's inversion of control (IoC) container.</p>
-<h3 id="fastioc.controller--example">Example:</h3>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastioc.controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIController</span><span class="p">,</span> <span class="n">get</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">my_app.interfaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">IUserService</span><span class="p">,</span> <span class="n">ILoggingService</span>
-
-<span class="k">class</span><span class="w"> </span><span class="nc">UserController</span><span class="p">(</span><span class="n">APIController</span><span class="p">):</span>
-    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;/users&quot;</span><span class="p">,</span>
-        <span class="s2">&quot;container&quot;</span><span class="p">:</span> <span class="n">app_container</span>
-    <span class="p">}</span>
-
-    <span class="n">logger</span><span class="p">:</span> <span class="n">ILoggingService</span>
-
-    <span class="nd">@get</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">list_users</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="n">IUserService</span><span class="p">):</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="s1">&#39;get users&#39;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">service</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
-
-<span class="n">router</span> <span class="o">=</span> <span class="n">UserController</span><span class="o">.</span><span class="n">router</span><span class="p">()</span>
-<span class="n">app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">router</span><span class="p">)</span>
-</code></pre></div>
-<p>This module is intended to be the primary import surface for most applications
-using FastIoC's controller architecture.</p>
-
-
-
-
-
-
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-class">
-
-
-
-<h2 id="fastioc.controller.APIController" class="doc doc-heading">
-            <code>APIController</code>
-
-
-</h2>
-
-
-    <div class="doc doc-contents ">
-
-
-        <p>APIController provides an integration layer between FastIoC's dependency injection container and FastAPI's routing system.</p>
-<p>This class acts as a declarative controller that automatically registers all endpoint methods 
-decorated with FastIoC route decorators (e.g., @get, @post, etc.) into a FastIoC-powered APIRouter.</p>
-<p>Each route and its dependencies are resolved through FastIoC's dependency injection mechanism, 
-allowing constructor injection, type-hint-based injection, and lifecycle management (e.g., singleton, transient).</p>
-<p>The controller can define a class-level <code>config</code> attribute containing APIRouterParams, which 
-specifies routing configuration such as prefix, tags, responses, and more.</p>
-<p>⚠️ Important:
-You must include a valid <code>container</code> instance in the <code>config</code> parameter to enable dependency injection 
-and proper controller instantiation.</p>
-<p>Usage example:
-<div class="highlight"><pre><span></span><code>    <span class="k">class</span><span class="w"> </span><span class="nc">UserController</span><span class="p">(</span><span class="n">APIController</span><span class="p">):</span>
-        <span class="n">config</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="s2">&quot;/users&quot;</span><span class="p">,</span>
-            <span class="s2">&quot;container&quot;</span><span class="p">:</span> <span class="n">app_container</span>
-        <span class="p">}</span>
-
-        <span class="nd">@get</span><span class="p">(</span><span class="s2">&quot;/&quot;</span><span class="p">)</span>
-        <span class="k">def</span><span class="w"> </span><span class="nf">list_users</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">service</span><span class="p">:</span> <span class="n">UserService</span><span class="p">):</span>
-            <span class="k">return</span> <span class="n">service</span><span class="o">.</span><span class="n">get_all</span><span class="p">()</span>
-
-    <span class="n">router</span> <span class="o">=</span> <span class="n">UserController</span><span class="o">.</span><span class="n">router</span><span class="p">()</span>
-    <span class="n">app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">router</span><span class="p">)</span>
-</code></pre></div></p>
-
-
-
-
-
-
-
-
-
-
-
-  <div class="doc doc-children">
-
-
-
-
-
-
-
-
-
-
-<div class="doc doc-object doc-function">
-
-
-<h3 id="fastioc.controller.APIController.router" class="doc doc-heading">
-            <code class="highlight language-python"><span class="n">router</span><span class="p">(</span><span class="n">config</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">APIRouterParams</span><span class="p">]</span> <span class="o">=</span> <span class="p">{})</span> <span class="o">-&gt;</span> <span class="n">APIRouter</span></code>
-
-  <span class="doc doc-labels">
-      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
-  </span>
-
-</h3>
-
-
-    <div class="doc doc-contents ">
-
-        <p>Create a new FastIoc APIRouter instance and populate it with APIRoutes.</p>
-
-
-<p><span class="doc-section-title">Parameters:</span></p>
-    <table>
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Type</th>
-          <th>Description</th>
-          <th>Default</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-            <td>
-                <code>config</code>
-            </td>
-            <td>
-                  <code><span title="typing.Optional">Optional</span>[<span title="fastioc.controller.definitions.APIRouterParams">APIRouterParams</span>]</code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>Optional configuration parameters for the APIRouter. 
-If not provided, uses the controller's default config.</p>
-<p>NOTE: If you provide this argument, it will completely override the controller config</p>
-              </div>
-            </td>
-            <td>
-                  <code>{}</code>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    <p><span class="doc-section-title">Returns:</span></p>
-    <table>
-      <thead>
-        <tr>
-<th>Name</th>          <th>Type</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-          <tr class="doc-section-item">
-<td><code>APIRouter</code></td>            <td>
-                  <code><a class="autorefs autorefs-internal" href="../integrations/#fastioc.integrations.APIRouter">APIRouter</a></code>
-            </td>
-            <td>
-              <div class="doc-md-description">
-                <p>An instance of fastioc.integrations.APIRouter with routes registered.</p>
-              </div>
-            </td>
-          </tr>
-      </tbody>
-    </table>
-
-
-    </div>
-
-</div>
-
-
-
-  </div>
-
-    </div>
-
-</div>
-
-
-
-
-  </div>
-
-    </div>
-
-</div>
 
 
 
@@ -943,10 +583,10 @@ If not provided, uses the controller's default config.</p>
     
     
       
-      <script id="__config" type="application/json">{"base": "../..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.instant.preview", "navigation.tracking", "navigation.path"], "search": "../../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+      <script id="__config" type="application/json">{"base": "..", "features": ["navigation.instant", "navigation.instant.prefetch", "navigation.instant.progress", "navigation.instant.preview", "navigation.tracking", "navigation.path"], "search": "../assets/javascripts/workers/search.973d3a69.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
     
     
-      <script src="../../assets/javascripts/bundle.f55a23d4.min.js"></script>
+      <script src="../assets/javascripts/bundle.f55a23d4.min.js"></script>
       
     
   </body>

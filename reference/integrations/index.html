@@ -1342,15 +1342,15 @@ Only protocols registered in the main container are considered.</p>
 </details>
 
 <p><span class="doc-section-title">Examples:</span></p>
-    <pre><code class="language-python">from fastioc import FastAPI
-app = FastAPI()
-app.add_scoped(IService, Service)
-overrides = {
-    IService: MockService,
-    some_dependency: custom_callable
-}
-app.override_dependencies(overrides)
-</code></pre>
+    <div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastioc</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">add_scoped</span><span class="p">(</span><span class="n">IService</span><span class="p">,</span> <span class="n">Service</span><span class="p">)</span>
+<span class="n">overrides</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="n">IService</span><span class="p">:</span> <span class="n">MockService</span><span class="p">,</span>
+    <span class="n">some_dependency</span><span class="p">:</span> <span class="n">custom_callable</span>
+<span class="p">}</span>
+<span class="n">app</span><span class="o">.</span><span class="n">override_dependencies</span><span class="p">(</span><span class="n">overrides</span><span class="p">)</span>
+</code></pre></div>
 
 
     </div>

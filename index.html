@@ -287,6 +287,19 @@
         
       
       
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    Home
+    
+  </span>
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
       <a href="." class="md-nav__link md-nav__link--active">
         
   
@@ -298,6 +311,85 @@
   
 
       </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation 📥
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage 💡
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage 💡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standalone-mode-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standalone Mode (Recommended) 🏕️
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integrated-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integrated Mode 🧩
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apicontroller" class="md-nav__link">
+    <span class="md-ellipsis">
+      APIController
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
       
     </li>
   
@@ -460,6 +552,74 @@
     
   
   
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#installation" class="md-nav__link">
+    <span class="md-ellipsis">
+      Installation 📥
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#usage" class="md-nav__link">
+    <span class="md-ellipsis">
+      Usage 💡
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Usage 💡">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#standalone-mode-recommended" class="md-nav__link">
+    <span class="md-ellipsis">
+      Standalone Mode (Recommended) 🏕️
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#integrated-mode" class="md-nav__link">
+    <span class="md-ellipsis">
+      Integrated Mode 🧩
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#apicontroller" class="md-nav__link">
+    <span class="md-ellipsis">
+      APIController
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#license" class="md-nav__link">
+    <span class="md-ellipsis">
+      License
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
 </nav>
                   </div>
                 </div>
@@ -513,6 +673,99 @@
 <p>🔧 Comes with customizable hooks, detailed logs &amp; ... 📊</p>
 </li>
 </ul>
+<h2 id="installation">Installation 📥</h2>
+<div class="highlight"><pre><span></span><code>$<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>fastioc
+</code></pre></div>
+<h2 id="usage">Usage 💡</h2>
+<p>A sample interface &amp; implementation:</p>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Protocol</span>
+
+<span class="c1"># Define the interface 📜</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">IService</span><span class="p">(</span><span class="n">Protocol</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="o">...</span>
+
+
+<span class="c1"># Implement concrete class 🏗️</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExampleService</span><span class="p">(</span><span class="n">IService</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ExampleService created&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="mi">42</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_number</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">number</span>
+</code></pre></div>
+<h3 id="standalone-mode-recommended">Standalone Mode (Recommended) 🏕️</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastioc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Container</span> <span class="c1"># Import the Container</span>
+
+
+<span class="c1"># Create container and register dependency 📝</span>
+<span class="n">container</span> <span class="o">=</span> <span class="n">Container</span><span class="p">()</span>
+<span class="n">container</span><span class="o">.</span><span class="n">add_scoped</span><span class="p">(</span><span class="n">IService</span><span class="p">,</span> <span class="n">ExampleService</span><span class="p">)</span> <span class="c1"># Also available: add_singleton, add_transient</span>
+
+
+<span class="c1"># Create FastAPI app and integrate it with the container 🪄</span>
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<span class="n">container</span><span class="o">.</span><span class="n">injectify</span><span class="p">(</span><span class="n">app</span><span class="p">)</span>
+
+
+<span class="c1"># Now your endpoints are injectified! 🎉</span>
+<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">index</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="n">IService</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span> <span class="c1"># Only use the interface - no &#39;Depends&#39; needed</span>
+    <span class="k">return</span> <span class="n">service</span><span class="o">.</span><span class="n">get_number</span><span class="p">()</span> <span class="c1"># 42 🤩</span>
+</code></pre></div>
+<h3 id="integrated-mode">Integrated Mode 🧩</h3>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastioc</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span> <span class="c1"># Also available: APIRouter</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">add_scoped</span><span class="p">(</span><span class="n">IService</span><span class="p">,</span> <span class="n">ExampleService</span><span class="p">)</span> <span class="c1"># Each FastAPI/APIRouter instance maintains its own interal container (by default)</span>
+
+<span class="c1"># ...</span>
+</code></pre></div>
+<p><strong><em>You can read more about working with APIRouter, APIController, lifetimes, nested dependencies, singleton clean-up, overriding dependencies &amp; ... in <a href="https://openmindamir.github.io/FastIoC/">Documentation</a></em></strong> 📄</p>
+<h2 id="apicontroller">APIController</h2>
+<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">fastapi</span><span class="w"> </span><span class="kn">import</span> <span class="n">FastAPI</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastioc</span><span class="w"> </span><span class="kn">import</span> <span class="n">Container</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">fastioc.controller</span><span class="w"> </span><span class="kn">import</span> <span class="n">APIController</span><span class="p">,</span> <span class="n">get</span><span class="p">,</span> <span class="n">post</span>
+
+<span class="c1"># Create container &amp; register dependencies 📝</span>
+<span class="n">container</span> <span class="o">=</span> <span class="n">Container</span><span class="p">()</span>
+<span class="n">container</span><span class="o">.</span><span class="n">add_scoped</span><span class="p">(</span><span class="n">IService</span><span class="p">,</span> <span class="n">ExampleService</span><span class="p">)</span>
+
+<span class="c1"># Define an example controller</span>
+<span class="k">class</span><span class="w"> </span><span class="nc">ExampleController</span><span class="p">(</span><span class="n">APIController</span><span class="p">):</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="p">{</span> <span class="c1"># APIRouter parameters (+ IDE Autocomplete 🤩)</span>
+        <span class="s2">&quot;prefix&quot;</span><span class="p">:</span> <span class="s1">&#39;/example&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;tag&quot;</span><span class="p">:</span> <span class="s1">&#39;example&#39;</span><span class="p">,</span>
+        <span class="s2">&quot;container&quot;</span><span class="p">:</span> <span class="n">container</span> <span class="c1"># ! DO NOT FORGET</span>
+    <span class="p">}</span>
+
+    <span class="n">service</span><span class="p">:</span> <span class="n">IService</span> <span class="c1"># Available in all endpoints!</span>
+
+    <span class="nd">@get</span><span class="p">(</span><span class="s1">&#39;/read&#39;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">read_example</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">int</span><span class="p">:</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">get_number</span><span class="p">()</span>
+
+    <span class="nd">@post</span><span class="p">(</span><span class="s1">&#39;/set&#39;</span><span class="p">)</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">set_example</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">service</span><span class="o">.</span><span class="n">number</span> <span class="o">=</span> <span class="mi">24</span>
+        <span class="k">return</span> <span class="kc">True</span>
+
+<span class="n">app</span> <span class="o">=</span> <span class="n">FastAPI</span><span class="p">()</span>
+<span class="n">app</span><span class="o">.</span><span class="n">include_router</span><span class="p">(</span><span class="n">ExampleController</span><span class="o">.</span><span class="n">router</span><span class="p">())</span> <span class="c1"># Get router from controller and include it</span>
+</code></pre></div>
+<ul>
+<li>APIController endpoints are injectified so you can also resolve dependencies in each endpoint separately.</li>
+<li>You can also resolve dependencies in <code>__init__</code> of your controller.</li>
+<li>Read more in <a href="controller/">APIController</a></li>
+</ul>
+<p>... INCOMPLETE ...</p>
+<h2 id="license">License</h2>
+<p>This project is licensed under the MIT License — see the <a href="./LICENSE.md">LICENSE</a> file for details.</p>
 
 
 
