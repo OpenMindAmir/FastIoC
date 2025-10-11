@@ -27,3 +27,8 @@
 - 🔄 Two operation modes: standalone 🏕️ and integrated 🧩
 
 - 🔧 Comes with customizable hooks, detailed logs & ... 📊
+
+## Installation
+
+## License
+This project is licensed under the MIT License — see the [LICENSE](./LICENSE.md) file for details.
