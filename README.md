@@ -129,7 +129,7 @@ app.include_router(ExampleController.router()) # Get router from controller and 
 
 ## Learn More 📘
 
-Check out the 📄 [full documentation](https://openmindamir.github.io/FastIoC/) for advanced examples, architecture guides, best practices, and more.
+Check out the [full documentation](https://openmindamir.github.io/FastIoC/) for advanced examples, architecture guides, best practices, and more.
 
 ## Contributing 💬
 
