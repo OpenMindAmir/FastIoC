@@ -53,7 +53,7 @@ plugins:
 nav:
   - 💝DONATE💝: https://OpenMindAmir.ir/donate
   - Home: index.md
-  - Core Concepts:
+  - Guide:
     - Injectification: injectify.md
     - Dependency Registeration: register.md
     - Dependency Resolution: resolve.md
@@ -62,11 +62,10 @@ nav:
     - Nested Dependencies: nested.md
     - Dependency Overrides: override.md
     - Dispose (Singleton Clean-up): dispose.md
-    - APIController: controller.md
-    - Integrated Mode: integrated.md
-  - Advanced Topics:
     - Passing Data to Dependencies: data.md
+    - APIController: controller.md
     - Project Structure at Scale: scale.md
+    - Integrated Mode: integrated.md
     - Hooks: hook.md
     - Logging System: log.md
   - API Reference:

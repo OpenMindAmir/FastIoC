@@ -30,6 +30,9 @@ class IUserService(Protocol):
 
 That's it! No `Depends()` needed. FastIoC automatically recognizes that `IUserService` is registered and injects it.
 
+!!! note "Dependency Not Working?"
+    If your endpoint returns **422 Unprocessable Entity** errors, it likely means the dependency wasn't registered in the container. See [Unregistered Dependencies](injectify.md#important-unregistered-dependencies) for troubleshooting.
+
 ## Annotated Resolution
 
 For non-class dependencies (like functions or custom marker types), you can use Python's `Annotated` type for clearer intent:
