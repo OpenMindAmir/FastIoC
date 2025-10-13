@@ -37,9 +37,11 @@ markdown_extensions:
   - codehilite
   - pymdownx.highlight
   - pymdownx.superfences
+  - admonition
 
 plugins:
   - search
+  - mike
   - mkdocstrings:
       handlers:
         python:
