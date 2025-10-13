@@ -17,6 +17,7 @@ theme:
     - navigation.instant.preview
     - navigation.tracking
     - navigation.path
+    - navigation.footer
   palette:
     - scheme: default
       primary: yellow
@@ -49,6 +50,21 @@ plugins:
 nav:
   - 💝DONATE💝: https://OpenMindAmir.ir/donate
   - Home: index.md
+  - Core Concepts:
+    - Dependency Registeration: register.md
+    - Dependency Resolution: resolve.md
+    - Passive Dependencies: passive.md
+    - Dependency Lifetimes: lifetime.md
+    - Nested Dependencies: nested.md
+    - Dependency Overrides: override.md
+    - Dispose (Singleton Clean-up): dispose.md
+    - APIController: controller.md
+    - Integrated Mode: integrated.md
+  - Advanced Topics:
+    - Passing Data to Dependencies: data.md
+    - Project Structure at Scale: scale.md
+    - Hooks: hook.md
+    - Logging System: log.md
   - API Reference:
       - Container: reference/container.md
       - Integrations: reference/integrations.md
