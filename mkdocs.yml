@@ -18,6 +18,7 @@ theme:
     - navigation.tracking
     - navigation.path
     - navigation.footer
+    - versioning
   palette:
     - scheme: default
       primary: yellow
