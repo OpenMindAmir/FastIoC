@@ -54,6 +54,7 @@ nav:
   - 💝DONATE💝: https://OpenMindAmir.ir/donate
   - Home: index.md
   - Core Concepts:
+    - Injectification: injectify.md
     - Dependency Registeration: register.md
     - Dependency Resolution: resolve.md
     - Passive Dependencies: passive.md
