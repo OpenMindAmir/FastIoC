@@ -158,7 +158,54 @@ async def get_async_db() -> AsyncGenerator[object, None]:
 container.add_scoped(AsyncDbConnection, get_async_db)
 ```
 
-## ⚠️ Important Note: Avoid Built-in Types
+### Callable Class Instances (Advanced)
+
+For more advanced use cases, you can use [callable class instances](https://fastapi.tiangolo.com/advanced/advanced-dependencies/#use-the-instance-as-a-dependency) as dependencies. This pattern is useful when you need to configure a dependency with parameters or maintain state across multiple calls:
+
+```python
+# 1. Define a callable class (with __call__ method)
+class DatabaseConnectionFactory:
+    def __init__(self, connection_string: str):
+        self.connection_string = connection_string
+        self.call_count = 0
+
+    def __call__(self) -> dict:
+        self.call_count += 1
+        return {
+            "connection": self.connection_string,
+            "call_count": self.call_count
+        }
+
+# 2. Create an instance with configuration
+db_factory = DatabaseConnectionFactory("postgresql://localhost/mydb")
+
+# 3. Define a marker type
+class DbConfig(dict):
+    ...
+
+# 4. Register the instance (not the class!)
+container.add_scoped(DbConfig, db_factory)
+```
+
+**When to use:**
+- When you need to pass configuration to the dependency at registration time
+- When you need to maintain state across dependency resolutions
+- When you want more control over the dependency creation process
+
+**Note:** You're registering the **instance** (the callable object), not the class itself. Each time the dependency is resolved, the `__call__` method is invoked.
+
+```python
+@app.get('/db-info')
+def get_db_info(config1: DbConfig, config2: DbConfig):
+    # First call: {"connection": "postgresql://...", "call_count": 1}
+    # Second call: {"connection": "postgresql://...", "call_count": 2}
+    # The instance's state is maintained!
+    return {"config1": config1, "config2": config2}
+```
+
+This pattern gives you the flexibility of functions with the state management of classes.
+
+<!-- ## ⚠️ Important Note: Avoid Built-in Types
 
 **Do not use built-in types** (`str`, `int`, `dict`, etc.) as interfaces when registering dependencies:
 
@@ -188,7 +235,7 @@ This is because FastAPI needs to distinguish between query/path parameters and i
     Always use custom types or Protocols instead.
 
 !!! warning "Advanced Usage"
-    FastIoC does not block registering built-in types - the operation will work. However, you should only do this if you fully understand the implications and are certain your endpoints won't have parameter name conflicts. **Use at your own risk!**
+    FastIoC does not block registering built-in types - the operation will work. However, you should only do this if you fully understand the implications and are certain your endpoints won't have parameter name conflicts. **Use at your own risk!** -->
     
 ## Registration Methods
 

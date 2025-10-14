@@ -353,7 +353,7 @@ class DatabasePool:
 container.add_singleton(IDatabasePool, DatabasePool)
 # Cleanup will run at application shutdown (see dispose documentation)
 ```
-**Note**: before using this feature you must config it first, see [here](dispose.md).
+⚠️ **Note**: before using this feature you must config it first, see [here](dispose.md).
 
 ## Lifetime Comparison
 
@@ -449,10 +449,175 @@ container.add_transient(IDataValidator, TransactionDataValidator)
 container.add_transient(ILogger, InfluxDBLogger)
 ```
 
+## Advanced: Callable Class Instances with Lifetimes
+
+When using [callable class instances](register.md#callable-class-instances-advanced) (classes with `__call__` method), the lifetime behavior works differently because you're registering an **instance** rather than a class or function.
+
+### ❌ With Singleton (Not Recommended)
+
+When you register a callable instance as singleton, FastIoC calls `__call__` **once** and caches that **return value** for the entire application lifetime:
+
+```python
+class Counter:
+    def __init__(self):
+        self.count = 0
+
+    def __call__(self) -> int:
+        self.count += 1
+        return self.count
+
+counter_instance = Counter()
+container.add_singleton(CounterValue, counter_instance)
+```
+
+```python
+@app.get('/count1')
+def get_count1(value: CounterValue):
+    return {"count": value}  # Always returns 1
+
+@app.get('/count2')
+def get_count2(value: CounterValue):
+    return {"count": value}  # Always returns 1 (same cached value!)
+```
+
+**What happens:**
+1. First request: `__call__()` is invoked → returns `1` → cached
+2. All subsequent requests: The cached value `1` is returned, `__call__()` is never called again
+
+This is usually **not** what you want with callable instances. Only use singleton for callable instances if you fully understand this behavior and it's exactly what you need.
+
+### ⚡️With Scoped (Recommended)
+
+This is where callable instances shine! When registered as scoped, the **instance persists** but `__call__` is invoked once per request. This gives you a "scoped proxy" pattern (similar to Spring Boot), allowing you to:
+
+- Maintain state across the application lifetime (the instance persists)
+- Access request-specific context when `__call__` is invoked
+- Combine singleton-like persistence with per-request execution
+
+```python
+class RequestContextTracker:
+    def __init__(self):
+        self.total_requests = 0  # Persists across all requests
+        self.request_ids = []
+
+    def __call__(self, request: Request) -> dict:
+        # Called once per request - has access to request context!
+        self.total_requests += 1
+        request_id = request.headers.get("X-Request-ID")
+        self.request_ids.append(request_id)
+
+        return {
+            "current_request_id": request_id,
+            "total_requests": self.total_requests
+        }
+
+tracker = RequestContextTracker()
+container.add_scoped(RequestContext, tracker)
+```
+
+```python
+@app.get('/stats')
+def get_stats(context: RequestContext):
+    # Request 1: {"current_request_id": "abc", "total_requests": 1}
+    # Request 2: {"current_request_id": "def", "total_requests": 2}
+    # The instance state accumulates across requests!
+    return context
+```
+
+**Thanks to Python's flexibility**, the instance can access both:
+- **Application-wide state** (instance attributes persist)
+- **Request-specific context** (when `__call__` is invoked per request)
+
+### ⚡️With Transient
+
+With transient lifetime, `__call__` is invoked **every time** the dependency is injected, even within the same request:
+
+```python
+class UniqueIdGenerator:
+    def __init__(self):
+        self.generated_count = 0  # Persists across all calls
+
+    def __call__(self) -> str:
+        # Called every injection
+        self.generated_count += 1
+        return f"id-{self.generated_count}"
+
+id_gen = UniqueIdGenerator()
+container.add_transient(UniqueId, id_gen)
+```
+
+```python
+@app.get('/ids')
+def get_ids(id1: UniqueId, id2: UniqueId):
+    # id1: "id-1"  ← First injection
+    # id2: "id-2"  ← Second injection (different value!)
+    # Instance state persists: generated_count = 2
+    return {"id1": id1, "id2": id2}
+```
+
+This pattern allows you to generate unique values while maintaining global state about how many have been generated.
+
 ## Related Topics
 
+- **[Callable Class Instances](register.md#callable-class-instances-advanced)** - Learn about using callable instances as dependencies
 - **[Nested Dependencies](nested.md)** - Understand lifetime rules when dependencies depend on other dependencies, including [`SingletonLifetimeViolationError`](nested.md#singleton-lifetime-violation)
 - **[Dispose (Singleton Clean-up)](dispose.md)** - Learn how to properly dispose of singleton resources when the application shuts down
+
+## Advanced: Singletons in Production Deployments
+
+!!! warning "Multiprocessing and Thread Safety Considerations"
+    When deploying FastAPI with multiple workers (using Gunicorn, Uvicorn workers, etc.), be aware of these singleton behaviors:
+
+    ### One Singleton Per Worker Process
+    When you deploy with multiple workers, **each worker process gets its own singleton instance**:
+
+    ```bash
+    # Running with 4 workers
+    uvicorn main:app --workers 4
+    ```
+
+    This creates **4 separate singleton instances** - one per worker. Singletons are **not** shared across worker processes. Each worker has its own isolated Python interpreter and memory space.
+
+    **Implications:**
+    - Singleton state is not shared between workers
+    - In-memory caches are duplicated across workers
+    - Counters and statistics are per-worker, not global
+    - If you need true application-wide state, use external storage (Redis, database, etc.)
+
+    ### Thread Safety
+    When using singleton dependencies in a multiprocessing/multithreaded environment, ensure your singleton objects are **thread-safe**:
+
+    ```python
+    # ❌ NOT thread-safe
+    class UnsafeCounter:
+        def __init__(self):
+            self.count = 0
+
+        def increment(self):
+            self.count += 1  # Race condition!
+            return self.count
+
+    # ✅ Thread-safe
+    from threading import Lock
+
+    class SafeCounter:
+        def __init__(self):
+            self.count = 0
+            self._lock = Lock()
+
+        def increment(self):
+            with self._lock:
+                self.count += 1
+                return self.count
+    ```
+
+    **Common non-thread-safe operations:**
+    - Incrementing counters (`count += 1`)
+    - Appending to lists (`list.append()`)
+    - Modifying dictionaries (`dict[key] = value`)
+    - File I/O without locks
+
+    Use Python's `threading.Lock`, `threading.RLock`, or thread-safe data structures (like `queue.Queue`) when modifying singleton state from multiple threads.
 
 ## Advanced: How Lifetimes Work Internally
 
