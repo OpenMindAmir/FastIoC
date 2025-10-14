@@ -158,7 +158,7 @@ async def get_async_db() -> AsyncGenerator[object, None]:
 container.add_scoped(AsyncDbConnection, get_async_db)
 ```
 
-## Important Note: Avoid Built-in Types
+## ⚠️ Important Note: Avoid Built-in Types
 
 **Do not use built-in types** (`str`, `int`, `dict`, etc.) as interfaces when registering dependencies:
 
@@ -177,9 +177,19 @@ container.add_scoped(SomeNumber, get_some_number)
 
 This is because FastAPI needs to distinguish between query/path parameters and injected dependencies.
 
+
+!!! tip "Also Avoid These Types"
+    Similarly, avoid using these as dependency interfaces, as they have special meaning in FastAPI:
+
+    - **Pydantic models** (`BaseModel` subclasses) - Used for request/response body parsing
+    - **Typing module generics** (`List`, `Dict`, `Optional`, etc.) - Used for parameter validation
+    - **FastAPI special types** (`Request`, `Response`, `BackgroundTasks`, `WebSocket`, `UploadFile`, `SecurityScopes`) - Used for FastAPI-specific functionality
+
+    Always use custom types or Protocols instead.
+
 !!! warning "Advanced Usage"
     FastIoC does not block registering built-in types - the operation will work. However, you should only do this if you fully understand the implications and are certain your endpoints won't have parameter name conflicts. **Use at your own risk!**
-
+    
 ## Registration Methods
 
 FastIoC provides three registration methods that control dependency lifetimes:

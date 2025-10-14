@@ -127,7 +127,7 @@ async def get_item(
 
 Everything works together seamlessly!
 
-## Important: Parameter Ordering
+## ⚠️ Important: Parameter Ordering
 
 Since FastIoC dependencies are converted to FastAPI's `Depends()` under the hood, you need to follow Python's parameter ordering rules:
 

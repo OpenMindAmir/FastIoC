@@ -22,7 +22,7 @@ def index():
     return {"message": "Hello World"}
 ```
 
-**Important:** You must call `injectify()` **before** defining your endpoints (routes). If you define routes before injectifying, those routes won't have dependency injection enabled.
+⚠️ **Important:** You must call `injectify()` **before** defining your endpoints (routes). If you define routes before injectifying, those routes won't have dependency injection enabled.
 
 ## Injectifying Routers
 
@@ -53,7 +53,7 @@ def list_items():
 app.include_router(router)
 ```
 
-**Important:** `app.include_router()` does **NOT** automatically injectify the router. You must explicitly call `container.injectify(router)` before defining endpoints on that router.
+⚠️ **Important:** `app.include_router()` does **NOT** automatically injectify the router. You must explicitly call `container.injectify(router)` before defining endpoints on that router.
 
 ### Large-Scale Applications
 
@@ -285,7 +285,7 @@ container.add_scoped(IUserService, UserService)
 # This endpoint won't have dependency injection
 ```
 
-## Important: Unregistered Dependencies
+## ⚠️ Important: Unregistered Dependencies
 
 If you request a dependency that hasn't been registered in the container, FastIoC will **not** raise an error during startup. Instead, FastAPI will treat it as a regular type annotation, and requests will fail with **422 Unprocessable Entity**.
 

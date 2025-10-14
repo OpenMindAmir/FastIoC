@@ -42,6 +42,7 @@ markdown_extensions:
 plugins:
   - search
   - mike
+  - minify
   - mkdocstrings:
       handlers:
         python:
