@@ -77,7 +77,7 @@ All endpoints in the router will automatically have these dependencies executed 
 
 ## Application Passive Dependencies
 
-Apply passive dependencies to all endpoints in your entire application:
+Apply passive dependencies to all endpoints in your entire application (also known as [Global Dependencies](https://fastapi.tiangolo.com/tutorial/dependencies/global-dependencies/) in FastAPI):
 
 ```python
 # main.py

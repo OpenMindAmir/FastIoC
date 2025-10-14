@@ -58,12 +58,12 @@ nav:
     - Injectification: injectify.md
     - Dependency Registeration: register.md
     - Dependency Resolution: resolve.md
-    - Passive Dependencies: passive.md
+    - Passive & Global Dependencies: passive.md
     - Dependency Lifetimes: lifetime.md
     - Nested Dependencies: nested.md
     - Dependency Overrides: override.md
-    - Dispose (Singleton Clean-up): dispose.md
     - Passing Data to Dependencies: data.md
+    - Dispose (Singleton Clean-up): dispose.md
     - APIController: controller.md
     - Project Structure at Scale: scale.md
     - Integrated Mode: integrated.md
