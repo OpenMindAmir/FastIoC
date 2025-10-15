@@ -12,6 +12,7 @@
 ### Why FastIoC 🤔
 
 FastIoC bridges the gap between Python’s dynamic nature and modern dependency injection patterns found in frameworks like .NET, Laravel, Spring Boot, and NestJS — with zero boilerplate and full FastAPI compatibility.
+It’s designed to make implementing scalable architectural patterns such as Clean Architecture or Hexagonal Architecture effortless and intuitive.
 
 
 **Features:**
