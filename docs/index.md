@@ -34,6 +34,10 @@ FastIoC bridges the gap between Python’s dynamic nature and modern dependency 
 
 - 🔧 Comes with customizable hooks, detailed logs & ... 📊
 
+## Sponsors 💝
+
+You can  [![Support](https://img.shields.io/badge/Support-violet?style=flat&logo=githubsponsors&logoColor=white&labelColor=black)](https://OpenMindAmir.ir/donate) us on a regular basis to become a sponsor. For more information contact [OpenMindAmir@gmail.com](mailto:OpenMindAmir@gmailc.com).
+
 ## Installation 📥
 
 ```bash
@@ -42,26 +46,36 @@ $ pip install fastioc
 
 ## Usage 💡
 
-A sample interface & implementation:
+Sample interface & implementation:
 
 ```python
 from typing import Protocol
 
-# Define the interface 📜
+# Define the interfaces 📜
+
+class INumberGenerator(protocol):
+
+    def generate(self) -> int: ...
+
+
 class IService(Protocol):
     
     def get_number(self) -> int: ...
 
 
-# Implement concrete class 🏗️
+# Implement concrete classes (Actual dependencies) 🏗️
+
+class SimpleNumberGenerator(INumberGenerator):
+
+    def generate(self) -> int:
+        return 42
+
 class ExampleService(IService):
 
-    def __init__(self):
-        print("ExampleService created")
-        self.number = 42
+    number_service: INumberGenerator # Nested dependency with type hints! ⚡
 
     def get_number(self) -> int:
-        return self.number
+        return self.number_service.generate()
 ```
 
 ### Standalone Mode 🏕️
@@ -74,6 +88,7 @@ from fastioc import Container # Import the Container
 
 # Create container and register dependency 📝
 container = Container()
+container.add_scoped(INumberGenerator, SampleNumberGenetator)
 container.add_scoped(IService, ExampleService) # Also available: add_singleton, add_transient
 
 
@@ -108,7 +123,7 @@ class ExampleController(APIController):
         "container": container # ! DO NOT FORGET
     }
 
-    service: IService # Available in all endpoints!
+    service: IService # Available in all endpoints! ⚡
 
     @get('/read')
     def read_example(self) -> int:
@@ -116,7 +131,7 @@ class ExampleController(APIController):
 
     @post('/set')
     def set_example(self) -> bool:
-        self.service.number = 24
+        # ...
         return True
 
 app = FastAPI()

@@ -469,7 +469,7 @@ container.add_scoped(IUserService, UserService)
 @app.get('/user/{user_id}')
 def get_user(user_id: int, service: IUserService):
     # Entire chain is resolved automatically:
-    # UserService � UserRepository � DatabaseSession � ConnectionPool + Logger
+    # UserService -> UserRepository -> DatabaseSession -> ConnectionPool + Logger
     return service.get_user_with_logging(user_id)
 ```
 
