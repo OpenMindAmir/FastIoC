@@ -36,7 +36,7 @@ FastIoC bridges the gap between Python’s dynamic nature and modern dependency 
 
 ## Sponsors 💝
 
-You can  [![Support](https://img.shields.io/badge/Support-violet?style=flat&logo=githubsponsors&logoColor=white&labelColor=black)](https://OpenMindAmir.ir/donate) us on a regular basis to become a sponsor. For more information contact [OpenMindAmir@gmail.com](mailto:OpenMindAmir@gmailc.com).
+You can  [![Support](https://img.shields.io/badge/Support-violet?style=flat&logo=githubsponsors&logoColor=white&labelColor=black)](https://OpenMindAmir.ir/donate) us on a regular basis to become a sponsor. For more info, contact [OpenMindAmir@gmail.com](mailto:OpenMindAmir@gmailc.com).
 
 ## Installation 📥
 
@@ -88,7 +88,7 @@ from fastioc import Container # Import the Container
 
 # Create container and register dependency 📝
 container = Container()
-container.add_scoped(INumberGenerator, SampleNumberGenetator)
+container.add_scoped(INumberGenerator, SimpleNumberGenetator)
 container.add_scoped(IService, ExampleService) # Also available: add_singleton, add_transient
 
 
