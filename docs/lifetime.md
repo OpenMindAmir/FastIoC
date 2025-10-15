@@ -560,7 +560,7 @@ This pattern allows you to generate unique values while maintaining global state
 ## Related Topics
 
 - **[Callable Class Instances](register.md#callable-class-instances-advanced)** - Learn about using callable instances as dependencies
-- **[Nested Dependencies](nested.md)** - Understand lifetime rules when dependencies depend on other dependencies, including [`SingletonLifetimeViolationError`](nested.md#singleton-lifetime-violation)
+- **[Nested Dependencies](nested.md)** - Understand lifetime rules when dependencies depend on other dependencies, including [`SingletonLifetimeViolationError`](nested.md#singletonlifetimeviolationerror)
 - **[Dispose (Singleton Clean-up)](dispose.md)** - Learn how to properly dispose of singleton resources when the application shuts down
 
 ## Advanced: Singletons in Production Deployments

@@ -249,6 +249,38 @@ container.add_transient(IService, ServiceImpl)   # New instance every time
 
 We'll explore these lifetimes in detail in the [Dependency Lifetimes](lifetime.md) chapter.
 
+### Re-registering Dependencies
+
+If you register multiple implementations for the same interface, **the last registration always replaces previous ones**:
+
+```python
+# First registration
+container.add_scoped(IUserService, UserServiceV1)
+
+# Second registration - replaces the first one
+container.add_scoped(IUserService, UserServiceV2)  # This is what will be used
+
+# Third registration - replaces the second one
+container.add_scoped(IUserService, UserServiceV3)  # This is what will actually be injected
+```
+
+When a dependency is re-registered:
+- The previous implementation is **completely forgotten**
+- Only the **last registered implementation** is used
+- No warning or error is raised
+
+**When to use this:**
+
+This behavior is mainly useful when you accidentally register the same interface twice, or when you intentionally want to replace a registration during initial setup.
+
+**When NOT to use this:**
+
+❌ **For testing/mocking** - Use [Dependency Overrides](override.md) instead (proper way to mock for tests)
+
+❌ **For environment-specific configs** - Use [Dependency Overrides](override.md) instead (proper way to handle dev/prod)
+
+Re-registration works, but **dependency overrides are the recommended best practice** for replacing implementations in different contexts (testing, environments, etc.).
+
 ## Next Steps
 
 - Learn about [Dependency Resolution](resolve.md) - how to access registered dependencies
