@@ -31,8 +31,6 @@ It’s designed to make implementing scalable architectural patterns such as Cle
 
 - 📦 Comes with the amazing **`APIController`** — the best class-based view (CBV) system ever seen in Python 🏆
 
-- 🔄 Two operation modes: **standalone** 🏕️ and **integrated** 🧩
-
 - 🔧 Comes with customizable hooks, detailed logs & ... 📊
 
 ## Sponsors 💝
@@ -79,7 +77,7 @@ class ExampleService(IService):
         return self.number_service.generate()
 ```
 
-### Standalone Mode 🏕️
+Create container, register dependencies & use them in endpoints!
 
 ```python
 from fastapi import FastAPI

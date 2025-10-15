@@ -8,7 +8,7 @@ It simplifies dependency management and promotes clean, modular code.
 """
 
 from fastioc.container import Container
-from fastioc.integrations import FastAPI, APIRouter
+# from fastioc.integrations import FastAPI, APIRouter
 from fastioc.controller.controller import APIController
 from fastioc.controller.definitions import *
 
@@ -38,8 +38,8 @@ class Actions:
 
 __all__ = [
     'Container',
-    'FastAPI',
-    'APIRouter',
+    # 'FastAPI',
+    # 'APIRouter',
     'APIController',
     'Actions'
 ]

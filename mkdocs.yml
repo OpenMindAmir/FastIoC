@@ -19,7 +19,6 @@ theme:
     - navigation.tracking
     - navigation.path
     - navigation.footer
-    - navigation.expand
     - versioning
   palette:
     - scheme: default
@@ -68,12 +67,13 @@ nav:
     - Dispose (Singleton Clean-up): dispose.md
     - APIController: controller.md
     - Project Structure at Scale: scale.md
-    - Integrated Mode: integrated.md
+  - Extra:
+    # - Integrated Mode: integrated.md
     - Hooks: hook.md
     - Logging System: log.md
   - API Reference:
       - Container: reference/container.md
-      - Integrations: reference/integrations.md
+      # - Integrations: reference/integrations.md
       - Exceptions:  reference/exceptions.md
       - APIController: reference/controller.md
 
