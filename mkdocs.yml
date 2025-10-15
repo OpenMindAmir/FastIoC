@@ -19,6 +19,7 @@ theme:
     - navigation.tracking
     - navigation.path
     - navigation.footer
+    - navigation.expand
     - versioning
   palette:
     - scheme: default
