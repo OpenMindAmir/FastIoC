@@ -248,7 +248,7 @@ class AuthController(APIController):
         self,
         user_id: int = Query(),
         token: Annotated[str, Depends(get_auth_token)] = None,
-        service: IAuthService  # From container
+        service: IAuthService = None  # From container
     ):
         self.user_id = user_id
         self.token = token
@@ -430,8 +430,8 @@ class MyController(APIController):
 # Runtime config REPLACES class config
 app.include_router(MyController.router({
     'prefix': '/new'
-    # 'tags' is not provided � uses default (empty)
-    # 'container' is not provided � uses default (None, DI won't work!)
+    # 'tags' is not provided ⚠️ uses default (empty)
+    # 'container' is not provided ⚠️ uses default (None, DI won't work!)
 }))
 
 # Result:

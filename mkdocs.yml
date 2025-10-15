@@ -1,6 +1,7 @@
 site_name: FastIoC
 site_url: https://OpenMindAmir.github.io/FastIoC
 repo_url: https://github.com/OpenMindAmir/FastIoC
+repo_name: openmindamir/fastioc
 
 theme:
   name: material
