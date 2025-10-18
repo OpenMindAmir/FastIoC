@@ -15,7 +15,6 @@ def test_controller(state: State, app: FastAPI, client: TestClient, container: C
     class TestController(APIController):
         config = {
             'prefix': '/ctrl',
-            'container': container,
             'dependencies': [IGlobalService2]
         }
 
@@ -33,7 +32,7 @@ def test_controller(state: State, app: FastAPI, client: TestClient, container: C
                 'num': self.number
             }
 
-    app.include_router(TestController.router())
+    app.include_router(TestController.router({'container': container}))
 
     response = client.get('/ctrl/test')
     data = response.json()

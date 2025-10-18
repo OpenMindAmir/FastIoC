@@ -413,35 +413,6 @@ config: APIRouterParams = {
 app.include_router(GenericController.router(config))
 ```
 
-**⚠️ Important**: The runtime config **completely replaces** the class config. It doesn't merge it replaces. If you don't provide a key, it uses the default value:
-
-```python
-class MyController(APIController):
-    config = {
-        'prefix': '/original',
-        'tags': ['Original'],
-        'container': container
-    }
-
-    @get('/')
-    def index(self):
-        return {}
-
-# Runtime config REPLACES class config
-app.include_router(MyController.router({
-    'prefix': '/new'
-    # 'tags' is not provided ⚠️ uses default (empty)
-    # 'container' is not provided ⚠️ uses default (None, DI won't work!)
-}))
-
-# Result:
-# - prefix: '/new'
-# - tags: []  (not ['Original'])
-# - container: None  (not the original container!)
-```
-
-If you need to keep some values from the class config, you must explicitly include them in the runtime config.
-
 ## Controller Dependencies in Config
 
 You can specify dependencies that apply to **all routes** in the controller via the `dependencies` key:

@@ -7,7 +7,6 @@ Make sure to include a valid `container` in the controller's config.
 """
 
 import inspect
-from typing import Optional
 
 from fastapi_controllers.definitions import WebsocketRouteMeta, Route, HTTPRouteMeta  # pyright: ignore[reportMissingTypeStubs]
 from fastapi_controllers.helpers import _replace_signature  # pyright: ignore[reportUnknownVariableType, reportPrivateUsage, reportMissingTypeStubs]
@@ -55,22 +54,19 @@ class APIController:
     config: APIRouterParams = {}
 
     @classmethod
-    def router(cls, config: Optional[APIRouterParams] = {}) -> APIRouter:  # pyright: ignore[reportRedeclaration]
+    def router(cls, config: APIRouterParams = {}) -> APIRouter:  # pyright: ignore[reportRedeclaration]
         """
         Create a new FastIoc APIRouter instance and populate it with APIRoutes.
 
         Args:
             config (Optional[APIRouterParams]): Optional configuration parameters for the APIRouter. 
                 If not provided, uses the controller's default config.
-                
-                NOTE: If you provide this argument, it will completely override the controller config
 
         Returns:
             APIRouter: An instance of fastioc.integrations.APIRouter with routes registered.
         """
 
-        if not config:
-            config = cls.config
+        config = {**cls.config, **config}
         container = config['container'] or Container() # pyright: ignore[reportTypedDictNotRequiredAccess]
 
         controller: type['APIController'] = container._nested_injector(cls, lifetime=LifeTime.SINGLETON)  # pyright: ignore[reportUnknownMemberType, reportUnknownVariableType, reportAssignmentType, reportPrivateUsage]
