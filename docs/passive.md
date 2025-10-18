@@ -199,4 +199,3 @@ Since passive dependencies don't inject their return values, they're perfect for
 
 - Learn about [Dependency Lifetimes](lifetime.md) - singleton, scoped, and transient behaviors
 - Explore [Nested Dependencies](nested.md) - automatic resolution of dependency chains
-- Understand [Testing](testing.md) - how to test applications with dependency injection

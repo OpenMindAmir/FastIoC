@@ -483,4 +483,3 @@ def get_user(user_id: int, service: IUserService):
 
 - Learn about [Dependency Overrides](override.md) - replacing dependencies for testing
 - Explore [Dispose](dispose.md) - cleaning up singleton resources
-- Understand [Testing](testing.md) - testing with dependency injection
