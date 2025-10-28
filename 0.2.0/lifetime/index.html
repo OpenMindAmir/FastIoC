@@ -1721,7 +1721,7 @@
 <span class="n">container</span><span class="o">.</span><span class="n">add_singleton</span><span class="p">(</span><span class="n">IDatabaseSession</span><span class="p">,</span> <span class="n">get_database</span><span class="p">)</span>  <span class="c1"># ❌ Error!</span>
 </code></pre></div>
 <p><strong>Why?</strong> Generators can only be used once. After yielding a value and reaching the end, they cannot be reused. Since singletons are meant to be reused across the entire application, generators don't make sense as singletons.</p>
-<p>See the <a href="reference/exceptions#singletongeneratorerror"><code>SingletonGeneratorError</code> API reference</a> for more details.</p>
+<p>See the <a href="/FastIoC/reference/exceptions#fastioc.errors.SingletonGeneratorError"><code>SingletonGeneratorError</code> API reference</a> for more details.</p>
 <p><strong>Solution 1:</strong> Use a regular <em>class</em> or <em>function</em> for singletons:</p>
 <div class="highlight"><pre><span></span><code><span class="c1"># ✅ CORRECT: Use a class</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">DatabasePool</span><span class="p">:</span>

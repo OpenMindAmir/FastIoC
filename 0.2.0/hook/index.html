@@ -1283,7 +1283,7 @@
 
 <span class="c1"># Registration logging</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">log_register</span><span class="p">(</span><span class="n">dependency</span><span class="p">:</span> <span class="n">Dependency</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dependency</span><span class="p">:</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;=� Registering: </span><span class="si">{</span><span class="n">dependency</span><span class="o">.</span><span class="n">protocol</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;=&gt; Registering: </span><span class="si">{</span><span class="n">dependency</span><span class="o">.</span><span class="n">protocol</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Implementation: </span><span class="si">{</span><span class="n">dependency</span><span class="o">.</span><span class="n">implementation</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;   Lifetime: </span><span class="si">{</span><span class="n">dependency</span><span class="o">.</span><span class="n">lifetime</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dependency</span>
@@ -1301,7 +1301,7 @@
 <span class="n">container</span><span class="o">.</span><span class="n">add_scoped</span><span class="p">(</span><span class="n">IUserService</span><span class="p">,</span> <span class="n">UserService</span><span class="p">)</span>
 </code></pre></div>
 <p><strong>Output:</strong>
-<div class="highlight"><pre><span></span><code>=� Registering: IUserService
+<div class="highlight"><pre><span></span><code>=&gt; Registering: IUserService
    Implementation: &lt;class &#39;UserService&#39;&gt;
    Lifetime: LifeTime.SCOPED
 </code></pre></div></p>
@@ -1381,7 +1381,7 @@
             <span class="n">mock_name</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;Mock</span><span class="si">{</span><span class="n">impl_name</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="c1"># Assume mock classes are available</span>
             <span class="k">if</span> <span class="n">mock_class</span> <span class="o">:=</span> <span class="nb">globals</span><span class="p">()</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">mock_name</span><span class="p">):</span>
-                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&gt;� Using </span><span class="si">{</span><span class="n">mock_name</span><span class="si">}</span><span class="s2"> instead of </span><span class="si">{</span><span class="n">impl_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+                <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;&gt;&gt; Using </span><span class="si">{</span><span class="n">mock_name</span><span class="si">}</span><span class="s2"> instead of </span><span class="si">{</span><span class="n">impl_name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
                 <span class="n">dependency</span><span class="o">.</span><span class="n">implementation</span> <span class="o">=</span> <span class="n">mock_class</span>
 
     <span class="k">return</span> <span class="n">dependency</span>
@@ -1417,7 +1417,7 @@
     <span class="k">global</span> <span class="n">register_number</span>
     <span class="c1"># Call implementation to get the number</span>
     <span class="n">register_number</span> <span class="o">=</span> <span class="n">dependency</span><span class="o">.</span><span class="n">implementation</span><span class="p">()</span><span class="o">.</span><span class="n">get_number</span><span class="p">()</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;=� Registered: </span><span class="si">{</span><span class="n">dependency</span><span class="o">.</span><span class="n">protocol</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (number: </span><span class="si">{</span><span class="n">register_number</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;=&gt; Registered: </span><span class="si">{</span><span class="n">dependency</span><span class="o">.</span><span class="n">protocol</span><span class="o">.</span><span class="vm">__name__</span><span class="si">}</span><span class="s2"> (number: </span><span class="si">{</span><span class="n">register_number</span><span class="si">}</span><span class="s2">)&quot;</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">dependency</span>
 
 <span class="k">def</span><span class="w"> </span><span class="nf">resolve_hook</span><span class="p">(</span><span class="n">dependency</span><span class="p">:</span> <span class="n">Depends</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Depends</span><span class="p">:</span>
@@ -1453,7 +1453,7 @@
 <span class="k">assert</span> <span class="n">data</span> <span class="o">==</span> <span class="n">register_number</span> <span class="o">==</span> <span class="n">resolve_number</span> <span class="o">==</span> <span class="mi">42</span>
 </code></pre></div>
 <p><strong>Output:</strong>
-<div class="highlight"><pre><span></span><code>=� Registered: INumberService (number: 42)
+<div class="highlight"><pre><span></span><code>=&gt; Registered: INumberService (number: 42)
 =
  Resolved: dependency (number: 42)
 Response: 42

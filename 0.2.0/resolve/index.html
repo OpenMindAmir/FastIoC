@@ -465,6 +465,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#async-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async Endpoints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       Next Steps
@@ -932,6 +941,15 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#async-endpoints" class="md-nav__link">
+    <span class="md-ellipsis">
+      Async Endpoints
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#next-steps" class="md-nav__link">
     <span class="md-ellipsis">
       Next Steps
@@ -1067,51 +1085,9 @@
     <span class="p">}</span>
 </code></pre></div>
 <p>Everything works together seamlessly!</p>
-<p>&lt;!-- ## ⚠️ Important: Parameter Ordering</p>
-<p>Since FastIoC dependencies are converted to FastAPI's <code>Depends()</code> under the hood, you need to follow Python's parameter ordering rules:</p>
-<div class="highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">project.interfaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">IUserService</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">project.dependencies</span><span class="w"> </span><span class="kn">import</span> <span class="n">UserId</span>
-
-<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/example&#39;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">good_example</span><span class="p">(</span>
-    <span class="c1"># ✅ CORRECT: Simple parameters first</span>
-    <span class="n">item_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">q</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
-    <span class="n">page</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
-
-    <span class="c1"># Then dependencies (they have default values under the hood)</span>
-    <span class="n">service</span><span class="p">:</span> <span class="n">IUserService</span><span class="p">,</span>
-    <span class="n">user_id</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">UserId</span><span class="p">]</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;ok&quot;</span><span class="p">}</span>
-
-<span class="nd">@app</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/example&#39;</span><span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">bad_example</span><span class="p">(</span>
-    <span class="c1"># ❌ WRONG: Dependencies before simple required parameters</span>
-    <span class="n">service</span><span class="p">:</span> <span class="n">IUserService</span><span class="p">,</span>
-    <span class="n">user_id</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">UserId</span><span class="p">],</span>
-
-    <span class="c1"># This will cause: &quot;non-default argument follows default argument&quot;</span>
-    <span class="n">item_id</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
-    <span class="n">q</span><span class="p">:</span> <span class="nb">str</span>
-<span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;error&quot;</span><span class="p">}</span>
-</code></pre></div>
-<p><strong>The rule:</strong> Place required parameters (path params, required query params) <strong>before</strong> injected dependencies.</p>
-<p>This is because under the hood, FastIoC transforms:
-<div class="highlight"><pre><span></span><code><span class="n">service</span><span class="p">:</span> <span class="n">IUserService</span>
-</code></pre></div>
-Into:
-<div class="highlight"><pre><span></span><code><span class="n">service</span><span class="p">:</span> <span class="n">IUserService</span> <span class="o">=</span> <span class="n">Depends</span><span class="p">(</span><span class="n">registered_service</span><span class="p">)</span>
-<span class="err">```</span> <span class="o">--&gt;</span>
-
-<span class="c1">## Async Endpoints</span>
-
-<span class="n">Both</span> <span class="n">sync</span> <span class="ow">and</span> <span class="k">async</span> <span class="n">endpoints</span> <span class="n">work</span> <span class="n">identically</span><span class="p">:</span>
-
-<span class="err">```</span><span class="n">python</span>
-<span class="c1"># project/routers/users.py</span>
+<h2 id="async-endpoints">Async Endpoints</h2>
+<p>Both sync and async endpoints work identically:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># project/routers/users.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">project.interfaces</span><span class="w"> </span><span class="kn">import</span> <span class="n">IUserService</span>
 
 <span class="nd">@router</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;/sync&#39;</span><span class="p">)</span>
@@ -1122,7 +1098,7 @@ Into:
 <span class="k">async</span> <span class="k">def</span><span class="w"> </span><span class="nf">async_endpoint</span><span class="p">(</span><span class="n">service</span><span class="p">:</span> <span class="n">IUserService</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
     <span class="c1"># Same syntax, FastAPI handles execution automatically</span>
     <span class="k">return</span> <span class="n">service</span><span class="o">.</span><span class="n">get_user</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
-</code></pre></div></p>
+</code></pre></div>
 <p>Whether your dependency implementation is sync or async, FastAPI automatically handles the execution.</p>
 <h2 id="next-steps">Next Steps</h2>
 <ul>
