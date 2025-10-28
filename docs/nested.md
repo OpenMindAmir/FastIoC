@@ -224,7 +224,7 @@ container.add_scoped(IOrderService, OrderService)
 
    Supported FastAPI types: `Request`, `Response`, `BackgroundTasks`, `WebSocket`, `UploadFile`, `SecurityScopes`, and annotations like `Query`, `Body`, `Path`, `File`, `Form`, `Cookie`, `Header`, `Security`, or even `Depends()`.
 
-4. **Lifetime consideration** - The dependency is resolved **once per class instance**, not per method call. Watch your [lifetime configurations](lifetime.md) carefully.
+**Lifetime consideration** - The dependency is resolved **once per class instance**, not per method call. Watch your [lifetime configurations](lifetime.md) carefully.
 
 ### Real-World Example
 

@@ -316,7 +316,7 @@ container.add_singleton(IDatabaseSession, get_database)  # ❌ Error!
 
 **Why?** Generators can only be used once. After yielding a value and reaching the end, they cannot be reused. Since singletons are meant to be reused across the entire application, generators don't make sense as singletons.
 
-See the [`SingletonGeneratorError` API reference](reference/exceptions#singletongeneratorerror) for more details.
+See the [`SingletonGeneratorError` API reference](/FastIoC/reference/exceptions#fastioc.errors.SingletonGeneratorError) for more details.
 
 **Solution 1:** Use a regular *class* or *function* for singletons:
 

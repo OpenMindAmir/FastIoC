@@ -75,7 +75,7 @@ container = Container()
 
 # Registration logging
 def log_register(dependency: Dependency) -> Dependency:
-    print(f"=� Registering: {dependency.protocol.__name__}")
+    print(f"=> Registering: {dependency.protocol.__name__}")
     print(f"   Implementation: {dependency.implementation}")
     print(f"   Lifetime: {dependency.lifetime}")
     return dependency
@@ -95,7 +95,7 @@ container.add_scoped(IUserService, UserService)
 
 **Output:**
 ```
-=� Registering: IUserService
+=> Registering: IUserService
    Implementation: <class 'UserService'>
    Lifetime: LifeTime.SCOPED
 ```
@@ -191,7 +191,7 @@ def env_based_register(dependency: Dependency) -> Dependency:
             mock_name = f"Mock{impl_name}"
             # Assume mock classes are available
             if mock_class := globals().get(mock_name):
-                print(f">� Using {mock_name} instead of {impl_name}")
+                print(f">> Using {mock_name} instead of {impl_name}")
                 dependency.implementation = mock_class
 
     return dependency
@@ -231,7 +231,7 @@ def register_hook(dependency: Dependency[INumberService]) -> Dependency[INumberS
     global register_number
     # Call implementation to get the number
     register_number = dependency.implementation().get_number()
-    print(f"=� Registered: {dependency.protocol.__name__} (number: {register_number})")
+    print(f"=> Registered: {dependency.protocol.__name__} (number: {register_number})")
     return dependency
 
 def resolve_hook(dependency: Depends) -> Depends:
@@ -269,7 +269,7 @@ assert data == register_number == resolve_number == 42
 
 **Output:**
 ```
-=� Registered: INumberService (number: 42)
+=> Registered: INumberService (number: 42)
 =
  Resolved: dependency (number: 42)
 Response: 42

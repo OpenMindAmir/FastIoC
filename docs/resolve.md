@@ -127,52 +127,6 @@ async def get_item(
 
 Everything works together seamlessly!
 
-<!-- ## ⚠️ Important: Parameter Ordering
-
-Since FastIoC dependencies are converted to FastAPI's `Depends()` under the hood, you need to follow Python's parameter ordering rules:
-
-```python
-from typing import Annotated
-from project.interfaces import IUserService
-from project.dependencies import UserId
-
-@app.get('/example')
-def good_example(
-    # ✅ CORRECT: Simple parameters first
-    item_id: int,
-    q: str,
-    page: int = 1,
-
-    # Then dependencies (they have default values under the hood)
-    service: IUserService,
-    user_id: Annotated[int, UserId]
-) -> dict:
-    return {"status": "ok"}
-
-@app.get('/example')
-def bad_example(
-    # ❌ WRONG: Dependencies before simple required parameters
-    service: IUserService,
-    user_id: Annotated[int, UserId],
-
-    # This will cause: "non-default argument follows default argument"
-    item_id: int,
-    q: str
-) -> dict:
-    return {"status": "error"}
-```
-
-**The rule:** Place required parameters (path params, required query params) **before** injected dependencies.
-
-This is because under the hood, FastIoC transforms:
-```python
-service: IUserService
-```
-Into:
-```python
-service: IUserService = Depends(registered_service)
-``` -->
-
 ## Async Endpoints
 
 Both sync and async endpoints work identically:
